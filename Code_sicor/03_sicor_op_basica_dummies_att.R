@@ -1,0 +1,138 @@
+##################
+
+# Author : Renan Morais
+# Date: 24-04-2023
+# Email: renanflorias@hotmail.com
+# Goal: join base: sicor_operacao_basica_estado with table "empreendimento"
+# resource: 
+
+########################### Libraries ######################################
+
+pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr)
+
+##### directory #########
+
+root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+dir_bcb<- ("A:/finance/sicor/cleanData")
+
+dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR")
+
+dir_bcb_clear <- ("A:/finance/sicor/cleanData")
+
+dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
+
+dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
+
+### import dataset ############
+
+setwd(dir_sicor_output)
+
+# df_sicor <- readRDS("sicor_main_2013_2023_with_empreendimento.Rds")
+
+df_sicor <- readRDS("df_sicor_op_basica_pre_dummie_190124.RDS")
+
+
+#### df "bcb_c82" possui todos códigos e descrições das características climáticas da consulta pública 82
+
+#### insert dummies
+
+setwd(dir_sicor_landuse2024)
+
+bcb_c82 <- read.xlsx("2023_12_mdcr_tabelas_relacionais.xlsx", sheet = "1_bcb_82_2021")
+
+bcb_c82 <- bcb_c82 %>% select(-USE_IRRIGACAO,-USE_MODALIDADE, -USE_PRODUTO,
+                                  -USE_SUBPROGRAMA, -USE_CULTIVO, -USE_INTEGR, -USE_AGRICULTURA,
+                              -USE_PRODUTO_2, - USE_SUBPROGRAMA, -USE_VARIEDADE, -USE_PROGRAMA_ABC,
+                              -USE_SUBPROGRAMA_PRONAF)
+
+
+# names(bcb_c82) <- tolower(names(bcb_c82))
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor %>%
+  mutate(DUMMY_TP_AGRICULTURA = if_else(CD_TIPO_AGRICULTURA  %in% bcb_c82$CD_TP_AGRICULTURA, 1, 0)) %>%
+  relocate(DUMMY_TP_AGRICULTURA, .after = CD_TIPO_AGRICULTURA) %>%
+  mutate(DUMMY_TP_CULTIVO = if_else(CD_TIPO_CULTIVO  %in% bcb_c82$CD_TIPO_CULTIVO, 1, 0)) %>%
+  relocate(DUMMY_TP_CULTIVO, .after = CD_TIPO_CULTIVO) %>%
+  mutate(DUMMY_TP_INTEGRACAO = if_else(CD_TIPO_INTGR_CONSOR  %in% bcb_c82$CD_TP_INTGR_CONSOR, 1, 0)) %>%
+  relocate(DUMMY_TP_INTEGRACAO, .after = CD_TIPO_INTGR_CONSOR) %>%
+  mutate(DUMMY_PROGRAMA = if_else(CD_PROGRAMA  %in% bcb_c82$CD_PROGRAMA, 1, 0)) %>%
+  relocate(DUMMY_PROGRAMA, .after = CD_PROGRAMA) %>%
+  mutate(DUMMY_SUBPROGRAMA = if_else(CD_SUBPROGRAMA  %in% bcb_c82$CD_SUBPROGRAMA, 1, 0)) %>%
+  relocate(DUMMY_SUBPROGRAMA, .after = CD_SUBPROGRAMA) %>%
+  mutate(DUMMY_TP_IRRIGACAO = if_else(CD_TIPO_IRRIGACAO  %in% bcb_c82$CD_IRRIGACAO, 1, 0)) %>%
+  relocate(DUMMY_TP_IRRIGACAO, .after = CD_TIPO_IRRIGACAO) %>%
+  mutate(DUMMY_MODALIDADE = if_else(CODIGO_MODALIDADE  %in% bcb_c82$CD_MODALIDADE, 1, 0)) %>%
+  relocate(DUMMY_MODALIDADE, .after = CODIGO_MODALIDADE) %>%
+  mutate(DUMMY_PRODUTO = if_else(CODIGO_PRODUTO  %in% bcb_c82$CD_PRODUTO, 1, 0)) %>%
+  relocate(DUMMY_PRODUTO, .after = CODIGO_PRODUTO) %>% 
+  mutate(DUMMY_ABC = if_else(CD_PROGRAMA %in% bcb_c82$CD_PROGRAMA_ABC, 1, 0)) %>% 
+  relocate(DUMMY_ABC, .after = DUMMY_PRODUTO) %>%
+  mutate(DUMMY_PRONAF_ABC = if_else(CD_SUBPROGRAMA %in% bcb_c82$CD_SUBPROGRAMA_PRONAF_ABC, 1, 0)) %>% 
+  relocate(DUMMY_ABC, .after = DUMMY_ABC)
+
+rm(df_sicor)
+
+#dummies conjuntas
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>% 
+  mutate(modalidade_produto = paste(CODIGO_MODALIDADE, CODIGO_PRODUTO, sep= "_"))
+
+
+#merge to condition modalidade and produto
+
+#DUMMY PRODUTO E MODALIDADE
+
+bcb_c82 <- bcb_c82 %>% mutate(modalidade_produto = paste("12", CD_PRODUTO, sep = "_"))
+#I manually have verified 12_NULL does not exist in sicor, but let's remove it : 
+bcb_c82 <- bcb_c82 %>% mutate(modalidade_produto =ifelse(modalidade_produto=="12_NULL","NULL", modalidade_produto))
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
+  mutate(DUMMY_PRODUTO_MODALIDADE = if_else((modalidade_produto %in% bcb_c82$modalidade_produto) ,1,0)) %>% 
+  mutate(DUMMY_PRODUTO_MODALIDADE = if_else((CODIGO_MODALIDADE == 11) & (CODIGO_PRODUTO != 3630),1,DUMMY_PRODUTO_MODALIDADE))
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
+  relocate(DUMMY_PRODUTO_MODALIDADE, .after = CODIGO_MODALIDADE)
+
+                                      
+#DUMMY_PRODUTO_FINALIDADE_VARIEDADE
+
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
+  mutate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE = if_else((CODIGO_PRODUTO  %in% bcb_c82$CD_PRODUTO_2),1,0))
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
+  mutate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE = if_else((CODIGO_FINALIDADE  %in% bcb_c82$CD_FINALIDADE_EXCEÇÃO),0,DUMMY_PRODUTO_FINALIDADE_VARIEDADE))
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
+  mutate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE = if_else((CODIGO_PRODUTO==1880) & (CODIGO_VARIEDADE==370),0,DUMMY_PRODUTO_FINALIDADE_VARIEDADE))
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
+  mutate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE = if_else((CODIGO_PRODUTO==6640) & (CODIGO_VARIEDADE==213),0,DUMMY_PRODUTO_FINALIDADE_VARIEDADE))
+
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
+  relocate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE, .after = CODIGO_VARIEDADE)
+
+
+df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>% 
+  mutate(sum_dummy = DUMMY_TP_AGRICULTURA + DUMMY_TP_CULTIVO + DUMMY_TP_INTEGRACAO +
+           DUMMY_SUBPROGRAMA + DUMMY_TP_IRRIGACAO + DUMMY_MODALIDADE + DUMMY_PRODUTO + DUMMY_ABC + DUMMY_PRONAF_ABC+
+           DUMMY_PRODUTO_FINALIDADE_VARIEDADE + DUMMY_PRODUTO_MODALIDADE)
+
+############ new dummy ###########
+
+# df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>% 
+#   mutate(DUMMY_ABC = if_else(CD_PROGRAMA %in% c(156,180), 1, 0))
+# 
+# "dummy com o objetivo de captar os programas do pronaf ABC"
+# 
+# df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>% 
+#   mutate(DUMMY_PRONAF_ABC = if_else(CD_SUBPROGRAMA %in% c(4,5,8,52,1234), 1, 0))
+
+
+
+setwd("A:/projects/brlanduse_landscape102023/sicor/tempfiles")
+
+saveRDS(df_sicor_op_basica_empreendimento_all_dummies, "df_sicor_op_basica_all_dummies_att.RDS")
+
+

@@ -1,0 +1,24 @@
+diff a/Codes/sicor/04_sicor_op_basica_transform_landscape.R b/Codes/sicor/04_sicor_op_basica_transform_landscape.R	(rejected hunks)
+@@ -289,15 +289,19 @@
+                                         "Pública", source_private_public))
+ 
+ df_final <- df_final %>% 
+-  dplyr::rename(value_original_currency = value_brl)
++  dplyr::rename(value_original_currency = value_brl) %>%
+   mutate(original_currency = "BRL") %>%
+   relocate(original_currency, .after = value_original_currency)
+ 
+ ######## apply deflate and create usd value ##########
+ 
+-source("C:/Users/rflorias/OneDrive - CPI/Documentos/climate_finance_codes/functions/inflation adjustment/automatic_deflate.r")
++#path for function
+ 
+-source("C:/Users/rflorias/OneDrive - CPI/Documentos/climate_finance_codes/functions/inflation adjustment/Funcao_taxa_cambio_v2.r")
++function_path<- 'C:/Users/marcos.duarte/Dropbox (CPI)/Marcos/Codes/functions/'
++  
++# sourcing deflate and exchange codes
++source(paste0(function_path,"automatic_deflate.R"))
++source(paste0(function_path,"Funcao_taxa_cambio_v2.R")) 
+ 
+ ano_ini = 2015
+ ano_fim = 2020
