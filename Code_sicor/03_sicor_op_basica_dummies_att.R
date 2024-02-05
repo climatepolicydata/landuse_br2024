@@ -1,3 +1,4 @@
+
 ##################
 
 # Author : Renan Morais
@@ -27,9 +28,8 @@ dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
 
 setwd(dir_sicor_output)
 
-# df_sicor <- readRDS("sicor_main_2013_2023_with_empreendimento.Rds")
 
-df_sicor <- readRDS("df_sicor_op_basica_pre_dummie_190124.RDS")
+df_sicor <- readRDS("df_sicor_op_basica_pre_dummie_aggregate.RDS")
 
 
 #### df "bcb_c82" possui todos códigos e descrições das características climáticas da consulta pública 82
@@ -38,8 +38,7 @@ df_sicor <- readRDS("df_sicor_op_basica_pre_dummie_190124.RDS")
 
 setwd(dir_sicor_landuse2024)
 
-bcb_c82 <- read.xlsx("2023_12_mdcr_tabelas_relacionais.xlsx", sheet = "1_bcb_82_2021")
-
+bcb_c82 <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "climate_use_bcb_82")
 bcb_c82 <- bcb_c82 %>% select(-USE_IRRIGACAO,-USE_MODALIDADE, -USE_PRODUTO,
                                   -USE_SUBPROGRAMA, -USE_CULTIVO, -USE_INTEGR, -USE_AGRICULTURA,
                               -USE_PRODUTO_2, - USE_SUBPROGRAMA, -USE_VARIEDADE, -USE_PROGRAMA_ABC,
@@ -51,7 +50,7 @@ bcb_c82 <- bcb_c82 %>% select(-USE_IRRIGACAO,-USE_MODALIDADE, -USE_PRODUTO,
 df_sicor_op_basica_empreendimento_all_dummies <- df_sicor %>%
   mutate(DUMMY_TP_AGRICULTURA = if_else(CD_TIPO_AGRICULTURA  %in% bcb_c82$CD_TP_AGRICULTURA, 1, 0)) %>%
   relocate(DUMMY_TP_AGRICULTURA, .after = CD_TIPO_AGRICULTURA) %>%
-  mutate(DUMMY_TP_CULTIVO = if_else(CD_TIPO_CULTIVO  %in% bcb_c82$CD_TIPO_CULTIVO, 1, 0)) %>%
+  mutate(DUMMY_TP_CULTIVO = if_else(CD_TIPO_CULTIVO %in% bcb_c82$CD_TP_CULTIVO, 1, 0)) %>%
   relocate(DUMMY_TP_CULTIVO, .after = CD_TIPO_CULTIVO) %>%
   mutate(DUMMY_TP_INTEGRACAO = if_else(CD_TIPO_INTGR_CONSOR  %in% bcb_c82$CD_TP_INTGR_CONSOR, 1, 0)) %>%
   relocate(DUMMY_TP_INTEGRACAO, .after = CD_TIPO_INTGR_CONSOR) %>%
@@ -114,10 +113,6 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
   relocate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE, .after = CODIGO_VARIEDADE)
 
 
-df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>% 
-  mutate(sum_dummy = DUMMY_TP_AGRICULTURA + DUMMY_TP_CULTIVO + DUMMY_TP_INTEGRACAO +
-           DUMMY_SUBPROGRAMA + DUMMY_TP_IRRIGACAO + DUMMY_MODALIDADE + DUMMY_PRODUTO + DUMMY_ABC + DUMMY_PRONAF_ABC+
-           DUMMY_PRODUTO_FINALIDADE_VARIEDADE + DUMMY_PRODUTO_MODALIDADE)
 
 ############ new dummy ###########
 
@@ -131,8 +126,8 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 
 
-setwd("A:/projects/brlanduse_landscape102023/sicor/tempfiles")
+setwd(dir_sicor_output)
 
-saveRDS(df_sicor_op_basica_empreendimento_all_dummies, "df_sicor_op_basica_all_dummies_att.RDS")
-
+saveRDS(df_sicor_op_basica_empreendimento_all_dummies, "df_sicor_op_basica_all_dummies_aggregate.RDS")
+write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,"df_sicor_op_basica_all_dummies_aggregate.xlsx")
 

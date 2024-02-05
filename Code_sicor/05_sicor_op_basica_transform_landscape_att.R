@@ -23,31 +23,23 @@ pacman::p_load(tidyverse,
 ##### directory #########
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
-dir_bcb<- paste0(root,"Dropbox (CPI)/Climate Finance Brazil/01_DATA/BCB/0_Database/3_Dataset cleaned")
 
-dir_bcb_raw <- ("A:/finance/sicor/rawData/auxiliary")
+dir_sicor_doc <- ("A:/finance/sicor/rawData/auxiliary")
 
-dir_bcb_output<- ("A:/projects/brlanduse_landscape102023/sicor/tempfiles")
+dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
 
-dir_bcb_relational <- ("A:/projects/brlanduse_landscape102023/sicor")
-
-# setwd(dir_bcb_output)
-
-
-# setwd(dir_bcb)
-# setwd(dir_bcb_raw)
-# setwd(dir_bcb_relational)
+dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
 
 
 ################ import databases #############
-setwd(dir_bcb_output)
+setwd(dir_sicor_output)
 
 
 # Read main dataset
-df <-readRDS("sicor_op_basica_DUMMY_ABC_PRONAF_att.RDS")
+df <-readRDS("sicor_op_basica_sum_dummies_aggregate.RDS")
 
 # Read description tables
-setwd(dir_bcb_raw)
+setwd(dir_sicor_doc)
 tb_irrigacao <- read.csv("TipoIrrigacao.csv", sep = "," ,encoding = "latin1") %>% 
   dplyr::rename(CD_TIPO_IRRIGACAO = X.CODIGO,
                 DESC_IRRIGACAO = DESCRICAO)
@@ -64,6 +56,19 @@ tb_intgr <- read.csv("TipoIntegracao.csv", sep = ",", encoding = "latin1") %>%
   dplyr::rename(CD_TIPO_INTGR_CONSOR = X.CODIGO,
                 DESCRICAO_INTGR = DESCRICAO)
 
+tb_modalidade <- read.csv("Modalidade.csv", sep = "," ,encoding = "latin1") %>% 
+  select(CODIGO_MODALIDADE, NOME_MODALIDADE)%>% 
+  dplyr::rename(MODALIDADE = NOME_MODALIDADE) %>% distinct()
+
+tb_finalidade <- read.csv("Modalidade.csv", sep = "," ,encoding = "latin1") %>% 
+  select(X.CODIGO_FINALIDADE, NOME_FINALIDADE)%>% 
+  dplyr::rename(FINALIDADE = NOME_FINALIDADE,
+                CODIGO_FINALIDADE =X.CODIGO_FINALIDADE ) %>% distinct()
+
+tb_produto <- read.csv("Produto.csv", sep = "," ,encoding = "latin1") %>% 
+  select(X.CODIGO, DESCRICAO)%>% 
+  dplyr::rename(PRODUTO = DESCRICAO,
+                CODIGO_PRODUTO = X.CODIGO) %>% distinct()
 
 
 df_if <- read.csv("SICOR_LISTA_IFS.csv", sep = ";", encoding = "latin1") %>% 
@@ -78,63 +83,52 @@ df <- join(df , tb_irrigacao, by = "CD_TIPO_IRRIGACAO")
 df <- join(df , tb_agricultura, by = "CD_TIPO_AGRICULTURA")
 df <- join(df, tb_subprograma, by ="CD_SUBPROGRAMA")
 df <- join(df, tb_cultivo, by="CD_TIPO_CULTIVO")
+#joins ok
 
 rm(tb_irrigacao,tb_agricultura,tb_subprograma,tb_cultivo)
 
 # Read relational tables
-setwd(dir_bcb_relational)
+setwd(dir_sicor_landuse2024)
 tabela_instrument <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "instrument_landscape")
 tabela_recipient <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "beneficiary_landscape") 
 tabela_fonte_recurso <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "source_landscape")
 tabela_climate_use <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "climate_use_bcb_82") %>% 
   dplyr::rename(DESC_IRRIGACAO = IRRIGACAO,
-                instrument_original = PROGRAMA,
                 DESCRICAO_SUBPROGRAMA = SUBPROGRAMA,
                 DESC_AGRICULTURA = TP_AGRICULTURA,
                 DESCRICAO_INTGR = TP_INTGR_CONSOR)
 
 # Import description and relational tables to transform codes into their respective descriptions
-df <- join(df, tabela_instrument, by= "CD_PROGRAMA")
-df <- join(df, tabela_recipient, by = "CD_PROGRAMA")
+df <- join(df, tabela_instrument, by= "CD_PROGRAMA") #ok
+df <- join(df, tabela_recipient, by = "CD_PROGRAMA") #ok
 df <- join(df, tabela_fonte_recurso, by = "CD_FONTE_RECURSO")
 df <- join(df, tb_intgr, by = "CD_TIPO_INTGR_CONSOR")
+
+df <- join(df, tb_modalidade, by = "CODIGO_MODALIDADE")
+df <- join(df, tb_finalidade, by = "CODIGO_FINALIDADE")
+
+df <- join(df, tb_produto, by = "CODIGO_PRODUTO")
+
+#ok
 
 ########### Creation of IDs and transformations #################
 
 df <- df %>% 
   mutate(project_name = paste(FINALIDADE, DESCRICAO_SUBPROGRAMA, sep = "_"),
-    project_description = paste(MODALIDADE, PRODUTO, DESC_AGRICULTURA, DESC_IRRIGACAO, DESCRICAO_TP_CULTIVO, sep = "_"),
-    CD_SUBPROGRAMA = ifelse(is.na(CD_SUBPROGRAMA), 0, CD_SUBPROGRAMA),
-    CD_PROGRAMA = ifelse(is.na(CD_PROGRAMA), 0, CD_PROGRAMA))
+    project_description = paste(MODALIDADE, PRODUTO, DESC_AGRICULTURA, DESC_IRRIGACAO, DESCRICAO_TP_CULTIVO, sep = "_"))
 
-
-"id para agregação"
-
-df <- df %>%
-  group_by(ANO, ATIVIDADE, CD_CATEG_EMITENTE, CD_FONTE_RECURSO, project_description, CD_PROGRAMA, 
-           CD_TIPO_INTGR_CONSOR, project_name,CNPJ_IF) %>%
-  dplyr::mutate(id_equals = dplyr::cur_group_id()) %>%
-  ungroup()
-
-
-# df <- df %>% 
-#   dplyr::rename(ANO = DT_EMISSAO)
-
-# eiminate dummies
-
-df2 <- df %>% select(-DUMMY_ABC,-DUMMY_TP_AGRICULTURA,-DUMMY_TP_CULTIVO,-DUMMY_TP_INTEGRACAO,-DUMMY_PROGRAMA,-DUMMY_SUBPROGRAMA,
-                    -DUMMY_TP_IRRIGACAO,-DUMMY_MODALIDADE, -DUMMY_PRODUTO, -DUMMY_ABC)
 
 #select 
 
-tabela_climate_modalidade <- tabela_climate_use %>% select(MODALIDADE,USE_MODALIDADE)
-tabela_climate_irrigacao <- tabela_climate_use %>% select(DESC_IRRIGACAO,USE_IRRIGACAO)
-tabela_climate_produto <- tabela_climate_use %>% select(PRODUTO,USE_PRODUTO)
-tabela_climate_programa <- tabela_climate_use %>% select(instrument_original,USE_PROGRAMA)
-tabela_climate_subprograma <- tabela_climate_use %>% select(DESCRICAO_SUBPROGRAMA,USE_SUBPROGRAMA)
-tabela_climate_cultivo <- tabela_climate_use %>% select(DESCRICAO_TP_CULTIVO,USE_CULTIVO)
-tabela_climate_intgr <- tabela_climate_use %>% select(DESCRICAO_INTGR,USE_INTEGR)
-tabela_climate_agricultra <- tabela_climate_use %>% select(DESC_AGRICULTURA,USE_AGRICULTURA)
+tabela_climate_modalidade <- tabela_climate_use %>% select(CODIGO_MODALIDADE,USE_MODALIDADE)
+tabela_climate_irrigacao <- tabela_climate_use %>% select(CD_IRRIGACAO,USE_IRRIGACAO)
+tabela_climate_produto <- tabela_climate_use %>% select(CODIGO_PRODUTO,USE_PRODUTO)
+tabela_climate_programa <- tabela_climate_use %>% select(CD_PROGRAMA_ABC,USE_PROGRAMA_ABC)
+tabela_climate_subprograma<- tabela_climate_use %>% select(CD_SUBPROGRAMA,USE_SUBPROGRAMA)
+tabela_climate_cultivo <- tabela_climate_use %>% select(CD_TP_CULTIVO,USE_CULTIVO)
+tabela_climate_intgr <- tabela_climate_use %>% select(CD_TP_INTGR_CONSOR,USE_INTEGR)
+tabela_climate_agricultra <- tabela_climate_use %>% select(CD_TP_AGRICULTURA,USE_AGRICULTURA)
+tabela_climate_pronaf_abc <- tabela_climate_use %>% select(CD_SUBPROGRAMA_PRONAF_ABC,USE_SUBPROGRAMA_PRONAF)
 
 
 # df3 <- left_join(df2, tabela_climate_modalidade, by = "MODALIDADE")
@@ -146,10 +140,10 @@ tabela_climate_agricultra <- tabela_climate_use %>% select(DESC_AGRICULTURA,USE_
 # df9 <- left_join(df8, tabela_climate_intgr, by = "DESCRICAO_INTGR")
 # df <- left_join(df9, tabela_climate_agricultra, by = "DESC_AGRICULTURA")
 
-df <- df2 %>%
-  left_join(tabela_climate_modalidade, by = "MODALIDADE") %>%
-  left_join(tabela_climate_irrigacao, by = "DESC_IRRIGACAO") %>%
-  left_join(tabela_climate_produto, by = "PRODUTO") %>%
+df2 <- df %>%
+  left_join(tabela_climate_modalidade, by = "CODIGO_MODALIDADE") %>%
+  left_join(tabela_climate_irrigacao, by = "CD_TP_INTGR_CONSOR") %>%
+  left_join(tabela_climate_produto, by = "") %>%
   left_join(tabela_climate_programa, by = "instrument_original") %>%
   left_join(tabela_climate_subprograma, by = "DESCRICAO_SUBPROGRAMA") %>%
   left_join(tabela_climate_cultivo, by = "DESCRICAO_TP_CULTIVO") %>%
@@ -181,8 +175,6 @@ df <- df %>%
                                                    ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 0 & DUMMY_DUAL == 1,"dual",
                                                    ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 1, "dual","none"))))))))
 
-df_ajust <- aggregate(VL_PARC_CREDITO ~ id_equals + ANO + ATIVIDADE+ CD_CATEG_EMITENTE+ CD_FONTE_RECURSO+ project_description+ CD_PROGRAMA+ 
-                      CD_TIPO_INTGR_CONSOR + project_name+ CNPJ_IF + climate_use, data = df, FUN = sum)
 
 rm(df)
 
