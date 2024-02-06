@@ -149,6 +149,8 @@ df_sicor <- left_join(df_sicor , finalidade, by ="FINALIDADE")
 ####ELIMINATE DESCRIPTIONS
 df_sicor <- df_sicor %>% 
   select(-PRODUTO,- MODALIDADE, - VARIEDADE, -FINALIDADE, -PRODUTO)
+
+###### changing values na to avoid ocorrency problems with aggregation.
   
 df_sicor <- df_sicor %>% 
   mutate(ATIVIDADE = ifelse(is.na(ATIVIDADE),"NÃO INFORMADO",ATIVIDADE),
