@@ -3,7 +3,9 @@ library(tidyverse)
 # Script containing all words combination to classify the sectors#
 ##################################################################
 
-#BNDES Sectors
+######################################################################################################################################################################################################
+
+# BNDES Sectors
 # Bioenergy
 
 bioenergy_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
@@ -17,7 +19,8 @@ bioenergy_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
     (grepl(pattern = "\\bgeracao\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bvapor",x = Coluna_search, ignore.case = TRUE)) |
     (grepl(pattern = "\\benergia\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bbagaco\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bcana\\b",x = Coluna_search, ignore.case = TRUE)) |
     (grepl(pattern = "\\bmilho\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\betanol\\b",x = Coluna_search, ignore.case = TRUE)) |
-    (grepl(pattern = "\\btermoeletrica\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bbiogas\\b",x = Coluna_search, ignore.case = TRUE)))
+    (grepl(pattern = "\\btermoeletrica\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bbiogas\\b",x = Coluna_search, ignore.case = TRUE))|
+    (grepl("\\bcaptacao\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bbiometano\\b",x = Coluna_search, ignore.case = TRUE)))
     return(data_frame_bioenergy)
 
 }
@@ -91,7 +94,8 @@ cattle_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
     (grepl("\\bservico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binseminacao\\b", x = Coluna_search , ignore.case = TRUE))|
     (grepl("\\bservico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmanejo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\banimais\\b", x = Coluna_search , ignore.case = TRUE))|
     (grepl("\\bcompostagem\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\borganica\\b", x = Coluna_search , ignore.case = TRUE))|
-    (grepl("\\bovos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bnatura\\b", x = Coluna_search , ignore.case = TRUE)))
+    (grepl("\\bovos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bnatura\\b", x = Coluna_search , ignore.case = TRUE)) |
+    (grepl("\\babate\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baves\\b",x = Coluna_search , ignore.case = TRUE)))
     return(data_frame_cattle)
 }
 
@@ -141,7 +145,7 @@ forest_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
 }
 
 #Multi Sector
-MultiSector_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
+multiSector_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
     data_frame_multisector <- data_frame_BNDES %>% filter((grepl(pattern = "\\bagricultura\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bpecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bservicos\\b", x = Coluna_search , ignore.case = TRUE)) |
     (grepl(pattern = "\\batv\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bapoio\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bagricultura\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bagricultura\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bpecuaria\\b", x = Coluna_search , ignore.case = TRUE)) |
     (grepl(pattern = "\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\boleos\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bgorduras\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bvegetais\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\banimais\\b", x = Coluna_search , ignore.case = TRUE)) |
@@ -150,3 +154,120 @@ MultiSector_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
     (grepl(pattern = "\\businas\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bcompostagem\\b", x = Coluna_search , ignore.case = TRUE)))
     return(data_frame_multisector)
 }
+
+# Crop
+crop_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
+    data_frame_crop <- data_frame_BNDES %>% filter((grepl("\\batividades\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bapoio\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagricultura\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\batividades\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcolheita\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bbeneficiamento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\barroz\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bbeneficiamento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcafe\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcom\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\batac\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcereal\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcomercio\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\batacadista\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcult\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutras\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfibras\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcult\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutras\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boleaginosas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcult\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bplantas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\babacaxi\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bacai\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\balgodao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\balho\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bamendoim\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\barroz\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbanana\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbatata\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcacau\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcafe\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcaju\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcana\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcebola\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcereais\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcha\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcitricos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcoco\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bdende\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\berva\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfeijao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bflores\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfumo\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bgirassol\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\blaranja\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmaca\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmamao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmandioca\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmanga\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmaracuja\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmelancia\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmelao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmilho\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmorango\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boleaginosas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutros\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcereais\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpessego\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpimenta\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bplantas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsoja\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\btomate\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\btrigo\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\buva\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfrutas\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\blavoura\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutras\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bplantas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bcultivo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bplantas\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\blavoura\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabri\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brefresco\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconservas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bacucar\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\badocantes\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\badubos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baguardente\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baguardentes\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baguas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\balimentos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bamidos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbebidas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbiscoitos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcervejas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcha\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcigarrilhas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcigarros\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bdefensivos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bespeciarias\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfarinha\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfermentos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfrutas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmalte\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmassa\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boleo\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boleos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutras\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baguardentes\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutros\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcafe\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\balimenticios\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpanificacao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\barroz\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfumo\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binfusao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brefrigerantes\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsorvetes\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsucos\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bvinho\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bvinagres\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brefino\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bacucar\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfarinha\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmilho\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutras\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbeb\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\boutros\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfumo\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bhorticultura\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bhorticultura\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbfloricultura\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bmoagem\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\btrigo\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bmoagem\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfabricacao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bprocessamento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bindustrial\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfumo\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bproducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\blavouras\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bproducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsementes\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bproducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmudas\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bservico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpoda\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bservico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpreparacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bterreno\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bservico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpulverizacao\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\btorrefacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmoagem\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcafe\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\capacidade\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmoagem\\b", x = Coluna_search , ignore.case = TRUE)))
+    return(data_frame_crop)
+}
+##############################################################################################################################################################################################################################################################
+
+# Para SIOP:
