@@ -83,3 +83,4 @@ siop_all_words_landuse%>%write.xlsx('C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/
 
 siop%>%filter(sector_landscape=="Bioenergy and Fuels")%>%select("project_name","project_description","sector_original","subsector_original","channel_original","source_original","sector_landscape")%>%unique%>%view
 siop%>%filter(sector_landscape=="Crop")%>%select("project_name","project_description","sector_original","subsector_original","channel_original","source_original","sector_landscape")%>%unique%>%view
+siop%>%filter(sector_landscape=="Forest")%>%select("project_name","project_description","sector_original","subsector_original","channel_original","source_original","sector_landscape")%>%unique%>%view
