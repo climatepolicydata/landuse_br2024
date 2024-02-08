@@ -10,6 +10,7 @@ source_landscape <- source_landscape%>%rename(source_original =`source_of financ
 source_landscape <- source_landscape%>%mutate(source_original = str_trim(str_to_lower(stri_trans_general(source_original,"Latin-ASCII"))))
 
 channel_landscape <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscape")
+channel_landscapeV2 <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscapeV2") %>% select(und_orc)%>%unique
 
 instrument_landscape <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx", sheet="instrument_landscape")
 
@@ -23,9 +24,11 @@ siop_tratado %>% mutate(
     source_original = fonte_recursos)%>%left_join(source_landscape%>%select(c(source_original,source_of_finance_landscape,domestic_internacional,source_private_public)), by ="source_original")%>%
     mutate(original_currency = "BRL",
            channel_original = str_c(modalidade,und_orc,sep=";")
-           )%>%left_join(channel_landscape%>%select(-channel_original),by="modalidade") %>%
-           mutate(instrument_original = grupo_de_despesa)%>%left_join(instrument_landscape,by="instrument_original")%>%
-           mutate(sector_original = str_c(funcao,subfuncao,sep = ";"))
+           ) %>%filter(und_orc %in% channel_landscapeV2$und_orc)%>%filter(liquidado>0)%>%view
 
 
+#Rascunho do resto da transformacao
+#%>%left_join(channel_landscape%>%select(-channel_original),by="modalidade") %>%
+ #          mutate(instrument_original = grupo_de_despesa)%>%left_join(instrument_landscape,by="instrument_original")%>%
+  #         mutate(sector_original = str_c(funcao,subfuncao,sep = ";"))
 
