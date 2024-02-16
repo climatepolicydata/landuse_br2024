@@ -82,5 +82,3 @@ siop_all_words_landuse <- siop_all_words%>%pivot_wider(names_from="Sector",value
 siop_all_words_landuse%>%write.xlsx('C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/brlanduse_landscape2024_dados/SIOP/Dicionario_SIOP.xlsx')
 
 
-siop <- siop %>% mutate(Coluna_search = str_c(project_name,project_description,sector_original,subsector_original,channel_original,source_original))
-source("C:/Users/eduar/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
