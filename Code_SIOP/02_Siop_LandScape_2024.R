@@ -1,7 +1,7 @@
 library(tidyverse)
 library(stringi)
 library(readxl)
-source("C:/Users/eduar/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
+source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
 siop_tratado <- read_rds('./brlanduse_landscape2024_dados/SIOP/Siop_Tratado_2021_2023.rds')
 
 #Tabelas relacionais
@@ -28,13 +28,50 @@ siop_landscape <- siop_tratado %>% mutate(
            ) %>% left_join(channel_landscapeV2, by = "channel_original")%>% #Fazendo o join para selecionar os canais landscape
             filter(!is.na(channel_landscape))%>%#Filtrando apenas os canais landscape que aparecem
             mutate(sector_original = str_c(modalidade,und_orc,sep = ";"), subsector_original = programa) %>% 
-            filter(Pago != 0) # Filtrando apenas contratos que pagaram algo
-              
+            filter(Pago != 0) # Filtrando apenas contratos que pagaram algum valor
+
+
+# Fazendo um merge entre a base do siop do ultimo landscape com a base atual
+# A ideia é ver se temos operações iguais para que consigamos classificar ate uso climatico sem a necessidade de dicionario
+
+# Lendo a base do ano passado
+last_landscape <- read_rds("./brlanduse_landscape2024_dados/Dict/base_landscape_final_01022024.rds")
+last_landscape <- last_landscape %>% mutate(sector_landscape= case_when(
+  sector_landscape == "crop" ~ "Crop",sector_landscape == "forest" ~ "Forest", sector_landscape=="cattle" ~ "Cattle",
+  sector_landscape == "Bioenergy and fuels" | sector_landscape == "Bioenergy And Fuels" ~ "Bioenergy and Fuels",sector_landscape == "Agriculture" ~ "Crop",.default = sector_landscape
+))
+siop_antigo <- last_landscape %>% filter(data_source== "siop_painel")%>%as_tibble()
+siop_antigo <- siop_antigo %>% select(project_name,project_description,channel_original,sector_landscape,activity_landscape,subactivity_landscape)
+siop_antigo <- siop_antigo%>%mutate(key_join = str_c(project_description,channel_original,project_name,sep = ";"))
+siop_antigo%>%select(project_name)%>%unique%>%view
+# Fazendo o innerjoin
+# project_description com channel_original
+siop_landscape <- siop_landscape%>%mutate(key_join = str_c(project_description,channel_original,project_name,sep = ";"))
+siop_landscape%>% select(project_name,project_description,channel_original,key_join) %>% inner_join(siop_antigo, by = "key_join")%>% view
+siop_landscape%>%select(project_name)%>%unique%>%view
+siop_landscape %>% filter(project_description =="operacao da rede hidrometeorologica")%>%view
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Aplicando os filtros
 siop_landscape <- siop_landscape %>% mutate(Coluna_search = str_c(project_name,project_description,sector_original,subsector_original,channel_original,source_original,sep = ";"))
 
 bioenergia_siop <- bioenergy_search_pattern_SIOP(data_frame_SIOP = siop_landscape,Coluna_search = Coluna_search)
-#bioenergia_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original)%>% view
+bioenergia_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original)%>% view
+
 
 crop_siop <- crop_search_pattern_SIOP(data_frame_SIOP = siop_landscape,Coluna_search = Coluna_search)
 crop_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
@@ -50,3 +87,5 @@ teste <- rbind(bioenergia_siop,crop_siop,multisector_siop,forest_siop)
 
 
 siop_landscape%>%filter(!Coluna_search %in% teste$Coluna_search)%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>%unique%>%view
+
+bioenergia_siop%>% group_by(Coluna_search)%>%summarize(Soma = sum(Pago))%>%select(Soma)%>%sum
