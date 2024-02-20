@@ -403,7 +403,20 @@ crop_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
          (grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binovacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagropecuaria\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bprograma\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bgarantia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\batividade\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagropecuaria\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bPROAGRO\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\bcadeia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutiva\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesqueira\\b", x = Coluna_search , ignore.case = TRUE))
+        (grepl("\\bcadeia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutiva\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesqueira\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bgestao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bestrategica\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprojetos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcorporativos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bministerio da agricultura, pecuaria e abastecimento\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bpromocao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagronegocio\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbrasileiro\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmercado internacional\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bdesenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcadeia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutiva\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bagropecuaria conservacionista\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bprograma\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcredito fundiario\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bsubvencao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpremio\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bseguro rural\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bapoio\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpolos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagricultura\\b", x = Coluna_search , ignore.case = TRUE)) |
+        
+        
+        (grepl("\\bcentros\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baquicultura\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bdesenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bproducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search , ignore.case = TRUE))
+        
+        
     )
     return(data_frame_crop)
 }
@@ -434,6 +447,7 @@ multisector_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         (grepl("\\b(embrace)\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baplicacoes\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bdesenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bobservacao da terra\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\barticulacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bimplementacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpoliticas publicas ambientais\\b", x = Coluna_search , ignore.case = TRUE))|
+        (grepl("\\bprojeto\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\birrigacao\\b", x = Coluna_search , ignore.case = TRUE)) |
         
         
         
@@ -486,7 +500,9 @@ multisector_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         (grepl("\\bgestao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bambiental\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bzona\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcosteira\\b", x = Coluna_search , ignore.case = TRUE)) |  
         
         (grepl("\\bprevencao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpreparo\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bresposta\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bresposta\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bdanos ambientais\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\bplataforma\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconhecimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\badaptacao a mudanca do clima\\b", x = Coluna_search , ignore.case = TRUE))
+        (grepl("\\bplataforma\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconhecimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\badaptacao a mudanca do clima\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\barranjos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutivos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbioeconomia\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bregulacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfiscalizacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brecursos hidricos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\birrigacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagua bruta\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bseguranca\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbarragens\\b", x = Coluna_search , ignore.case = TRUE))    
         
         
     )
@@ -519,7 +535,7 @@ forest_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         (grepl("\\bcolecoes\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bvivas\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bcontrole\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmonitoramento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\btriagem\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\banimais\\b", x = Coluna_search , ignore.case = TRUE) &grepl("\\bsilvestres\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bgestao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bnacional\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brecursos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfaunisticos\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\bregulacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfiscalizacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brecursos hidricos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\birrigacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagua bruta\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bseguranca\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbarragens\\b", x = Coluna_search , ignore.case = TRUE)) |
+        
         (grepl("\\bconservacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brecursos hidricos\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bprevencao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcombate\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bincendios\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bflorestais\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bcontrole\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bqueimadas\\b", x = Coluna_search , ignore.case = TRUE)) |
@@ -604,7 +620,11 @@ forest_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         
         (grepl("\\bdesenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bflorestal\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bexpansao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsilvicultura\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bnativas\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagroflorestais\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\bsociodiversidade\\b", x = Coluna_search , ignore.case = TRUE)) 
+        (grepl("\\bsociodiversidade\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bmonitoramento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconflitos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagrarios\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpacificacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcampo", x = Coluna_search , ignore.case = TRUE))|
+        (grepl("\\bconsolidacao de assentamentos rurais\\b", x = Coluna_search , ignore.case = TRUE))|
+        (grepl("\\baquisicao de terras\\b", x = Coluna_search , ignore.case = TRUE))|
+        (grepl("\\breforma agraria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bregularizacao fundiaria\\b", x = Coluna_search , ignore.case = TRUE))
         
     )
     return(data_frame_forest)
