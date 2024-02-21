@@ -548,7 +548,7 @@ forest_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         (grepl("\\bampliacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconsolidacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsistema nacional de unidades de conservacao\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bfiscalizacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\batividades\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bdesmatamento\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bgestao ambiental\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bnormatizacao e fiscalizacao\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\bunidades de conservacao\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bunidades de conservacao federais\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bestrutura\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfundiaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\breforma agraria\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\borganizacao agraria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bordenamento territorial\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\borganizacoes\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bflorestal\\b", x = Coluna_search , ignore.case = TRUE)) |
@@ -624,8 +624,58 @@ forest_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         (grepl("\\bmonitoramento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconflitos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagrarios\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpacificacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcampo", x = Coluna_search , ignore.case = TRUE))|
         (grepl("\\bconsolidacao de assentamentos rurais\\b", x = Coluna_search , ignore.case = TRUE))|
         (grepl("\\baquisicao de terras\\b", x = Coluna_search , ignore.case = TRUE))|
-        (grepl("\\breforma agraria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bregularizacao fundiaria\\b", x = Coluna_search , ignore.case = TRUE))
+        (grepl("\\breforma agraria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bregularizacao fundiaria\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\baposentadorias e pensoes civis da uniao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bcontribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbeneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bajuda de custo para moradia ou auxilio-moradia a agentes publicos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bassistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbeneficios e pensoes indenizatorias decorrentes de legislacao especial e/ou decisoes judiciais\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bcriacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bimplementacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bunidades de conservacao federais\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\baposentadorias e pensoes civis da uniao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfunai\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbeneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfunai\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bajuda de custo para moradia ou auxilio-moradia a agentes publicos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfunai\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbeneficios e pensoes indenizatorias decorrentes de legislacao especial e/ou decisoes judiciais\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bfunai\\b", x = Coluna_search , ignore.case = TRUE))
         
     )
     return(data_frame_forest)
+}
+bioenergy_out_SIOP <- function(data_frame_SIOP_bioenergia,Coluna_search){
+    data_frame_bioenergy_filter <- data_frame_SIOP_bioenergia %>% filter(
+        (!grepl("\\bestudos da industria de petroleo e gas natural\\b", x = Coluna_search , ignore.case = TRUE)))
+    return(data_frame_bioenergy_filter)
+}
+
+crop_out_SIOP <- function(data_frame_SIOP_crop,Coluna_search){
+    data_frame_crop_filter <- data_frame_SIOP_crop %>% filter(
+        (!grepl("\\boperacao dos servicos administrativos\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\boperacao dos servicos\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\badministracao da unidade - despesas diversas\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\bativos civis da uniao\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\bassistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\bauxilio-familiar no exterior\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\bbeneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\bbeneficios e pensoes indenizatorias decorrentes de legislacao especial e/ou decisoes judiciais\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\bsentencas judiciais devidas por empresas estatais\\b", x = Coluna_search , ignore.case = TRUE)) &
+        (!grepl("\\bsentencas judiciais transitadas em julgado de pequeno valor\\b", x = Coluna_search , ignore.case = TRUE))
+    )
+    return(data_frame_crop_filter)
+}
+
+multisector_out_SIOP <- function(data_frame_SIOP_multisector,Coluna_search){
+    data_frame_multisector_filter <- data_frame_SIOP_multisector %>% filter(
+
+    (!grepl("\\badministracao da unidade\\b", x = Coluna_search , ignore.case = TRUE)) 
+
+    )    
+    return(data_frame_multisector_filter)
+}
+forest_out_SIOP <- function(data_frame_SIOP_forest,Coluna_search){
+    data_frame_forest_filter <- data_frame_SIOP_forest %>% filter(
+
+    (!grepl("\\bativos civis da uniao\\b", x = Coluna_search , ignore.case = TRUE)) &
+    (!grepl("\\bprecatorios\\b", x = Coluna_search , ignore.case = TRUE))
+
+    )    
+    return(data_frame_forest_filter)
 }
