@@ -25,11 +25,11 @@ siop_tratado = siop %>%
     und_orc = str_trim(str_replace(str_replace(str_to_lower(stri_trans_general(
         `Unidade Orçamentária`, "Latin-ASCII")), "^[[:alnum:]]{5}", ""), "-", "")),
     
-    programa = str_replace(str_replace(str_to_lower(stri_trans_general(
-        Programa, "Latin-ASCII")), "^[[:alnum:]]{4}", ""), "-", ""),
+    programa = str_trim(str_replace(str_replace(str_to_lower(stri_trans_general(
+        Programa, "Latin-ASCII")), "^[[:alnum:]]{4}", ""), "-", "")),
 
-    acao = str_replace(str_replace(str_to_lower(stri_trans_general(
-        Ação, "Latin-ASCII")), "^[[:alnum:]]{4}", ""), "-", ""),
+    acao = str_trim(str_replace(str_replace(str_to_lower(stri_trans_general(
+        Ação, "Latin-ASCII")), "^[[:alnum:]]{4}", ""), "-", "")),
 
     localizador = str_trim(str_replace(str_replace(str_to_lower(stri_trans_general(
         Localizador, "Latin-ASCII")), "^[[:alnum:]]{4}", ""), "-", "")),
@@ -61,8 +61,8 @@ siop_tratado = siop %>%
     subfuncao = str_trim(str_remove(str_remove(str_to_lower(stri_trans_general(
         `Subfunção`, "Latin-ASCII")),"^[[:alnum:]]{3}"),"-")),
     
-    origem_do_credito = str_remove(str_remove(str_to_lower(stri_trans_general(
-        `Origem do Crédito`, "Latin-ASCII")), "^[[:alnum:]]{1}"), "-"),
+    origem_do_credito = str_trim(str_remove(str_remove(str_to_lower(stri_trans_general(
+        `Origem do Crédito`, "Latin-ASCII")), "^[[:alnum:]]{1}"), "-")),
     
     objetivo = str_trim(str_remove(str_remove(str_to_lower(stri_trans_general(
         Objetivo, "Latin-ASCII")),"^[[:alnum:]]{4}"),"-")),
