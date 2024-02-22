@@ -1,0 +1,32 @@
+Atlas do Seguro Rural
+Última atualização: 2023-08-18, por Wagner Oliveira
+Proprietários da pasta: Gabriela Coser, Renan Morais, Wagner Oliveira e Mariana Stussi
+
+- Descrição
+Trata-se de uma base de dados de com características dos contratos (apólices) de seguro rural subvencionadas pelo Programa de Subvenção ao Prêmio do
+ Seguro Rural (PSR), do Ministério da Agricultura e Pecuária (MAPA). O universo de análise é de 2006 até o ano mais recente.
+
+O MAPA disponibiliza a descrição das variáveis da base através do arquivo "dicionariodedados---sisser" disponível na pasta.
+
+- Fonte
+Ministério da Agricultura e Pecuária (MAPA), Departamento de Gestão de Riscos (DEGER): Atlas do Seguro Rural.
+
+- Download
+Dados brutos: https://mapa-indicadores.agricultura.gov.br/publico/extensions/SISSER/SISSER.html
+Arquivo baixado em: 2023-05-30, por Renan Morais (2015-2020)
+
+- Tratamento
+
+  - Código "base_atlas_transform_landscape.R", por Renan Florias
+
+	Código de limpeza e agregação dos dados do para transformação no modelo landscape.
+	A separação entre valores negativos e positivos é para evitar a contabilização duplicada dos contratos que
+	estão na base SES (Susep).
+	1º padronizamos as variáveis da base, tanto para colunas quanto para observações.
+	2º retiramos variáveis que não serão utilizadas para análise ou não são relevantes para análises posteriores.
+	3º Filtramos para eliminar variáveis que continha no ramo do produto a descrição: "SEGURO PECUÁRIO COM COBERTURA DO FESR","SEGURO PECUÁRIO SEM COBERTURA DO FESR"pois aparecia como ruído nos valores os dados relacionados a pecuaria e que não utilizamos no escopo da análise.
+
+	4º agregamos os dados para otimizar a visualização e análise dos contratos que possuem as mesmas características.
+	(Utilizamos a função aggregate junto a algumas variáveis de interesse.)
+	5º renomeamos as variáveis de acordo com o escopo landscape.
+	(essa etapa pode ser ignorada caso queira apenas a agregação dos dados).
