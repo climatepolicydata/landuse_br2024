@@ -36,14 +36,16 @@ dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
 
 ##### import datasets #########
 setwd(dir_sicor_output)
-mdcr_op_basic_modify <- readRDS("df_sicor_op_basica_all_dummies_aggregate.RDS")
+mdcr_op_basic_modify <- readRDS("df_sicor_op_basica_all_dummies_aggregate_v2.RDS")
 
 
 ########### Create variable sum dummy to filter operations at least 1 dummy #####
-  
+
+
+"foi retirado da soma a dummy produto por suposta duplicação de contabilização"  
 mdcr_op_basic_modify <- mdcr_op_basic_modify %>% 
   mutate(sum_dummy = DUMMY_TP_AGRICULTURA + DUMMY_TP_CULTIVO + DUMMY_TP_INTEGRACAO +
-           DUMMY_SUBPROGRAMA + DUMMY_TP_IRRIGACAO + DUMMY_MODALIDADE + DUMMY_PRODUTO + DUMMY_ABC + DUMMY_PRONAF_ABC+
+           DUMMY_SUBPROGRAMA + DUMMY_TP_IRRIGACAO + DUMMY_MODALIDADE + DUMMY_ABC + DUMMY_PRONAF_ABC+
            DUMMY_PRODUTO_FINALIDADE_VARIEDADE + DUMMY_PRODUTO_MODALIDADE)
 
 
@@ -53,7 +55,7 @@ mdcr_op_basic_modify_filter <- mdcr_op_basic_modify %>%
 rm(mdcr_op_basic_modify)
 setwd(dir_sicor_output)
 
-saveRDS(mdcr_op_basic_modify_filter, "sicor_op_basica_sum_dummies_aggregate.RDS")
+saveRDS(mdcr_op_basic_modify_filter, "sicor_op_basica_sum_dummies_aggregate_v2.RDS")
 
 #write.csv(mdcr_op_basic_modify_filter, "sicor_op_basica_filter_consulta_pub_abc.csv")
 

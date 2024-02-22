@@ -1,0 +1,49 @@
+SES - Seguro Rural
+Última atualização: 2023-09-21, por Renan Morais
+
+-Descrição
+Dados do Mercado de Seguros por Ramo  - Apólices
+
+Descrição dos arquivos disponibilizado na pasta como: "Documentacao_das_tabelas"
+
+O tratamento descrito abaixo é específico para o dataset "Ses_seguros.csv".
+IMPORTANTE: As categorias das variáveis estão disponíveis apenas em códigos.
+As descrições de cada código de empresas (coenti) está disponível na tabela inclusa no arquivo csv "Ses_grupos_economicos.csv"
+
+	-Os ramos descrevem as modalidades do seguro rural e possuem 8 tipos com suas subdivisões:
+		Seguro Agrícola
+			Ramo 01: Seguro Agrícola Sem Cobertura do FESR
+			Ramo 02: Seguro Agrícola Com Cobertura do FESR
+		Seguro Pecuário
+			Ramo 03: Seguro Pecuário Sem Cobertura do FESR
+			Ramo 04: Seguro Pecuário Com Cobertura do FESR
+		Seguro Aqüícola
+			Ramo 05: Seguro Aqüícola Sem Cobertura do FESR
+			Ramo 06: Seguro Aqüícola Com Cobertura do FESR
+		Seguro de Benfeitorias e Produtos Agropecuários (Ramo 30)
+		Seguro de Penhor Rural
+			Ramo 62: Seguro de Penhor Rural Instituição Financeira Privada
+			Ramo 63: Seguro de Penhor Rural Instituição Financeira Pública
+		Seguro de Florestas
+			Ramo 07: Seguro de Florestas Sem Cobertura do FESR
+			Ramo 08: Seguro de Florestas Com Cobertura do FESR
+		Seguro de Vida do Produtor Rural (Ramo 98)
+		Seguro de Cédula do Produto Rural (Ramo 09)
+
+	A base SES é composta por um conjunto de arquivos disponibilizado em zip. 
+	Descrição dos arquivos disponibilizado na pasta como: "Documentacao_das_tabelas"
+
+
+- Fonte:
+https://cpisf.sharepoint.com/:x:/r/sites/Brazil/_layouts/15/Doc.aspx?sourcedoc=%7B89572E19-71C4-4283-9B5C-4847535F98F4%7D&file=dadosCompartilhados.xlsx&wdOrigin=TEAMS-ELECTRON.p2p.bim&action=default&mobileredirect=true
+
+- Tratamento
+
+  código: 01_base_SES_clear_agreggate.R
+
+	1 - importação do dataset via xlsx
+	2 - limpeza e padronização das variáveis, retirando acento, maiusculas e minusculas.
+	3 - Inclusão da descrição de cada código da empresa (coenti) através de outra planilha "Ses_grupos_economicos.csv"
+	6 - Filtragem para códigos de interesse focados na análise do landuse. planilha: "codes_ramo_rural_landscape.xlsx" (onde está o arquivo)?
+	7 - Criação de um id com base em 3 variáveis: coenti,coramo e ano.
+	8 - agregação da base a fim de diminuir o número de observações, mas manter a características agrupadas sem alteração do valor

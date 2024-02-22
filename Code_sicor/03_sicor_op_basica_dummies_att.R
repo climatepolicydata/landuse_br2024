@@ -62,10 +62,10 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor %>%
   relocate(DUMMY_TP_IRRIGACAO, .after = CD_TIPO_IRRIGACAO) %>%
   mutate(DUMMY_MODALIDADE = if_else(CODIGO_MODALIDADE  %in% bcb_c82$CD_MODALIDADE, 1, 0)) %>%
   relocate(DUMMY_MODALIDADE, .after = CODIGO_MODALIDADE) %>%
-  mutate(DUMMY_PRODUTO = if_else(CODIGO_PRODUTO  %in% bcb_c82$CD_PRODUTO, 1, 0)) %>%
-  relocate(DUMMY_PRODUTO, .after = CODIGO_PRODUTO) %>% 
+  # mutate(DUMMY_PRODUTO = if_else(CODIGO_PRODUTO  %in% bcb_c82$CD_PRODUTO, 1, 0)) %>%
+  # relocate(DUMMY_PRODUTO, .after = CODIGO_PRODUTO) %>% 
   mutate(DUMMY_ABC = if_else(CD_PROGRAMA %in% bcb_c82$CD_PROGRAMA_ABC, 1, 0)) %>% 
-  relocate(DUMMY_ABC, .after = DUMMY_PRODUTO) %>%
+  # relocate(DUMMY_ABC, .after = DUMMY_PRODUTO) %>%
   mutate(DUMMY_PRONAF_ABC = if_else(CD_SUBPROGRAMA %in% bcb_c82$CD_SUBPROGRAMA_PRONAF_ABC, 1, 0)) %>% 
   relocate(DUMMY_ABC, .after = DUMMY_ABC)
 
@@ -128,6 +128,6 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 setwd(dir_sicor_output)
 
-saveRDS(df_sicor_op_basica_empreendimento_all_dummies, "df_sicor_op_basica_all_dummies_aggregate.RDS")
+saveRDS(df_sicor_op_basica_empreendimento_all_dummies, "df_sicor_op_basica_all_dummies_aggregate_v2.RDS")
 write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,"df_sicor_op_basica_all_dummies_aggregate.xlsx")
 
