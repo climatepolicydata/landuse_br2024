@@ -688,3 +688,14 @@ forest_out_SIOP <- function(data_frame_SIOP_forest,Coluna_search){
     )    
     return(data_frame_forest_filter)
 }
+##############################################################################################################################################################################################################################################################
+# Dicionario OCDE
+# Para bioenergia
+bioenergy_ocde <- function(data_frame_ocde,coluna_search){
+    data_frame_bioenergy_ocde <-data_frame_ocde %>% filter(
+        (grepl("\\bpolitica\\b", x = coluna_search , ignore.case = TRUE) & grepl("\\bnacional\\b", x = coluna_search , ignore.case = TRUE) & grepl("\\bbiocombustiveis\\b", x = coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bpolitica\\b", x = coluna_search , ignore.case = TRUE) & grepl("\\bnacional\\b", x = coluna_search , ignore.case = TRUE))
+
+    )
+    return(data_frame_bioenergy_ocde)
+}
