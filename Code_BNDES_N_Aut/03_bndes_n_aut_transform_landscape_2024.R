@@ -58,6 +58,38 @@ bndes <- last_landscape%>%filter(data_source=="bndes_naut")%>% as_tibble()
 bndes_filter_cols <- bndes %>% select(beneficiary_original,sector_landscape,climate_component,rio_marker)%>%distinct(beneficiary_original,.keep_all = TRUE)
 bndes_filter_cols%>%view
 df_bndes_filter_landscape_climate_select <- df_bndes_filter_landscape %>% inner_join(bndes_filter_cols,by = "beneficiary_original")
+# Fazendo a classificacao de atividade e subactivity landscape
+producao_cana<- df_bndes_filter_landscape_climate_select %>% filter((grepl("\\bacucar\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bacucar\\b",x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos alimenticios\\b",x = Coluna_search , ignore.case = TRUE))) %>% mutate(
+  activity_landscape = "Produção de cana-de-açúcar, inclusive para geração de energia",
+  subactivity_landscape = "Expansão e renovação de canaviais, otimização da colheita e ampliação da capacidade de moagem de cana. Inclui aquisição de máquinas, equipamentos e construção de unidades de armazenamento para etanol e açúcar."
+) %>% mutate(climate_use = "Mitigação")
+GeracaoEnergiaRenovavel<- df_bndes_filter_landscape_climate_select %>% filter(
+  (grepl("\\bfabricacao de alcool\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\brenovabio\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\benergia\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bdistribuicao de combustiveis gasosos por redes urbanas\\b", x = Coluna_search , ignore.case = TRUE) )
+) %>% mutate(activity_landscape = "Geração de energia renovável e medidas para eficiência energética",
+            subactivity_landscape = if_else((grepl("\\bcontratacao de credito para aquisicao\\b",x = Coluna_search,ignore.case=TRUE) | grepl("\\bapoio financeiro, por meio de credito\\b",x = Coluna_search,ignore.case = TRUE) | grepl("\\bapoio direto por meio de credito asg\\b",x = Coluna_search,ignore.case = TRUE)),true="Modernização industrial e agrícola para aumentar a eficiência, expansão da exportação de energia renovável,investimentos em eficiência energética",
+            false = if_else((grepl("\\bapoio ao plano de investimentos da companhia de gas\\b",x = Coluna_search,ignore.case = TRUE)),true="Tratamento de água e resíduos para produção de energia a partir do biogás.",
+            false = if_else((grepl("\\bplacas fotovoltaicas\\b",x = Coluna_search,ignore.case = TRUE)),true="Energia solar para redes centralizadas, incluindo células fotovoltaicas e sistemas de energia solar concentrada, e para redes isoladas e sistemas autônomos, incluindo minirredes e sistemas solares residenciais",
+            false = "Sem Classificacao")))) %>% filter(subactivity_landscape !="Sem Classificacao")%>% mutate(climate_use = "Mitigação")
+#filtro1
+filtro1 <- rbind(producao_cana,GeracaoEnergiaRenovavel)
+df_bndes_filter_landscape_climate_select <- df_bndes_filter_landscape_climate_select %>% anti_join(filtro1 , by="Coluna_search")
+
+atividades_relacionadas_industria<- df_bndes_filter_landscape_climate_select%>% filter(
+  (grepl("\\bcelulose\\b",x = Coluna_search,ignore.case = TRUE) | grepl("\\bcelulosi\\b",x = Coluna_search,ignore.case = TRUE))
+) %>% mutate(activity_landscape = "Atividades relacionadas à indústria de florestas plantadas, celulose e papel",
+            subactivity_landscape = if_else((grepl("\\bcontratacao de credito",x = Coluna_search,ignore.case = TRUE) | grepl("\\bcontratacao de limite de credito\\b",x = Coluna_search,ignore.case = TRUE) | grepl("\\bmodernizacao de unidades\\b",x = Coluna_search,ignore.case = TRUE)), true="Investimentos em modernização industrial e manutenção da capacidade produtiva da indústria de celulose e papel alinhados ao meio ambiente.",false = "Sem Classificacao")) %>% 
+            mutate(climate_use = "Mitigação e Adaptação")  
+#Filtro2
+Filtro2 <- rbind(filtro1,atividades_relacionadas_industria)
+df_bndes_filter_landscape_climate_select <- df_bndes_filter_landscape_climate_select %>% anti_join(Filtro2 , by="Coluna_search")
+
+
+
+
+
+
+
+# Retendo os contratos que tiveram join
 filter_fora <- df_bndes_filter_landscape_climate_select%>%select(id_original)%>% as_vector
 
 # Agora vamos filtrar os contratos restantes que nao houve match
@@ -76,8 +108,6 @@ df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_con
 multiSector_contracts <- multiSector_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
 df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% multiSector_contracts$numero_do_contrato)
 
-
-
 crop_contracts <- crop_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
 df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% crop_contracts$numero_do_contrato)
 
@@ -88,27 +118,71 @@ cattle_contracts$sector_landscape = "Cattle"
 forest_contracts$sector_landscape = "Forest"
 multiSector_contracts$sector_landscape = "Multisector"
 crop_contracts$sector_landscape = "Crop"
+
+cattle_contracts <- cattle_contracts %>% mutate(sector_landscape = case_when(
+              grepl("\\bfabricacao de acucar em bruto\\b", x = Coluna_search , ignore.case = TRUE) ~ "Bioenergy and fuels",.default = sector_landscape
+)) 
 df_bndes_filter_landscape_v2 <- rbind(bioenergy_contracts,cattle_contracts,forest_contracts,multiSector_contracts,crop_contracts)
 df_bndes_filter_landscape_v2%>%view
 
-# Dando sequencia a criação das colunas para o landscape:
+# Classificacao Climatica
 
-df_bndes_filter_landscape_v2 %>% names
-df_bndes_filter_landscape_climate_select %>% names
+#Produção de cana-de-açúcar, inclusive para geração de energia
+producaoCanaAcucarGeracaoEnergia <- df_bndes_filter_landscape_v2 %>% filter((grepl("\\bacucar\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bacucar\\b",x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos alimenticios\\b",x = Coluna_search , ignore.case = TRUE))) %>% mutate(
+  activity_landscape = "Produção de cana-de-açúcar, inclusive para geração de energia",
+  subactivity_landscape = "Expansão e renovação de canaviais, otimização da colheita e ampliação da capacidade de moagem de cana. Inclui aquisição de máquinas, equipamentos e construção de unidades de armazenamento para etanol e açúcar."
+) %>% mutate(climate_use = "Mitigação")
+
+producaoCanaAcucarGeracaoEnergia%>% select(sector_original,subsector_original,project_description,sector_landscape,Coluna_search) %>% unique() %>% view
+
+# Geração de energia renovável e medidas para eficiência energética
+geracaoEnergiaRenovavelMedidasEficiencia <- df_bndes_filter_landscape_v2 %>% filter(
+  (grepl("\\bfabricacao de alcool\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\brenovabio\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\benergia\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bdistribuicao de combustiveis gasosos por redes urbanas\\b", x = Coluna_search , ignore.case = TRUE) )
+) %>% mutate(activity_landscape = "Geração de energia renovável e medidas para eficiência energética",
+            subactivity_landscape = if_else((grepl("\\bcontratacao de credito para aquisicao\\b",x = Coluna_search,ignore.case=TRUE) | grepl("\\bapoio financeiro, por meio de credito\\b",x = Coluna_search,ignore.case = TRUE) | grepl("\\bapoio direto por meio de credito asg\\b",x = Coluna_search,ignore.case = TRUE)),true="Modernização industrial e agrícola para aumentar a eficiência, expansão da exportação de energia renovável,investimentos em eficiência energética",
+            false = if_else((grepl("\\bapoio ao plano de investimentos da companhia de gas\\b",x = Coluna_search,ignore.case = TRUE)),true="Tratamento de água e resíduos para produção de energia a partir do biogás.",
+            false = if_else((grepl("\\bplacas fotovoltaicas\\b",x = Coluna_search,ignore.case = TRUE)),true="Energia solar para redes centralizadas, incluindo células fotovoltaicas e sistemas de energia solar concentrada, e para redes isoladas e sistemas autônomos, incluindo minirredes e sistemas solares residenciais",
+            false = "Sem Classificacao")))) %>% mutate(climate_use = "Mitigação")
 
 
+#Fazendo o 1o filtro:
+
+filtro_1 <- rbind(producaoCanaAcucarGeracaoEnergia,geracaoEnergiaRenovavelMedidasEficiencia)
+df_bndes_filter_landscape_v2 <- df_bndes_filter_landscape_v2 %>% anti_join(filtro_1 , by="Coluna_search")
+
+#Atividades para redução de emissões por desmatamento e degradação
+AtividadesReducaoEmissoes <- df_bndes_filter_landscape_v2 %>% filter(
+  (grepl("\\brestauracao\\b",x = Coluna_search,ignore.case = TRUE))
+) %>% mutate(activity_landscape = "Atividades para redução de emissões por desmatamento e degradação",
+            subactivity_landscape = if_else((grepl("\\brestauracao\\b",x = Coluna_search,ignore.case = TRUE)),true = "Conservação de florestas, restauração e recuperação de áreas degradadas, inclusive de vegetação nativa e áreas de preservação permanente, para melhorar o abastecimento de água. Projetos de reserva florestal privada.",false = "Sem Classificacao"))%>% mutate(climate_use = "Mitigação e Adaptação")
+
+# Fazendo o 2o filtro:
+filtro_2 <- rbind(filtro_1,AtividadesReducaoEmissoes)
+df_bndes_filter_landscape_v2 <- df_bndes_filter_landscape_v2 %>% anti_join(filtro_2 , by="Coluna_search")
+
+# Atividades relacionadas à indústria de florestas plantadas, celulose e papel
+AtividadesIndustriaFlorestas <- df_bndes_filter_landscape_v2 %>% filter(
+  (grepl("\\bcelulose\\b",x = Coluna_search,ignore.case = TRUE) | grepl("\\bcelulosi\\b",x = Coluna_search,ignore.case = TRUE))
+) %>% mutate(activity_landscape = "Atividades relacionadas à indústria de florestas plantadas, celulose e papel",
+            subactivity_landscape = if_else((grepl("\\bcontratacao de credito",x = Coluna_search,ignore.case = TRUE) | grepl("\\bcontratacao de limite de credito\\b",x = Coluna_search,ignore.case = TRUE)), true="Investimentos em modernização industrial e manutenção da capacidade produtiva da indústria de celulose e papel alinhados ao meio ambiente.",false = "Sem Classificacao")) %>% 
+            mutate(climate_use = "Mitigação e Adaptação") 
+
+# Fazendo 3o filtro:
+filtro_3 <- rbind(AtividadesIndustriaFlorestas,filtro_2)
+df_bndes_filter_landscape_v2 <- df_bndes_filter_landscape_v2 %>% anti_join(filtro_3 , by="Coluna_search")
+
+df_bndes_filter_landscape_v2 %>% select(sector_original,subsector_original,project_description,sector_landscape,Coluna_search) %>% unique() %>% view
 
 
+# Fazendo o bind final
+df_bndes_filter_landscape_climate_select <- df_bndes_filter_landscape_climate_select %>% select(-c(climate_component)) %>% mutate(climate_use = "-")
+filtro_3 <- filtro_3 %>% mutate(rio_marker = "-")
+df_bndes_filter_landscape_v2 <- df_bndes_filter_landscape_v2 %>% mutate(rio_marker = "-",
+                                                    activity_landscape="-",subactivity_landscape="-",climate_use="-")
+Filtro2 <- Filtro2%>%mutate(rio_marker = "-")%>%select(-climate_component)
+bndes_final <- bind_rows(df_bndes_filter_landscape_climate_select,filtro_3,df_bndes_filter_landscape_v2,Filtro2)
 
-
-
-
-
-
-
-
-
-
+bndes_final
 
 
 
