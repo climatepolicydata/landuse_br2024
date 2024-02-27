@@ -122,6 +122,28 @@ siop_mitigacaoAdaptacao_planejamentocapacitacao <- siop_sectorlandscape %>% anti
 filtro_1 <- rbind(siop_mitigacaoAdaptacao_planejamentocapacitacao,siop_mitigacao_folha_pagamento)
 siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_1 , by="Coluna_search") 
 
+#Gestão e planejamento de políticas, capacitação e orientação
+gestao_planejamento_politicas_capacitacao_orientacao <- siop_sectorlandscape %>% filter(
+  (grepl("\\bpolitica nacional sobre mudanca do clima\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bpolitica nacional de recursos hidricos\\b", x = Coluna_search , ignore.case = TRUE)) | grepl("\\binpa\\b", x = Coluna_search , ignore.case = TRUE) | (grepl("\\binsa\\b", x = Coluna_search , ignore.case = TRUE)) |
+  (grepl("\\bantartica\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bamazonia azul\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bapoio ao desenvolvimento de agricultura de baixa emissao de carbono e sistemas sustentaveis de producao\\b", x = Coluna_search , ignore.case = TRUE)) |
+  (grepl("\\bpro-organico\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bdesenvolvimento rural sustentavel do semiarido brasileiro\\b", x = Coluna_search , ignore.case = TRUE)) |
+  (grepl("\\bpromocao e fortalecimento da comercializacao e acesso aos mercados\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bapoio a agricultura digital e de precisao\\b", x = Coluna_search , ignore.case = TRUE))
+  
+)%>% mutate(activity_landscape="Gestão e planejamento de políticas, capacitação e orientação",
+          subactivity_landscape = if_else((grepl("\\bpolitica nacional sobre mudanca do clima\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bpolitica nacional de recursos hidricos\\b", x = Coluna_search , ignore.case = TRUE)),true = "Políticas, leis, regulamentações, instrumentos econômicos, seminários e reuniões para medidas relacionadas a conservação, energia, meio ambiente e uso da água, como a Política Nacional sobre Mudança do Clima (PNMC) entre outras.",
+          false = if_else((grepl("\\binpa\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\binsa\\b", x = Coluna_search , ignore.case = TRUE)),true = "Ciência, tecnologia e inovação no Instituto Nacional da Mata Atlântica (INMA), Instituto Nacional de Pesquisas da Amazônia (Inpa), Instituto Nacional de Pesquisas Espaciais (Inpe), Instituto Nacional do Semiárido (INSA).",
+          false = if_else((grepl("\\bantartica\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bamazonia azul\\b", x = Coluna_search , ignore.case = TRUE)),true = "Estudos e projetos de pesquisa e desenvolvimento relacionados à mudança do clima e ao monitoramento oceanográfico e climatológico da Amazônia Azul. Apoio logístico à pesquisa científica na Antártica.",
+          false = if_else((grepl("\\bapoio ao desenvolvimento de agricultura de baixa emissao de carbono e sistemas sustentaveis de producao\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bpro-organico\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bdesenvolvimento rural sustentavel do semiarido brasileiro\\b", x = Coluna_search , ignore.case = TRUE)),true = "Agricultura de baixa emissão de carbono e sistemas sustentáveis de produção, cadeias produtivas regionais, controle da agricultura orgânica (Pró-Orgânico), desenvolvimento sustentável das cadeias produtivas agrícolas e seus territórios e combate à pobreza rural no semiárido do Nordeste.",
+          false = if_else((grepl("\\bpromocao e fortalecimento da comercializacao e acesso aos mercados\\b", x = Coluna_search , ignore.case = TRUE)),true = "Conservação e uso sustentável de recursos genéticos para agricultura e alimentação. Produção agroalimentar artesanal. IG de Produtos Agropecuários. Estruturação e consolidação de redes socioprodutivas da agricultura familiar.",
+          false = if_else((grepl("\\bapoio a agricultura digital e de precisao\\b", x = Coluna_search , ignore.case = TRUE)),true = "Agricultura digital e de precisão.",
+          false = "Sem Classificacao"))))))
+          ) %>% mutate(climate_component = "Mitigação e Adaptação")
+
+# Segundo Filtro
+filtro_2 <- rbind(filtro_1,gestao_planejamento_politicas_capacitacao_orientacao)
+siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_2 , by="Coluna_search") 
+
+
 # Regularização ambiental e fundiária e de ordenamento territorial
 siop_mitigacao_regularizacaoAmbiental <- siop_sectorlandscape %>% filter(
   (grepl("\\breforma agraria e regularizacao fundiaria\\b", x = Coluna_search , ignore.case = TRUE)) |
@@ -129,10 +151,10 @@ siop_mitigacao_regularizacaoAmbiental <- siop_sectorlandscape %>% filter(
   (grepl("\\bregularizacao, demarcacao e fiscalizacao de terras indigenas e protecao dos povos indigenas isolados\\b", x = Coluna_search , ignore.case = TRUE)) |
   (grepl("\\bgovernanca fundiaria e gerenciamento do cadastro rural\\b", x = Coluna_search , ignore.case = TRUE)) |
   (grepl("\\borganizacao da estrutura fundiaria\\b", x = Coluna_search , ignore.case = TRUE)) |
-  (grepl("\\bapoio a criacao, gestao e implementacao das unidades de conservacao federais\\b", x = Coluna_search , ignore.case = TRUE) | (grepl("\\bcadastro, recomposicao e producao florestal\\b",x = Coluna_search,ignore.case = TRUE)))  
+  (grepl("\\bapoio a criacao, gestao e implementacao das unidades de conservacao federais\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bcadastro, recomposicao e producao florestal\\b",x = Coluna_search,ignore.case = TRUE)) | grepl("\\bconsolidacao do sistema nacional de unidades de conservacao da natureza\\b",x = Coluna_search,ignore.case = TRUE)  
 ) %>% mutate(activity_landscape = "Regularização ambiental e fundiária e de ordenamento territorial",
             climate_component = "Mitigação",
-            subactivity_landscape =if_else(grepl("\\bunidades de conservacao federais\\b", x = Coluna_search , ignore.case = TRUE),true = "Criação, gestão, fiscalização e implementação das Unidades de Conservação (UCs). Sistema Nacional de Unidades
+            subactivity_landscape =if_else((grepl("\\bunidades de conservacao federais\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bconsolidacao do sistema nacional de unidades de conservacao da natureza\\b", x = Coluna_search , ignore.case = TRUE)),true = "Criação, gestão, fiscalização e implementação das Unidades de Conservação (UCs). Sistema Nacional de Unidades
 de Conservação (SNUC)",
                       false = if_else((grepl("\\bgeorreferenciamento da malha\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bgerenciamento dos imoveis rurais\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bfiscalizacao do cadastro rural\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bgestao do sistema de cadastro ambiental rural\\b",x = Coluna_search,ignore.case = TRUE) | grepl("\\bpromocao da ampliacao da producao florestal\\b",x = Coluna_search,ignore.case = TRUE)),
                       true = "Governança fundiária e gerenciamento do Cadastro Ambiental Rural (CAR). Regularização ambiental dos imóveis rurais nas unidades da federação. Apoio a órgãos subnacionais para implementação do CAR e regularização ambiental.",
@@ -141,9 +163,9 @@ de Conservação (SNUC)",
                       false = if_else((grepl("\\bfiscalizacao de terras indigenas\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bbarreiras sanitarias\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bcoronavirus\\b", x = Coluna_search , ignore.case = TRUE)), true = "Regularização, demarcação e fiscalização de terras indígenas e proteção dos povos indígenas isolados. Reconhecimento e indenização de territórios quilombolas. Gestão ambiental e etnodesenvolvimento.",
                       false = "Sem Classificacao"))))
        ) 
-# Fazendo o segundo filtro
-filtro_2 <- rbind(siop_mitigacao_regularizacaoAmbiental,filtro_1)
-siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_2 , by="Coluna_search")
+# Fazendo o terceiro filtro
+filtro_3 <- rbind(siop_mitigacao_regularizacaoAmbiental,filtro_2)
+siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_3 , by="Coluna_search")
 
 # Ações de prevenção, controle do desmatamento e de incêndios
 siop_mitigacao_prevencaoControleDesmatIncendio <- siop_sectorlandscape %>% filter(
@@ -158,9 +180,9 @@ siop_mitigacao_prevencaoControleDesmatIncendio <- siop_sectorlandscape %>% filte
             false = if_else((grepl("\\bdesenvolvimento de politicas e acoes para a reducao do desmatamento ilegal e dos incendios florestais\\b", x = Coluna_search , ignore.case = TRUE)),true = "Desenvolvimento e implementação de sistemas de monitoramento do desmatamento, além do controle, fiscalização,monitoramento ambiental e combate a infrações ambientais, inclusive por meio de sistemas de satélite.",false = "Sem Classificacao"))))
             ) %>% mutate(climate_component = "Mitigação")
 
-# Fazendo o terceiro filtro
-filtro_3 <- rbind(siop_mitigacao_prevencaoControleDesmatIncendio,filtro_2)
-siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_3 , by="Coluna_search")
+# Fazendo o quarto filtro
+filtro_4 <- rbind(siop_mitigacao_prevencaoControleDesmatIncendio,filtro_3)
+siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_4 , by="Coluna_search")
 
 # Produção de defensivos agrícolas biológicos e orgânicos
 # OU
@@ -185,9 +207,9 @@ siop_adaptacao_desenvolvimentoZoneamento <- siop_sectorlandscape %>% filter(
   climate_component = "Adaptação"
 )
 
-# Fazendo o quarto filtro
-filtro_4 <- rbind(siop_adaptacao_ProducaoDefensivosAgricolas,siop_adaptacao_desenvolvimentoZoneamento,filtro_3)
-siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_4 , by="Coluna_search")
+# Fazendo o quinto filtro
+filtro_5 <- rbind(siop_adaptacao_ProducaoDefensivosAgricolas,siop_adaptacao_desenvolvimentoZoneamento,filtro_4)
+siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_5 , by="Coluna_search")
 
 # Gerenciamento e monitoramento para uso de água e saneamento
 siop_GerenciamentoMonitoramentosoAguaSaneamento <- siop_sectorlandscape %>% filter(
@@ -201,9 +223,9 @@ siop_GerenciamentoMonitoramentosoAguaSaneamento <- siop_sectorlandscape %>% filt
                                   false = if_else((grepl("\\bremocao de cargas poluidoras de bacias hidrograficas - prodes\\b", x = project_description , ignore.case = TRUE) | grepl("\\bcooperacao nacional e internacional em recursos hidricos\\b", x = project_description , ignore.case = TRUE)),true = "Projetos de infraestrutura e atividades institucionais para o manejo integrado de bacias hidrográficas.", false = "Sem Classificacao")))))
   ) %>% mutate(climate_component = "Mitigação e Adaptação")
 
-# Fazendo o quinto filtro
-filtro_5 <- rbind(siop_GerenciamentoMonitoramentosoAguaSaneamento,filtro_4)
-siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_5 , by="Coluna_search")
+# Fazendo o sexto filtro
+filtro_6 <- rbind(siop_GerenciamentoMonitoramentosoAguaSaneamento,filtro_5)
+siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_6 , by="Coluna_search")
 
 #Extensão rural para melhorar as práticas agronômicas e o acesso à tecnologia e infraestrutura
 siop_ExtensaoRural <- siop_sectorlandscape %>% filter((grepl("\\bextensao rural\\b", x = Coluna_search , ignore.case = TRUE))) %>% mutate(
@@ -211,9 +233,9 @@ siop_ExtensaoRural <- siop_sectorlandscape %>% filter((grepl("\\bextensao rural\
       subactivity_landscape  = if_else((grepl("\\bfomento a producao de tecnologias e de conhecimentos\\b", x = project_description , ignore.case = TRUE) | grepl("\\bformacao e capacitacao tecnica e profissional \\b", x = project_description , ignore.case = TRUE) | grepl("\\bassistencia tecnica e extensao rural para o produtor rural\\b", x = project_description , ignore.case = TRUE) | grepl("\\bassistencia tecnica e extensao rural - despesas diversas\\b", x = project_description , ignore.case = TRUE)), true = "Assistência técnica e extensão rural, capacitação de técnicos e produtores, estruturação das entidades estaduais de assistência técnica.", false = "Não Classificado")
 ) %>% mutate(climate_component = "Mitigação e Adaptação")
 
-# Fazendo o sexto filtro
-filtro_6 <- rbind(siop_ExtensaoRural,filtro_5)
-siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_6 , by="Coluna_search")
+# Fazendo o sétimo filtro
+filtro_7 <- rbind(siop_ExtensaoRural,filtro_6)
+siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_7 , by="Coluna_search")
 
 #P&D, sistemas de gestão do conhecimento
 
@@ -246,14 +268,13 @@ pd_SistemasGestaoConhecimento <- siop_sectorlandscape %>% filter(
             false = if_else((grepl("\\bcacau\\b", x = Coluna_search)),true = "Difusão e transferência de tecnologia para o desenvolvimento sustentável da agricultura e de SAFs nas regiõesprodutoras de cacau.",false = "Sem Classificacao"))))))))))))))) %>% mutate(subactivity_landscape = if_else((grepl("\\blevantamento e interpretacao de informacoes de solos\\b",x = project_description,ignore.case = TRUE)),true = "Unidades de Referência Tecnológica (URTs) do Plano Brasil Sem Miséria (BSM) e do Sistema Nacional de Pesquisas Agropecuárias (SNPA). Pesquisa, acompanhamento e avaliação de safras e perdas na pós-colheita. Levantamento e interpretação de informações de solos.",false = subactivity_landscape)) %>%
             mutate(climate_component = "Mitigação e Adaptação")  
 
-# Fazendo o setimo filtro
-filtro_7 <- rbind(pd_SistemasGestaoConhecimento,filtro_6)
-siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_7 , by="Coluna_search")
+# Fazendo o oitavo filtro
+filtro_8 <- rbind(pd_SistemasGestaoConhecimento,filtro_7)
+siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_8 , by="Coluna_search")
 
 siop_sectorlandscape%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,sector_landscape,Coluna_search)%>% unique %>% view
 
  
-
 
 
 
