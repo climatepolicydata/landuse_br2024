@@ -414,7 +414,8 @@ crop_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         
         
         (grepl("\\bcentros\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\baquicultura\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\bdesenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bproducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search , ignore.case = TRUE))
+        (grepl("\\bdesenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bproducao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bagropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bpromocao da educacao do campo\\b", x = Coluna_search , ignore.case = TRUE))
         
         
     )
@@ -508,7 +509,14 @@ multisector_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
         (grepl("\\bapoio\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\belaboracao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bplanos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprojetos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsaneamento\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bmelhoria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bqualidade\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bregulatoria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsetor de saneamento\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bapoio\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\blogistico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcientifica\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bantartica\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\bconstrucao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binfraestrutura\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binstituto nacional do semi-arido\\b", x = Coluna_search , ignore.case = TRUE))
+        (grepl("\\bconstrucao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binfraestrutura\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binstituto nacional do semi-arido\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bpesquisa, desenvolvimento e supercomputacao para previsao de tempo e clima\\b", x = Coluna_search , ignore.case = TRUE)) | 
+        (grepl("\\bpesquisa e desenvolvimento para estudos de tempo, clima, observacao e modelagem do sistema terrestre\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bapoio a sistemas de drenagem urbana sustentavel e de manejo de aguas pluviais em municipios criticos sujeitos a eventos recorrentes de inundacoes, enxurradas e alagamentos\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bapoio a implantacao, ampliacao ou melhorias de sistemas de esgotamento sanitario em municipios com populacao superior a 50 mil habitantes ou municipios integrantes de regioes metropolitanas ou de regioes integradas de desenvolvimento\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bapoio a empreendimentos de saneamento integrado em municipios com populacao superior a 50 mil habitantes ou municipios integrantes de regioes metropolitanas ou de regioes integradas de desenvolvimento\\b", x = Coluna_search , ignore.case = TRUE))|
+        (grepl("\\bapoio a implementacao de acoes de desenvolvimento do setor aguas\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bimplantacao, ampliacao, melhoria ou adequacao de sistemas de esgotamento sanitario na area de atuacao da codevasf\\b", x = Coluna_search , ignore.case = TRUE))
         
         
     )
