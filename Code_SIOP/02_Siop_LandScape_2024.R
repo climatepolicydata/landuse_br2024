@@ -2,7 +2,7 @@ library(tidyverse)
 library(stringi)
 library(readxl)
 library(xlsx)
-source("C:/Users/eduar/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
+source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
 siop_tratado <- read_rds('./brlanduse_landscape2024_dados/SIOP/Siop_Tratado_2021_2023.rds')
 
 #Tabelas relacionais
@@ -37,8 +37,10 @@ siop_landscape <- siop_tratado %>% mutate(
            channel_original = str_c(modalidade,und_orc,sep=";")
            ) %>% left_join(channel_landscapeV2, by = "channel_original")%>% #Fazendo o join para selecionar os canais landscape
             filter(!is.na(channel_landscape))%>%#Filtrando apenas os canais landscape que aparecem
-            mutate(sector_original = str_c(modalidade,und_orc,sep = ";"), subsector_original = programa) %>% 
-            filter(Pago != 0) # Filtrando apenas contratos que pagaram algum valor
+            mutate(sector_original = str_c(modalidade,und_orc,sep = ";"), subsector_original = programa,) %>% 
+            filter(Pago != 0) %>%  # Filtrando apenas contratos que pagaram algum valor
+             mutate(beneficiary_original = str_c(project_name,project_description,sep = ";")) %>% mutate(instrument_original = grupo_de_despesa) %>%
+             left_join(instrument_landscape , by = "instrument_original") 
 
 # Aplicando o left join para filtro climatico que existe no excel do relational base
 # Criando as colunas para esse join
@@ -46,7 +48,7 @@ siop_landscape <- siop_landscape %>% mutate(left_join_key = str_c(project_descri
 climate_use <- climate_use %>% mutate(left_join_key = str_c(plano_orc,acao,sector_original,subsector_original,sep = ";"))
 climate_use <- climate_use%>%distinct(left_join_key,.keep_all = TRUE)
 siop_landscape_climate_use <- siop_landscape %>% inner_join(climate_use %>% select(left_join_key,sector_landscape,activity_landscape,subactivity_landscape,climate_component,rio_marker,beneficiary_landscape),by = "left_join_key") 
-
+siop_landscape_climate_use %>% view
 # Filtrando os investimentos que nao tiveram match
 
 siop_landscape <- siop_landscape %>% anti_join(siop_landscape_climate_use, by = "left_join_key")
@@ -368,22 +370,22 @@ manejo_nutrientes_controle_pragas_servicos_pecuarios_vet <- siop_sectorlandscape
 filtro_11 <- rbind(manejo_nutrientes_controle_pragas_servicos_pecuarios_vet,filtro_10)
 siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_11 , by="Coluna_search")
 
-filtro_11%>%view
-siop_landscape_climate_use
-resto <- siop_sectorlandscape
+# Dando bind nas linhas que tiveram info de sector e climate use
+siop_landscape_climate_use_bind <- bind_rows(filtro_11,siop_landscape_climate_use)
+# Dando continuidade ao landscape
+siop_landscape_climate_use_bind <- siop_landscape_climate_use_bind %>% mutate(localization_original = localizador,region = regiao,uf = uf,municipality = municipio)
+siop_landscape_climate_use_bind %>% select(
+  all_of(c("id_original","data_source","year","project_name","project_description","source_original","source_of_finance_landscape",
+  "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
+  "instrument_landscape","sector_original","sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_component","localization_original","region",
+  "uf","municipality", "Coluna_search")) 
+)  %>% write.xlsx("Siop_Landscape_ClimateUse.xlsx")
 
+#siop_landscape_climate_use_bind %>% select(beneficiary_original,beneficiary_landscape) %>% unique %>% write.xlsx("Beneficiario.xlsx")
 
-sem_filtro_dicionario%>% filter(
-  (!grepl("\\baposentadorias e pensoes civis da uniao\\b",x = Coluna_search,ignore.case = TRUE)) &
-  (!grepl("\\bativos civis da uniao\\b",x = Coluna_search,ignore.case = TRUE)) &
-  (!grepl("\\bbeneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes\\b",x = Coluna_search,ignore.case = TRUE)) &
-  (!grepl("\\badministracao da unidade\\b",x = Coluna_search,ignore.case = TRUE))
-) %>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original, Coluna_search) %>% unique%>% view
-
-
-resto%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original, Coluna_search) %>% unique%>% view
-
-
-
+# Unindo os que nao tiveram
+siop_rest <- bind_rows(sem_filtro_dicionario %>% mutate(sector_landscape = "Sem Classificacao de Setor"),siop_sectorlandscape)
+siop_rest %>% select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,sector_landscape,Coluna_search) %>% unique  %>% write.xlsx("Siop_Resto.xlsx")
+siop_rest %>% group_by(sector_landscape) %>% count()
 
 
