@@ -132,9 +132,24 @@ AtividadesIndustriaFlorestas <- df_bndes_filter_landscape_v2 %>% filter(
 filtro_3 <- rbind(AtividadesIndustriaFlorestas,filtro_2)
 df_bndes_filter_landscape_v2 <- df_bndes_filter_landscape_v2 %>% anti_join(filtro_3 , by="Coluna_search")
 
+# Dando continuidade ao landscape
 
-df_bndes_filter_landscape_v2 %>% select(sector_original,subsector_original,project_description,sector_landscape,Coluna_search) %>% unique() %>% view
+landscape_bndesNAUT <- filtro_3 %>% select(
+  all_of(c("id_original","data_source","year","project_name","project_description","source_original",
+  "source_of_finance_landscape","national_internacional","source_private_public","value_original_currency",
+  "original_currency","channel_original","channel_landscape","instrument_original","instrument_landscape","sector_original",
+  "sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_use",
+  "beneficiary_original","beneficiary_landscape","beneficiary_public_private","localization_original","region","uf","municipality")) 
+)
+landscape_bndesNAUT %>% write.xlsx("Landscape_climateUse_bndes_naut.xlsx")
 
 
 
-
+bndes_NAUT_fora <- df_bndes_filter_landscape_v2%>% select(
+  all_of(c("id_original","data_source","year","project_name","project_description","source_original",
+  "source_of_finance_landscape","national_internacional","source_private_public","value_original_currency",
+  "original_currency","channel_original","channel_landscape","instrument_original","instrument_landscape","sector_original",
+  "sector_landscape","subsector_original",
+  "beneficiary_original","beneficiary_landscape","beneficiary_public_private","localization_original","region","uf","municipality")) 
+)
+bndes_NAUT_fora %>% write.xlsx("bndes_naut_Fora.xlsx")
