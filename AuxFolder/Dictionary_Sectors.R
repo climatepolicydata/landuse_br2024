@@ -697,6 +697,72 @@ forest_out_SIOP <- function(data_frame_SIOP_forest,Coluna_search){
     return(data_frame_forest_filter)
 }
 ##############################################################################################################################################################################################################################################################
+# Dicionário NINT
+
+# Para bioenergia
+bioenergia_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
+    data_frame_bioenergia <- data_frame_NINT %>% filter(
+        (grepl("\\bcorn\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bethanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bethanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbioenergy\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\brenovabio\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bindustrialização\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcana-de-açucar\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\baumento\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\beficiência\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\busina\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcogeração\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbagaço\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcana-de-açucar\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbiocombustíveis\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbiocombustível\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bcogeração\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\benergia\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\baquisição\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\binsumos\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bcogeração\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\benergia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\brenovável\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbiocombustível\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bcogeração\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\benergia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbiomassa\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcana de açúcar\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bsolar\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcredit\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bsolar\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\benergy\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprojects\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bethanol\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcorn\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bsolar\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\beólica\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpequenas hidrelétricas\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bbiogás\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bgeração\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bvapor\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bcogeração\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\benergia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\belétrica\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbiomassa\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bfinanciar\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
+        (grepl("\\braízen\\b", x = Coluna_search , ignore.case = TRUE))
+    )
+    return(data_frame_bioenergia)
+}
+bioenergia_NINT_out <- function(data_frame_NINT){
+    data_frame_bioenergia_filter <- data_frame_NINT %>% filter(
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210921+GLP+Brasil.pdf") &
+        (!verificador_externo2 %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210921+GLP+Brasil.pdf") &
+        (!cbi %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210921+GLP+Brasil.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20231129+Capal.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220114+Sanepar.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220420+BRK.pdf") &
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/9ffe3afc-e8e3-4e62-9f49-04166095f065/0f113c82-79af-6add-1d24-31ef43427f09?origin=1") &
+        (!verificador_externo2 %in% "https://api.mziq.com/mzfilemanager/v2/d/9aa4d8c5-604a-4097-acc9-2d8be8f71593/613063a6-dd33-8d8d-d715-55284ed6297b?origin=1") &
+        (!verificador_externo2 %in% "https://api.mziq.com/mzfilemanager/v2/d/9aa4d8c5-604a-4097-acc9-2d8be8f71593/7d2a2b2a-5c4b-dc7e-ec20-984c550c5259?origin=1") &
+        (!verificador_externo %in% "https://www.spglobal.com/_assets/documents/ratings/pt/pdf/2023/2023-10-27-debentures-verdes-de-955-milhoes-da-concessionaria-de-saneamento-do-amapa.pdf") &
+        (!verificador_externo %in% "https://www.iss-corporate.com/file/documents/spo/spo-20210108-simpar.pdf") 
+    )
+
+    return(data_frame_bioenergia_filter)
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+##############################################################################################################################################################################################################################################################
 # Dicionario OCDE
 # Para bioenergia
 bioenergy_ocde <- function(data_frame_ocde,coluna_search){
