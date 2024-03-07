@@ -3,7 +3,7 @@ library(stringi)
 library(readxl)
 library(xlsx)
 library(pdftools)
-source("C:/Users/eduar/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
+source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
 #Importando tabela relacional
 source_finance_landscape <- read_excel("./brlanduse_landscape2024_dados/NINT/11_nint_relational_tables.xlsx",sheet = "source_finance_landscape") %>% select(-emissor_trade_name)
 source_finance_landscape <- source_finance_landscape %>% mutate(source_original = str_to_lower(stri_trans_general(source_original,"Latin-ASCII")))
@@ -194,7 +194,28 @@ klabin <- nint_clear_landscape %>% filter(grepl("\\bklabin\\b",x =emissor_trade_
 nint_clear_landscape_sector <- bind_rows(nint_clear_landscape_sector_semKlabin,klabin)
 nint_clear_landscape_sector
 
-nint_clear_landscape_sector %>% mutate(Coluna_search = project_description)
-a <- bioenergia_search_pattern_NINT(data_frame_NINT = nint_clear_landscape_sector %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
-a %>% view
+# Iniciando a classificação setorial
+#Para bioenergia
+bioenergia_nint <- bioenergia_search_pattern_NINT(data_frame_NINT = nint_clear_landscape_sector %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
+bioenergia_nint_filter <- bioenergia_NINT_out(data_frame_NINT = bioenergia_nint)
+bioenergia_nint_filter$Sector_landscape = "Bioenergy and Fuels"
+# Para Crop
+crop_nint <- crop_search_pattern_NINT(data_frame_NINT = nint_clear_landscape_sector %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
+crop_nint_filter <- crop_NINT_out(data_frame_NINT = crop_nint)
+crop_nint_filter$Sector_landscape = "Crop"
+
+# Para Forest
+forest_nint <- forest_search_pattern_NINT(data_frame_NINT = nint_clear_landscape_sector %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
+forest_nint_filter <- forest_NINT_out(data_frame_NINT = forest_nint)
+forest_nint_filter$Sector_landscape = "Forest"
+# Para Cattle
+cattle_nint <- cattle_search_pattern_NINT(data_frame_NINT = nint_clear_landscape_sector %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
+cattle_NINT_filter <- cattle_NINT_out(data_frame_NINT = cattle_nint)
+cattle_NINT_filter$Sector_landscape = "Cattle"
+
+#Para MultiSector
+multisector_nint <- multisector_search_pattern_NINT(data_frame_NINT = nint_clear_landscape_sector %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
+
+a = multisector_nint %>% inner_join(crop_nint_filter,by = "project_description") %>% unique
+a %>% select(verificador_externo.x,verificador_externo2.x,Texto_cbi.x,verificador_externo.y,verificador_externo2.y,Texto_cbi.y) %>% view
 
