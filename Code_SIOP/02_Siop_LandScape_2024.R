@@ -378,7 +378,7 @@ siop_landscape_climate_use_bind %>% select(
   all_of(c("id_original","data_source","year","project_name","project_description","source_original","source_of_finance_landscape",
   "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
   "instrument_landscape","sector_original","sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_component","localization_original","region",
-  "uf","municipality", "Coluna_search")) 
+  "uf","municipality", "Coluna_search","Pago")) 
 )  %>% write.xlsx("Siop_Landscape_ClimateUse.xlsx")
 
 #siop_landscape_climate_use_bind %>% select(beneficiary_original,beneficiary_landscape) %>% unique %>% write.xlsx("Beneficiario.xlsx")
@@ -389,3 +389,91 @@ siop_rest %>% select(project_name,project_description,sector_original,subsector_
 siop_rest %>% group_by(sector_landscape) %>% count()
 
 
+
+
+
+
+
+# Fazendo o plot
+last_landscape <- read_rds("./brlanduse_landscape2024_dados/Dict/base_landscape_final_01022024.rds")
+last_landscape <- last_landscape %>% mutate(sector_landscape= case_when(
+  sector_landscape == "crop" ~ "Crop",sector_landscape == "forest" ~ "Forest", sector_landscape=="cattle" ~ "Cattle",
+  sector_landscape == "Bioenergy and fuels" | sector_landscape == "Bioenergy And Fuels" ~ "Bioenergy and Fuels",sector_landscape == "Agriculture" ~ "Crop",.default = sector_landscape
+))
+siop_antigo <- last_landscape %>% filter(data_source="siop_painel")
+climate_use <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx",sheet = "climate_use")
+climate_use <- climate_use %>% mutate(plano_orc = str_trim(str_remove(str_remove(str_remove(str_to_lower(stri_trans_general(plano_orc,"Latin-ASCII")),"'"),"^[[:alnum:]]{4}"),"-")),
+                      acao = str_trim(str_remove(str_remove(str_remove(str_to_lower(stri_trans_general(acao,"Latin-ASCII")),"'"),"^[[:alnum:]]{4}"),"-")))
+climate_use <- climate_use%>%mutate(key_join = str_c(plano_orc,acao,sep = "_"))
+siop_antigo <- siop_antigo%>%mutate(key_join = str_c(project_description,project_name,sep = "_"))%>%mutate(key_join=str_remove(key_join,"-"))
+
+siop_antigo_climate <- siop_antigo %>% left_join(climate_use%>% select(key_join,climate_component)%>% distinct(key_join, .keep_all = TRUE),by = "key_join") 
+siop_antigo_climate <- siop_antigo_climate %>% mutate(climate_component.y = if_else(is.na(climate_component.y),true = "Mitigation",
+false = climate_component.y))
+ano_siop_antigo_pago <- siop_antigo_climate %>% group_by(climate_component.y,year) %>% summarise(Soma_Dinheiro = sum(value_original_currency)) 
+ano_siop_antigo_pago_wider <- ano_siop_antigo_pago %>% pivot_wider(names_from = year, values_from = Soma_Dinheiro) 
+
+siop_atual <- read_excel("./brlanduse_landscape2024_dados/SIOP/Siop_Landscape_ClimateUse.xlsx")
+siop_atual <- siop_atual%>% select(climate_component,year,Pago)
+siop_atual %>% group_by(climate_component,year) %>% summarise(SumPago = sum(Pago))
+
+#Fazendo Deflacao
+ibge_ipca <- read_excel("./brlanduse_landscape2024_dados/ipca_ibge_cl.xlsx")
+ibge_ipca <- ibge_ipca %>% 
+  mutate(variacao_doze_meses = suppressWarnings(as.numeric(variacao_doze_meses)))
+deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
+  
+  # Defina o seu projeto no Google Cloud, é importante criar o projeto e colar o id no "set_billing_id". Fora isso, nao funcionarah
+  # Existe um bug no datalake da Base dos Dados que não permite o download direto.
+  # set_billing_id("scenic-notch-360215")
+  # 
+  # # criacao do data frame direto da base de dados
+  # serie_basedosdados <- basedosdados::bdplyr("br_ibge_ipca.mes_brasil") %>% bd_collect()
+  
+  serie_basedosdados <- base
+  
+  # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
+  serie_filtrada <- serie_basedosdados %>% 
+    select(ano, mes, variacao_doze_meses) %>% 
+    filter(mes == 12,ano >= ano_ini & ano <= ano_fim ) %>% 
+    arrange(desc(ano))
+  
+  indice = 1
+  
+  #criacao do data frame para o deflator
+  for (l in anos) {
+    # chamei novamente a base feita pela funcao do api, pois a base precisa ser percorrida ano a ano e
+    # se nao criarmos essa tabela, a tabela a ser percorrida novamente terá sempre o ano inicial como observacao
+    tabela <- serie_filtrada 
+    
+    tabela <- tabela %>% 
+    filter(ano == l)
+    
+    if (l == ano_fim) {
+      tabela <- tabela %>%  mutate(deflator = indice)
+      tabela_final <- tabela
+      indice_ano_anterior = indice * (1+ (tabela$variacao_doze_meses/100))
+    } else {
+      tabela <- tabela %>% mutate(deflator = indice_ano_anterior)
+      
+      tabela_final <- rbind(tabela_final, tabela)
+      indice_ano_anterior = indice_ano_anterior * (1 + (tabela$variacao_doze_meses/100))
+    }
+  }
+  tabela_final <- tabela_final %>% 
+    select(ano, deflator) %>%
+    dplyr::rename(year = ano) %>% 
+    arrange(year)
+  return(tabela_final)
+}
+
+ano_ini = 2021
+ano_fim = 2023
+anos = seq(ano_fim,ano_ini, -1)
+teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+base_select_deflator <- siop_atual %>% 
+    left_join(teste, by= "year")%>%
+    mutate(value_brl_deflated = as.numeric(Pago * deflator))
+base_select_deflator%>% view
+base_select_deflator <- base_select_deflator%>% group_by(climate_component,year) %>% summarise(SumPago = sum(value_brl_deflated))
+base_select_deflator %>% pivot_wider(names_from = year, values_from = SumPago) 
