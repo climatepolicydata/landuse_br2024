@@ -726,7 +726,8 @@ bioenergia_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
         (grepl("\\bcogeração\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\benergia\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\belétrica\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbiomassa\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bfinanciar\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
-        (grepl("\\braízen\\b", x = Coluna_search , ignore.case = TRUE))
+        (grepl("\\braízen\\b", x = Coluna_search , ignore.case = TRUE))|
+        (verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211025+Usina+Sonora.pdf")
     )
     return(data_frame_bioenergia)
 }
@@ -743,25 +744,170 @@ bioenergia_NINT_out <- function(data_frame_NINT){
         (!verificador_externo2 %in% "https://api.mziq.com/mzfilemanager/v2/d/9aa4d8c5-604a-4097-acc9-2d8be8f71593/613063a6-dd33-8d8d-d715-55284ed6297b?origin=1") &
         (!verificador_externo2 %in% "https://api.mziq.com/mzfilemanager/v2/d/9aa4d8c5-604a-4097-acc9-2d8be8f71593/7d2a2b2a-5c4b-dc7e-ec20-984c550c5259?origin=1") &
         (!verificador_externo %in% "https://www.spglobal.com/_assets/documents/ratings/pt/pdf/2023/2023-10-27-debentures-verdes-de-955-milhoes-da-concessionaria-de-saneamento-do-amapa.pdf") &
-        (!verificador_externo %in% "https://www.iss-corporate.com/file/documents/spo/spo-20210108-simpar.pdf") 
+        (!verificador_externo %in% "https://www.iss-corporate.com/file/documents/spo/spo-20210108-simpar.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210614+S%C3%A3o+Martinho.pdf") &
+        (!grepl("\\boperações gerais da empresa\\b", x = project_description,ignore.case = TRUE)) &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210520+Diana+Bioenergia.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210623+S%C3%A3o+Manoel.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210701+Colombo+Agroindustria.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211124++Jalles+Machado.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211025+Usina+Sonora.pdf") &
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/5b5bf7fa-0e5c-4b44-91cb-707e34a1356a/807f065d-e12a-d9b0-2c45-54c547094632?origin=2")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20221212+Agrogalaxy.pdf") &
+        (!verificador_externo2 %in% "https://www.santander.com/content/dam/santander-com/es/documentos/presentaciones-de-renta-fija/2023/06/prf-santander-group-green-social-and-sustainability-funding-global-framework-second-party-opinion-2023.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/opea_Pre%20issuance%20assurance%20statement.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20231129+Capal.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210330+Allonda.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Tereos.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220127+State+Grid.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220406+Allonda.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220713+Usina+S%C3%A3o+Jos%C3%A9.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220726+Irani.pdf")
     )
 
     return(data_frame_bioenergia_filter)
     
 }
+# Para Crop NINT
+crop_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
+    data_frame_crop <- data_frame_NINT %>% filter(
+        (grepl("\\bagricultura\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bprecisão\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bagricultura\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bdigital\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bdigital\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bagriculture\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bplantio\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcana-de-açúcar\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\brenovação\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcanavial\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcana de açúcar\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bplantio\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\btratos\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcana de açúcar\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\brenovação\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcanavial\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcana de açúcar\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bcultivo\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcana-de-açúcar\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bagricultura\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bbaixo\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcarbono\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bmanutenção\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\brenovação\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bmelhoria\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcanavial\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\brenovação\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcanavial\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bbioinsumos\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bpurchase\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bsoy\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\blow-carbon\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\btechniques\\b",x = Coluna_search,ignore.case = TRUE))
+    )
+    return(data_frame_crop)
 
+}
+crop_NINT_out <- function(data_frame_NINT){
+    data_frame_crop_filter <- data_frame_NINT %>% filter(
+        (!grepl("\\boperações gerais da empresa\\b", x = project_description,ignore.case = TRUE)) &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201125+Rio+Amambai.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210128+Colombo+Agroindustria.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210201+Tereos.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210324+Ferrari.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!verificador_externo2 %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210730+Grupo+Balbo.pdf") &
+        (!verificador_externo %in% "https://www.climatebonds.net/files/files/FS-Agrisolutions-Industria-de-Biocombustiveis-Ltda_Pre%20issuance%20assurance%20statement.pdf") &
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/5b5bf7fa-0e5c-4b44-91cb-707e34a1356a/807f065d-e12a-d9b0-2c45-54c547094632?origin=2") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220713+Usina+S%C3%A3o+Jos%C3%A9.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230526+Usina+Itamarati.pdf") &
+        (!verificador_externo2 %in% "https://www.santander.com/content/dam/santander-com/es/documentos/presentaciones-de-renta-fija/2023/06/prf-santander-group-green-social-and-sustainability-funding-global-framework-second-party-opinion-2023.pdf") &
+        (!cbi %in% "https://www.climatebonds.net/files/files/opea_Pre%20issuance%20assurance%20statement.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210305+Fazenda+da+Toca.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211025+Usina+Sonora.pdf")
 
+    )
+    return(data_frame_crop_filter)
+}
+# Para Forest NINT
+forest_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
+    data_frame_forest <- data_frame_NINT %>% filter(
+        (grepl("\\bmanejo\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bsustentável\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bflorestas certificadas\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bfomento\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bflorestal\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\baquisição\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bflorestas\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bplantadas\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bsilvicutura\\b",x = Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\breflorestamento\\b",x = Coluna_search,ignore.case = TRUE))        
+    )
+    return(data_frame_forest)
+}  
+forest_NINT_out <- function(data_frame_NINT){
+    data_frame_forest_filter <- data_frame_NINT %>% filter(
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210305+Fazenda+da+Toca.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210614+S%C3%A3o+Martinho.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211124++Jalles+Machado.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220317+Citrosuco.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20221212+Agrogalaxy.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201125+Rio+Amambai.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210201+Tereos.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210330+Allonda.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Tereos.pdf") &
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/3c0b3516-7dff-44a5-946f-20e7ec87dfa0/93abd1c0-ab0a-b2c6-f17c-03659badeec1?origin=1") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211001+ComBio.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220127+State+Grid.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220406+Allonda.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220608+ComBio.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220713+Usina+S%C3%A3o+Jos%C3%A9.pdf") &
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/5b5bf7fa-0e5c-4b44-91cb-707e34a1356a/807f065d-e12a-d9b0-2c45-54c547094632?origin=2")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf")
+    )
+    return(data_frame_forest_filter)
+}
+# Para Cattle NINT
+cattle_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
+    data_frame_cattle <- data_frame_NINT %>% filter(
+        (grepl("\\baumento\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bprodução\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bcomercialização\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bovos orgânicos\\b",x = Coluna_search, ignore.case = TRUE)) |
+        (grepl("\\bbem-estar\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\banimal\\b",x = Coluna_search, ignore.case = TRUE)) |
+        (grepl("\\bprodução\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\borgânica\\b",x = Coluna_search, ignore.case = TRUE))
 
+    )
+    return(data_frame_cattle)
+}
+cattle_NINT_out <- function(data_frame_NINT){
+    data_frame_cattle_filter <- data_frame_NINT %>% filter(
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210520+Diana+Bioenergia.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210614+S%C3%A3o+Martinho.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Tereos.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210623+S%C3%A3o+Manoel.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210701+Colombo+Agroindustria.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211124++Jalles+Machado.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211025+Usina+Sonora.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20221212+Agrogalaxy.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201125+Rio+Amambai.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210128+Colombo+Agroindustria.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210201+Tereos.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210324+Ferrari.pdf") &
+        (!verificador_externo2 %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210730+Grupo+Balbo.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211001+ComBio.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230526+Usina+Itamarati.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220608+ComBio.pdf")
+    )
+    return(data_frame_cattle_filter)
+}   
 
+# Para MultiSector
+multisector_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
+    data_frame_multisector <- data_frame_NINT %>% filter(
+        (grepl("\\bsaneamento\\b",x =Coluna_search,ignore.case = TRUE )) |
+        (grepl("\\bampliação\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bsistemas\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\babastecimento\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bágua\\b",x =Coluna_search,ignore.case = TRUE))|
+        (grepl("\\bsanitation\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bbrazil\\b",x =Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\btratamento\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\besgoto\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bbiodiversidade\\b",x =Coluna_search,ignore.case = TRUE))
 
-
-
-
-
-
-
-
-
+    )
+    return(data_frame_multisector)
+}
+multisector_NINT_out <- function(data_frame_NINT){
+    data_frame_multisector_filter <- data_frame_NINT %>% filter(
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210305+Fazenda+da+Toca.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210723+Adami.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf")
+    )
+}
 ##############################################################################################################################################################################################################################################################
 # Dicionario OCDE
 # Para bioenergia
