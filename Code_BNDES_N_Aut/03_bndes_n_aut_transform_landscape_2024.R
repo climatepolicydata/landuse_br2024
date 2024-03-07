@@ -139,7 +139,7 @@ landscape_bndesNAUT <- filtro_3 %>% select(
   "source_of_finance_landscape","national_internacional","source_private_public","value_original_currency",
   "original_currency","channel_original","channel_landscape","instrument_original","instrument_landscape","sector_original",
   "sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_use",
-  "beneficiary_original","beneficiary_landscape","beneficiary_public_private","localization_original","region","uf","municipality")) 
+  "beneficiary_original","beneficiary_landscape","beneficiary_public_private","localization_original","region","uf","municipality","valor_contratado_reais")) 
 )
 landscape_bndesNAUT %>% write.xlsx("Landscape_climateUse_bndes_naut.xlsx")
 
@@ -150,6 +150,73 @@ bndes_NAUT_fora <- df_bndes_filter_landscape_v2%>% select(
   "source_of_finance_landscape","national_internacional","source_private_public","value_original_currency",
   "original_currency","channel_original","channel_landscape","instrument_original","instrument_landscape","sector_original",
   "sector_landscape","subsector_original",
-  "beneficiary_original","beneficiary_landscape","beneficiary_public_private","localization_original","region","uf","municipality")) 
+  "beneficiary_original","beneficiary_landscape","beneficiary_public_private","localization_original","region","uf","municipality","valor_contratado_reais")) 
 )
 bndes_NAUT_fora %>% write.xlsx("bndes_naut_Fora.xlsx")
+
+#Criando os graficos de evolucao
+bndes = last_landscape %>% filter(data_source=="bndes_naut")
+bndes <- bndes %>% select(climate_component,year,value_brl_deflated)
+bndes %>% group_by(year,climate_component) %>% summarise(Pago = sum(value_brl_deflated))
+bndes_atual <- read_excel("./brlanduse_landscape2024_dados/BNDES_N_Aut/Landscape_climateUse_bndes_naut.xlsx")
+bndes_atual <- bndes_atual %>% select(climate_use,year,valor_contratado_reais)
+
+ibge_ipca <- read_excel("./brlanduse_landscape2024_dados/ipca_ibge_cl.xlsx")
+ibge_ipca <- ibge_ipca %>% 
+  mutate(variacao_doze_meses = suppressWarnings(as.numeric(variacao_doze_meses)))
+deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
+  
+  # Defina o seu projeto no Google Cloud, é importante criar o projeto e colar o id no "set_billing_id". Fora isso, nao funcionarah
+  # Existe um bug no datalake da Base dos Dados que não permite o download direto.
+  # set_billing_id("scenic-notch-360215")
+  # 
+  # # criacao do data frame direto da base de dados
+  # serie_basedosdados <- basedosdados::bdplyr("br_ibge_ipca.mes_brasil") %>% bd_collect()
+  
+  serie_basedosdados <- base
+  
+  # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
+  serie_filtrada <- serie_basedosdados %>% 
+    select(ano, mes, variacao_doze_meses) %>% 
+    filter(mes == 12,ano >= ano_ini & ano <= ano_fim ) %>% 
+    arrange(desc(ano))
+  
+  indice = 1
+  
+  #criacao do data frame para o deflator
+  for (l in anos) {
+    # chamei novamente a base feita pela funcao do api, pois a base precisa ser percorrida ano a ano e
+    # se nao criarmos essa tabela, a tabela a ser percorrida novamente terá sempre o ano inicial como observacao
+    tabela <- serie_filtrada 
+    
+    tabela <- tabela %>% 
+    filter(ano == l)
+    
+    if (l == ano_fim) {
+      tabela <- tabela %>%  mutate(deflator = indice)
+      tabela_final <- tabela
+      indice_ano_anterior = indice * (1+ (tabela$variacao_doze_meses/100))
+    } else {
+      tabela <- tabela %>% mutate(deflator = indice_ano_anterior)
+      
+      tabela_final <- rbind(tabela_final, tabela)
+      indice_ano_anterior = indice_ano_anterior * (1 + (tabela$variacao_doze_meses/100))
+    }
+  }
+  tabela_final <- tabela_final %>% 
+    select(ano, deflator) %>%
+    dplyr::rename(year = ano) %>% 
+    arrange(year)
+  return(tabela_final)
+}
+
+ano_ini = 2021
+ano_fim = 2023
+anos = seq(ano_fim,ano_ini, -1)
+teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+base_select_deflator <- bndes_atual %>% 
+    left_join(teste, by= "year")%>%
+    mutate(value_brl_deflated = as.numeric(valor_contratado_reais * deflator))
+base_select_deflator%>% view
+base_select_deflator <- base_select_deflator%>% group_by(climate_use,year) %>% summarise(SumPago = sum(value_brl_deflated))
+base_select_deflator %>% pivot_wider(names_from = year, values_from = SumPago) 
