@@ -727,7 +727,8 @@ bioenergia_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
         (grepl("\\bfinanciar\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\bprodução\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\betanol\\b", x = Coluna_search , ignore.case = TRUE)) |
         (grepl("\\braízen\\b", x = Coluna_search , ignore.case = TRUE))|
-        (verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211025+Usina+Sonora.pdf")
+        (grepl("\\bUsina+Sonora.pdf\\b",x = verificador_externo,ignore.case = TRUE))
+        
     )
     return(data_frame_bioenergia)
 }
@@ -764,7 +765,42 @@ bioenergia_NINT_out <- function(data_frame_NINT){
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220127+State+Grid.pdf") &
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220406+Allonda.pdf") &
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220713+Usina+S%C3%A3o+Jos%C3%A9.pdf") &
-        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220726+Irani.pdf")
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220726+Irani.pdf") &
+        (!verificador_externo %in% "https://mstar-sustops-cdn-mainwebsite-s3.s3.amazonaws.com/docs/default-source/spos/banco-btg-pactual-green-social-and-sustainable-financing-framework-second-party-opinion.pdf?sfvrsn=c4309f16_3") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20200203+CBA.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230828+Taesa.pdf") &
+        (!verificador_externo %in% "http://www.sustainalytics.com/sustainable-finance/wp-content/uploads/2020/11/Banco-BTG-Pactual-Green-Social-and-Sustainable-Financing-Framework-Second-Party-Opinion.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Ciclus+Ambiental.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211013+Orizon.pdf") &
+        (!verificador_externo %in% "https://mstar-sustops-cdn-mainwebsite-s3.s3.amazonaws.com/docs/default-source/spos/banco-bradesco-s.a.-sustainable-finance-framework-second-party-opinion.pdf?sfvrsn=6909247_1%2FBanco-Bradesco-S.A.-Sustainable-Finance-Framework-Second-Party-Opinion.pdf&utm_campaign=SPO%20Alert%20Emails&utm_medium=email&utm_content=200687204&utm_source=hs_email") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230403+Sanepar.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201223+ISA+CTEEP.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210316+Irani.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201027+Ibemapar.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220119+Eurofarma.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220420+BRK.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220405+Alian%C3%A7a.pdf")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/a608601a-f940-4251-9b9d-7feaf98e8e69/e1549723-2cf6-ce41-48f4-e1287b47b03b?origin=1")&
+        (!verificador_externo %in% "https://www.spglobal.com/_assets/documents/ratings/pt/pdf/2023/2023-10-27-debentures-verdes-de-955-milhoes-da-concessionaria-de-saneamento-do-amapa.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210520+Diana+Bioenergia.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210614+S%C3%A3o+Martinho.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Tereos.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210401+CGI.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210820+Elektro.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210929+CELPE.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210930+Coelba.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211213+COELBA.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211216+COSERN.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220204+Neoenergia+Vale+do+Itaja%C3%AD.pdf")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/5760dff3-15e1-4962-9e81-322a0b3d0bbd/cd1b3730-c6a9-6d96-1b45-df390d0b4f86?origin=2")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220617+Neoenergia+Bras%C3%ADlia.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220615+NeoPernambuco.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220614+Sterlite+Power.pdf")&
+        (!verificador_externo %in% "https://mstar-sustops-cdn-mainwebsite-s3.s3.amazonaws.com/docs/default-source/spos/banco-do-brasil-sustainable-finance-framework-second-party-opinion.pdf?sfvrsn=858681f0_3")&
+        (!verificador_externo2 %in% "https://s3.sa-east-1.amazonaws.com/static.cteep.mediagroup.com.br/Arquivos/Imagens/SPO-Nint-ISA-CTEEP-Green-Bond-Framework-Atualizacao-Jan23.pdf")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/2aec7c3f-0df1-4df1-967a-66ab1030fc14/afe58009-aa17-9276-2c74-371fa756ea91?origin=1") &
+        (!verificador_externo %in% "https://eleadigital.com/wp-content/uploads/2023/12/SPO-SLB-Elea-Digital-20221219-final.pdf")
+        
     )
 
     return(data_frame_bioenergia_filter)
@@ -818,7 +854,19 @@ crop_NINT_out <- function(data_frame_NINT){
         (!verificador_externo2 %in% "https://www.santander.com/content/dam/santander-com/es/documentos/presentaciones-de-renta-fija/2023/06/prf-santander-group-green-social-and-sustainability-funding-global-framework-second-party-opinion-2023.pdf") &
         (!cbi %in% "https://www.climatebonds.net/files/files/opea_Pre%20issuance%20assurance%20statement.pdf") &
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210305+Fazenda+da+Toca.pdf")&
-        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211025+Usina+Sonora.pdf")
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211025+Usina+Sonora.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Ciclus+Ambiental.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210713++ENC+Energy.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210818+RZK+Biog%C3%A1s.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211104+Camil.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211013+Orizon.pdf") &
+        (!verificador_externo %in% "https://mstar-sustops-cdn-mainwebsite-s3.s3.amazonaws.com/docs/default-source/spos/banco-bradesco-s.a.-sustainable-finance-framework-second-party-opinion.pdf?sfvrsn=6909247_1%2FBanco-Bradesco-S.A.-Sustainable-Finance-Framework-Second-Party-Opinion.pdf&utm_campaign=SPO%20Alert%20Emails&utm_medium=email&utm_content=200687204&utm_source=hs_email") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220923+Energisa.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230403+Sanepar.pdf")&
+        (!verificador_externo %in% "https://www.spglobal.com/_assets/documents/ratings/pt/pdf/2023/2023-10-27-debentures-verdes-de-955-milhoes-da-concessionaria-de-saneamento-do-amapa.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210921+GLP+Brasil.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220114+Sanepar.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220317+Citrosuco.pdf")
 
     )
     return(data_frame_crop_filter)
@@ -853,7 +901,18 @@ forest_NINT_out <- function(data_frame_NINT){
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220608+ComBio.pdf") &
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220713+Usina+S%C3%A3o+Jos%C3%A9.pdf") &
         (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/5b5bf7fa-0e5c-4b44-91cb-707e34a1356a/807f065d-e12a-d9b0-2c45-54c547094632?origin=2")&
-        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf")
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201223+ISA+CTEEP.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201027+Ibemapar.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220119+Eurofarma.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220322+AXS+Energia.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220420+BRK.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220405+Alian%C3%A7a.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220602+EAB+Energias.pdf")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/a608601a-f940-4251-9b9d-7feaf98e8e69/e1549723-2cf6-ce41-48f4-e1287b47b03b?origin=1")&
+        (!verificador_externo %in% "https://www.spglobal.com/_assets/documents/ratings/pt/pdf/2023/2023-10-27-debentures-verdes-de-955-milhoes-da-concessionaria-de-saneamento-do-amapa.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220513+Direcional.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220927+AES+Caju%C3%ADna+AB1.pdf")
     )
     return(data_frame_forest_filter)
 }
@@ -885,7 +944,19 @@ cattle_NINT_out <- function(data_frame_NINT){
         (!verificador_externo2 %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210730+Grupo+Balbo.pdf") &
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211001+ComBio.pdf") &
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230526+Usina+Itamarati.pdf") &
-        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220608+ComBio.pdf")
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220608+ComBio.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210305+Fazenda+da+Toca.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210713++ENC+Energy.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210818+RZK+Biog%C3%A1s.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211104+Camil.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20221219+Solvi+Essencis.pdf")&
+        (!verificador_externo %in% "https://www.spglobal.com/_assets/documents/ratings/pt/pdf/2023/2023-10-27-debentures-verdes-de-955-milhoes-da-concessionaria-de-saneamento-do-amapa.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Ciclus+Ambiental.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211013+Orizon.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230403+Sanepar.pdf")&
+        (!verificador_externo %in% "https://sgssa.com.br/wp-content/uploads/2023/06/SPO-GB-Titulo-Verde-Sao-Gabriel-Saneamento-20221216.pdf")&
+        (!verificador_externo2 %in% "https://ri.riomaissaneamento.com.br/docs/riomais-saneamento-2023-08-31-8bTjbKwz.pdf")&
+        (!verificador_externo %in% "https://www.grupoboticario.com.br/wp-content/uploads/2023/12/SPO-SLB-Boticario-20231212.pdf")
     )
     return(data_frame_cattle_filter)
 }   
@@ -896,7 +967,13 @@ multisector_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
         (grepl("\\bsaneamento\\b",x =Coluna_search,ignore.case = TRUE )) |
         (grepl("\\bampliação\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bsistemas\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\babastecimento\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bágua\\b",x =Coluna_search,ignore.case = TRUE))|
         (grepl("\\bsanitation\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bbrazil\\b",x =Coluna_search,ignore.case = TRUE)) |
-        (grepl("\\btratamento\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\besgoto\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bbiodiversidade\\b",x =Coluna_search,ignore.case = TRUE))
+        (grepl("\\btratamento\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\besgoto\\b",x =Coluna_search,ignore.case = TRUE) & grepl("\\bbiodiversidade\\b",x =Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bCorsan\\b",x =Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bSanepar\\b",x =Coluna_search,ignore.case = TRUE))|
+        (grepl("\\babastecimento de água e esgotamento sanitário\\b",x =Coluna_search,ignore.case = TRUE))|
+        (grepl("\\bCEDAE\\b",x =Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bmelhorias no sistema de tratamento de água e esgoto\\b",x =Coluna_search,ignore.case = TRUE)) 
+        
 
     )
     return(data_frame_multisector)
@@ -905,7 +982,53 @@ multisector_NINT_out <- function(data_frame_NINT){
     data_frame_multisector_filter <- data_frame_NINT %>% filter(
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210305+Fazenda+da+Toca.pdf") &
         (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210723+Adami.pdf") &
-        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf")
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220721+Tobasa.pdf") & 
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210520+Diana+Bioenergia.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210614+S%C3%A3o+Martinho.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210623+S%C3%A3o+Manoel.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210701+Colombo+Agroindustria.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211124++Jalles+Machado.pdf") &
+        (!verificador_externo %in% "https://mstar-sustops-cdn-mainwebsite-s3.s3.amazonaws.com/docs/default-source/spos/banco-btg-pactual-green-social-and-sustainable-financing-framework-second-party-opinion.pdf?sfvrsn=c4309f16_3") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210128+Colombo+Agroindustria.pdf") &
+        (!verificador_externo2 %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210730+Grupo+Balbo.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20200203+CBA.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230828+Taesa.pdf")&
+        (!verificador_externo %in% "http://www.sustainalytics.com/sustainable-finance/wp-content/uploads/2020/11/Banco-BTG-Pactual-Green-Social-and-Sustainable-Financing-Framework-Second-Party-Opinion.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20201027+Ibemapar.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220420+BRK.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220405+Alian%C3%A7a.pdf")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/a608601a-f940-4251-9b9d-7feaf98e8e69/e1549723-2cf6-ce41-48f4-e1287b47b03b?origin=1")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210401+CGI.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210928+RZK+Energia+Solar.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210713++ENC+Energy.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210820+Elektro.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210818+RZK+Biog%C3%A1s.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210929+CELPE.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210930+Coelba.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211209+RZK+Energia.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211213+COELBA.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211216+COSERN.pdf") &
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220204+Neoenergia+Vale+do+Itaja%C3%AD.pdf")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/5760dff3-15e1-4962-9e81-322a0b3d0bbd/cd1b3730-c6a9-6d96-1b45-df390d0b4f86?origin=2")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220509+Solar+21.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220617+Neoenergia+Bras%C3%ADlia.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220615+NeoPernambuco.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220614+Sterlite+Power.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20230906+Plat%C3%A3o+Energia.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20221121+Elera.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20221219+Solvi+Essencis.pdf")&
+        (!verificador_externo %in% "https://mstar-sustops-cdn-mainwebsite-s3.s3.amazonaws.com/docs/default-source/spos/banco-do-brasil-sustainable-finance-framework-second-party-opinion.pdf?sfvrsn=858681f0_3")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20221019+GDS+Energia.pdf")&
+        (!verificador_externo2 %in% "https://s3.sa-east-1.amazonaws.com/static.cteep.mediagroup.com.br/Arquivos/Imagens/SPO-Nint-ISA-CTEEP-Green-Bond-Framework-Atualizacao-Jan23.pdf")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/2aec7c3f-0df1-4df1-967a-66ab1030fc14/afe58009-aa17-9276-2c74-371fa756ea91?origin=1")&
+        (!verificador_externo %in% "https://api.mziq.com/mzfilemanager/v2/d/2aec7c3f-0df1-4df1-967a-66ab1030fc14/bcbd5c1a-d7cf-b45e-b54d-cb847951111e?origin=1")&
+        (!verificador_externo %in%"https://eleadigital.com/wp-content/uploads/2023/12/SPO-SLB-Elea-Digital-20221219-final.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210921+GLP+Brasil.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220513+Direcional.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20220927+AES+Caju%C3%ADna+AB1.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210528+Ciclus+Ambiental.pdf")&
+        (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211013+Orizon.pdf")&
+        (!verificador_externo %in% "https://www.grupoboticario.com.br/wp-content/uploads/2023/12/SPO-SLB-Boticario-20231212.pdf")
     )
 }
 ##############################################################################################################################################################################################################################################################
