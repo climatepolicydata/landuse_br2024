@@ -17,16 +17,14 @@ pacman::p_load(tidyverse,
                readr,
                data.table,
                dplyr,
-               plyr,
+               
                pivottabler)
 
 
-
-
-df <- readRDS("C:/Users/eduar/Dropbox (CPI)/EduardoMinsky/PARAMIM/BNDES_N_Aut/operacoes_financiamento_operacoes_nao_automaticas_clear.RDS")
-sector_bndes_n_aut <- read.xlsx("06_bndes_naut_relational_tables.xlsx", sheet = "sector_landscape")
-
-
+df <- readRDS("A:\\finance\\bndes_N_aut\\cleanData\\operacoes_financiamento_operacoes_nao_automaticas_clear_03_24.rds")
+sector_bndes_n_aut <- read.xlsx("A:\\projects\\landuse_br2024\\bndes_n_aut\\06_bndes_naut_relational_tables.xlsx", sheet = "sector_landscape")
+df %>% select(ano) %>%unique
+sector_bndes_n_aut%>%unique%>%view
 df_filter <- df %>% filter(ano >= 2021 & ano <= 2023)%>% 
                     filter(fonte_de_recurso_desembolsos != "recursos vinculados - fundo amazonia")
 
@@ -36,7 +34,7 @@ prazo_carencia_meses,prazo_amortizacao_meses,inovacao,area_operacional,setor_cna
 
 lista_instrument <- c("bndes florestal", 
                       "distribuicao de gas e biocombustiveis - incentivada b", 
-                      "producaoo de alimentos e biocombustiveis - incentivada b")
+                      "producao de alimentos e biocombustiveis - incentivada b")
 
 lista_descricao <- c("cana-de-acucar|etanol|canavial|biomassa|cana de acucar")
 
@@ -46,4 +44,4 @@ df_filter_reviewed <- df_filter %>% filter(subsetor_cnae_nome %in% sector_bndes_
 
 
 
-df_filter_reviewed%>%write_rds("df_bndes_n_aut_filter_reviewed.rds")
+df_filter_reviewed%>%write_rds("A:\\projects\\landuse_br2024\\bndes_n_aut\\output\\df_bndes_n_aut_filter_reviewed_03_24.rds")
