@@ -258,3 +258,13 @@ base_select_deflator <- bndes_atual %>%
 base_select_deflator%>% view
 base_select_deflator <- base_select_deflator%>% group_by(climate_use,year) %>% summarise(SumPago = sum(value_brl_deflated))
 base_select_deflator %>% pivot_wider(names_from = year, values_from = SumPago) 
+
+# FAzendo a criação dos dicionários para a gabriela
+data_dict <- read_rds("A:\\finance\\bndes_N_aut\\cleanData\\operacoes_financiamento_operacoes_nao_automaticas_clear_03_24.rds")
+
+
+create_dict(data_dict, write_excel = TRUE, file_name = "Descricao_Dados_BNDES_N_AUT_03_24")
+
+
+	
+	
