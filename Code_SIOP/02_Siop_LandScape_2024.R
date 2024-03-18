@@ -400,14 +400,14 @@ last_landscape <- last_landscape %>% mutate(sector_landscape= case_when(
   sector_landscape == "crop" ~ "Crop",sector_landscape == "forest" ~ "Forest", sector_landscape=="cattle" ~ "Cattle",
   sector_landscape == "Bioenergy and fuels" | sector_landscape == "Bioenergy And Fuels" ~ "Bioenergy and Fuels",sector_landscape == "Agriculture" ~ "Crop",.default = sector_landscape
 ))
-siop_antigo <- last_landscape %>% filter(data_source="siop_painel")
+siop_antigo <- last_landscape %>% filter(data_source=="siop_painel")
 climate_use <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx",sheet = "climate_use")
 climate_use <- climate_use %>% mutate(plano_orc = str_trim(str_remove(str_remove(str_remove(str_to_lower(stri_trans_general(plano_orc,"Latin-ASCII")),"'"),"^[[:alnum:]]{4}"),"-")),
                       acao = str_trim(str_remove(str_remove(str_remove(str_to_lower(stri_trans_general(acao,"Latin-ASCII")),"'"),"^[[:alnum:]]{4}"),"-")))
 climate_use <- climate_use%>%mutate(key_join = str_c(plano_orc,acao,sep = "_"))
 siop_antigo <- siop_antigo%>%mutate(key_join = str_c(project_description,project_name,sep = "_"))%>%mutate(key_join=str_remove(key_join,"-"))
 
-siop_antigo_climate <- siop_antigo %>% left_join(climate_use%>% select(key_join,climate_component)%>% distinct(key_join, .keep_all = TRUE),by = "key_join") 
+siop_antigo_climate <- siop_antigo %>% left_join(climate_use%>% select(key_join,rio_marker,beneficiary_landscape,climate_component)%>% distinct(key_join, .keep_all = TRUE),by = "key_join") 
 siop_antigo_climate <- siop_antigo_climate %>% mutate(climate_component.y = if_else(is.na(climate_component.y),true = "Mitigation",
 false = climate_component.y))
 ano_siop_antigo_pago <- siop_antigo_climate %>% group_by(climate_component.y,year) %>% summarise(Soma_Dinheiro = sum(value_original_currency)) 
@@ -477,3 +477,32 @@ base_select_deflator <- siop_atual %>%
 base_select_deflator%>% view
 base_select_deflator <- base_select_deflator%>% group_by(climate_component,year) %>% summarise(SumPago = sum(value_brl_deflated))
 base_select_deflator %>% pivot_wider(names_from = year, values_from = SumPago) 
+
+
+
+
+siop_antigo_climate %>% view
+last_landscape %>% names
+siop_antigo_climate <- siop_antigo_climate %>% select(id_original,data_source,year,project_name,project_description,source_original,
+          source_finance_landscape,origin_domestic_international,origin_private_public,value_original_currency,original_currency,value_brl_deflated,value_usd,
+              channel_original,channel_landscape,instrument_original,instrument_landscape,sector_original,sector_landscape,
+              subsector_original,activity_landscape,subactivity_landscape,beneficiary_original,beneficiary_public_private,localization_original,
+              region,uf,municipality,value_brl_deflated_mean,value_usd_mean,rio_marker.y,beneficiary_landscape.y,climate_component.y)
+siop_antigo_climate <- siop_antigo_climate %>% rename(rio_marker = rio_marker.y, beneficiary_landscape = beneficiary_landscape.y,climate_component = climate_component.y ) 
+
+siop_antigo_climate%>% view
+siop_antigo_climate <- siop_antigo_climate %>% mutate(origin_domestic_international =case_when(origin_domestic_international == "Doméstico" ~ "Domestic",
+                                                                          origin_domestic_international == "Internacional" ~ "International",.default = origin_domestic_international),
+                                                                          origin_private_public = case_when(origin_private_public == "Outros" ~ "Others",
+                                                                          origin_private_public == "Pública" ~ "Public",
+                                                                          .default = origin_private_public),
+                                                                          channel_landscape = case_when(
+                                                                            channel_landscape == "Órgãos Governamentais" ~ "Government agencies",
+                                                                            channel_landscape == "OSCFLs" ~ "Civil society organizations",
+                                                                            channel_landscape == "Instituições Financeiras" ~ "Corporations",.default = channel_landscape
+                                                                          ),
+                                                                          instrument_landscape = case_when(instrument_landscape=="Orçamento Público" ~ "Public Budget",
+                                                                          .default ="Public Budget" ))
+
+siop_antigo_climate %>% write_rds("Siop_Revisado_LandScape_15_20.rds")
+siop_antigo_climate%>% view
