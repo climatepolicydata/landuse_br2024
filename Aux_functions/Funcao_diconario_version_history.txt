@@ -1,0 +1,6 @@
+v12 28-03-2022
+- version history created
+- dispersion summary measurements added {sd (standard deviation), var (variance), var_coefficient (coefficient of variation [variance/average])
+- coefficient of variation is useful for comparing dispersion across variables with different scales (ex: meters vs. inches, dollars vs. brazilian reais) acording to Statistics professor
+v13 29-03-2022
+-main_sheet function renamed to f_summarize
