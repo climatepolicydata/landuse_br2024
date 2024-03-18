@@ -20,7 +20,10 @@ bioenergy_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
     (grepl(pattern = "\\benergia\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bbagaco\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bcana\\b",x = Coluna_search, ignore.case = TRUE)) |
     (grepl(pattern = "\\bmilho\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\betanol\\b",x = Coluna_search, ignore.case = TRUE)) |
     (grepl(pattern = "\\btermoeletrica\\b",x = Coluna_search, ignore.case = TRUE) & grepl(pattern = "\\bbiogas\\b",x = Coluna_search, ignore.case = TRUE))|
-    (grepl("\\bcaptacao\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bbiometano\\b",x = Coluna_search, ignore.case = TRUE)))
+    (grepl("\\bcaptacao\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bbiometano\\b",x = Coluna_search, ignore.case = TRUE))|
+    (grepl("\\bproducao\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bbiometano\\b",x = Coluna_search, ignore.case = TRUE))|
+    (grepl("\\bpurificacao\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bbiogas\\b",x = Coluna_search, ignore.case = TRUE))|
+    (grepl("\\bprocessamento\\b",x = Coluna_search, ignore.case = TRUE) & grepl("\\bbiomassa\\b",x = Coluna_search, ignore.case = TRUE)))
     return(data_frame_bioenergy)
 
 }
@@ -102,7 +105,7 @@ cattle_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
 # Forest
 forest_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
     data_frame_forest <- data_frame_BNDES %>% filter((grepl(pattern = "\\bjardim botanico\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bzoo\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bpq nac\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\breserva eco\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bprot ambiental\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl(pattern = "\\batividades\\b", x = Coluna_search , ignore.case = TRUE) & grep(pattern = "\\bproducao florestal\\b", x = Coluna_search , ignore.case = TRUE)) |
+    (grepl(pattern = "\\batividades\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bproducao florestal\\b", x = Coluna_search , ignore.case = TRUE)) |
     (grepl(pattern = "\\batividades\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bpatrimonio\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\bambiental\\b", x = Coluna_search , ignore.case = TRUE)) |
     (grepl(pattern = "\\bcoleta\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\castanha\\b", x = Coluna_search , ignore.case = TRUE)) |
     (grepl(pattern = "\\bcoleta\\b", x = Coluna_search , ignore.case = TRUE) & grepl(pattern = "\\blatex\\b", x = Coluna_search , ignore.case = TRUE)) |
@@ -265,7 +268,8 @@ crop_search_pattern_BNDES <- function(data_frame_BNDES,Coluna_search){
     (grepl("\\bservico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpreparacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bterreno\\b", x = Coluna_search , ignore.case = TRUE))|
     (grepl("\\bservico\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpulverizacao\\b", x = Coluna_search , ignore.case = TRUE))|
     (grepl("\\btorrefacao\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmoagem\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bcafe\\b", x = Coluna_search , ignore.case = TRUE))|
-    (grepl("\\capacidade\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmoagem\\b", x = Coluna_search , ignore.case = TRUE)))
+    (grepl("\\capacidade\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bmoagem\\b", x = Coluna_search , ignore.case = TRUE))|
+    (grepl("\\bbiofertilizantes\\b", x = Coluna_search , ignore.case = TRUE)))
     return(data_frame_crop)
 }
 ##############################################################################################################################################################################################################################################################
@@ -972,7 +976,8 @@ multisector_search_pattern_NINT <- function(data_frame_NINT,Coluna_search){
         (grepl("\\bSanepar\\b",x =Coluna_search,ignore.case = TRUE))|
         (grepl("\\babastecimento de água e esgotamento sanitário\\b",x =Coluna_search,ignore.case = TRUE))|
         (grepl("\\bCEDAE\\b",x =Coluna_search,ignore.case = TRUE)) |
-        (grepl("\\bmelhorias no sistema de tratamento de água e esgoto\\b",x =Coluna_search,ignore.case = TRUE)) 
+        (grepl("\\bmelhorias no sistema de tratamento de água e esgoto\\b",x =Coluna_search,ignore.case = TRUE)) |
+        (grepl("\\bcentrais geradoras eólicas\\b",x =Coluna_search,ignore.case = TRUE))
         
 
     )
