@@ -8,7 +8,7 @@
 
 ########################### Libraries ######################################
 
-pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr)
+pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, dplyr)
 
 ##### directory #########
 
@@ -21,7 +21,7 @@ dir_bndes_n_aut_clear <- ("A:/finance/bndes_N_aut/CleanData")
 setwd(dir_bndes_n_aut_raw)
 
 
-df_n_aut_clear <- read.csv2("operacoes_financiamento_operacoes_nao_automaticas.csv") %>% 
+df_n_aut_clear <- read.csv2("operacoes-financiamento-operacoes-nao-automaticas_01_2024.csv") %>% 
   janitor::clean_names() %>%  
   mutate_if(is.character, tolower)
 
@@ -33,9 +33,9 @@ df_n_aut_clear <- df_n_aut_clear %>% mutate(ano = as.numeric(format(dmy(df_n_aut
   mutate(descricao_do_projeto = str_trim(descricao_do_projeto))
 
 
-
+df_n_aut_clear$ano%>%unique
 
 
 setwd(dir_bndes_n_aut_clear)
 
-saveRDS(df_n_aut_clear, "operacoes_financiamento_operacoes_nao_automaticas_clear.RDS")
+saveRDS(df_n_aut_clear, "operacoes_financiamento_operacoes_nao_automaticas_clear_03_24.RDS")
