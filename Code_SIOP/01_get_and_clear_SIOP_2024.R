@@ -8,7 +8,7 @@
 library(tidyverse)
 library(stringi)
 library(readxl)
-siop = read_csv2('./SIOP/SIOP_2021_2023.csv')
+siop = read_csv2('A:/finance/siop/rawData/siop_2021-2023_03_24.csv')
 siop <- siop %>% slice(-1)
 siop%>%glimpse
 
@@ -71,8 +71,8 @@ siop_tratado = siop %>%
 
     liquidado = as.numeric(Liquidado)
   )
+siop_tratado%>%view
 
-
-siop_tratado%>%write_rds('./Siop_Tratado_2021_2023.rds')
+siop_tratado%>%write_rds('A:\\finance\\siop\\cleanData\\Siop_Tratado_2021_2023_03_24.rds')
 
 
