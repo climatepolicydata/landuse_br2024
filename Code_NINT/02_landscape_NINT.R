@@ -154,7 +154,6 @@ for (i in 1:length(pdf_urls3)) {
 
 nint_clear$Texto_cbi = pdf_cbi
 
-
 # Iniciando o landscape transform
 nint_clear_landscape <- nint_clear %>% mutate(
     id_original = number,
@@ -171,6 +170,7 @@ nint_clear_landscape <- nint_clear %>% mutate(
 
 
 # Iniciando a classificação setorial
+
 #Para bioenergia
 bioenergia_nint <- bioenergia_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 bioenergia_nint_filter <- bioenergia_NINT_out(data_frame_NINT = bioenergia_nint)
@@ -195,8 +195,7 @@ multisector_nint_filter <- multisector_NINT_out(multisector_nint)
 multisector_nint_filter$Sector_landscape = "MultiSector"
 
 nint_sectorLandscape <- bind_rows(bioenergia_nint_filter,crop_nint_filter,forest_nint_filter,cattle_NINT_filter,multisector_nint_filter)
-#nint_clear_landscape %>% anti_join(nint_sectorLandscape,by = "project_description") %>% select(verificador_externo,verificador_externo2,cbi,uso_de_recursos)%>%view
-
+nint_clear_SemSector <- nint_clear_landscape %>% anti_join(nint_sectorLandscape,by = "project_description") 
 # Dando continuidade ao Landscape transform
 nint_sectorLandscape <- nint_sectorLandscape %>% mutate(
   subsector_original = "-",
@@ -217,12 +216,12 @@ filter(
   (grepl("\\bcultivo de cana-de-açúcar\\b",x = project_description,ignore.case = TRUE))|
   (grepl("\\bexpansão de canavial\\b",x = project_description,ignore.case = TRUE))|
   (grepl("\\bexpansão de canaviais\\b",x = project_description,ignore.case = TRUE)) |
-  (grepl("\\bsugarcane harvesting\\b",x = project_description,ignore.case = TRUE))|
-  (filter(pdf_verificador_externo == "https://nintspo.s3.sa-east-1.amazonaws.com/20220713+Usina+S%C3%A3o+Jos%C3%A9.pdf")))%>%mutate(
+  (grepl("\\bsugarcane harvesting\\b",x = project_description,ignore.case = TRUE)))%>%mutate(
     activity_landscape = "Produção de cana-de-açúcar, inclusive para geração de energia",
     subactivity_landscape = "Expansão e renovação de canaviais, otimização da colheita e ampliação da capacidade de moagem de cana. Inclui aquisição de máquinas, equipamentos e construção de unidades de armazenamento para etanol e açúcar.",
     climate_use = "Mitigação"
   )
+
 #Primeiro Filtro
 
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(nint_Mitigacao_ProducaoCanaAcucar,by = "project_description") 
@@ -242,7 +241,7 @@ Producao_biocomb_biodiesel_etanol <- nint_sectorLandscape %>% filter(
 
 # Segundo filtro
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(Producao_biocomb_biodiesel_etanol,by = "project_description") 
-
+GeracaoEnergiaRenovavelMEdidasEficiencia %>% filter(Sector_landscape== "MultiSector") %>% view
 # Geração de energia renovável e medidas para eficiência energética
 GeracaoEnergiaRenovavelMEdidasEficiencia <- nint_sectorLandscape %>% filter(
   (grepl("\\bsolar\\b",x =project_description , ignore.case = TRUE)) |
@@ -250,9 +249,9 @@ GeracaoEnergiaRenovavelMEdidasEficiencia <- nint_sectorLandscape %>% filter(
   (grepl("\\bbiomassa\\b",x =project_description , ignore.case = TRUE)) |
   (grepl("\\bfoto\\b",x =project_description , ignore.case = TRUE)) |
   (grepl("\\bcogeração\\b",x =project_description , ignore.case = TRUE)) |
-  (grepl("\\bCentral Geradora Hidrelétrica\\b",x =project_description , ignore.case = TRUE))
-) %>% filter((!verificador_externo %in% "https://www.iss-corporate.com/file/documents/spo/spo-20210119-movida.pdf") &
-            (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210517+Taesa.pdf") &
+  (grepl("\\bCentral Geradora Hidrelétrica\\b",x =project_description , ignore.case = TRUE)) |
+  (grepl("\\blinhas de transmissão\\b",x =project_description , ignore.case = TRUE))
+) %>% filter((!verificador_externo %in% "https://www.iss-corporate.com/file/documents/spo/spo-20210119-movida.pdf")  &
             (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210908+Green+Yellow.pdf") &
             (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf") &
             (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210329+Solinftec.pdf") &
@@ -264,7 +263,7 @@ GeracaoEnergiaRenovavelMEdidasEficiencia <- nint_sectorLandscape %>% filter(
               subactivity_landscape = if_else((grepl("\\bsolar\\b",x =project_description , ignore.case = TRUE)),true = "Energia solar para redes centralizadas, incluindo células fotovoltaicas e sistemas de energia solar concentrada, e para redes isoladas e sistemas autônomos, incluindo minirredes e sistemas solares residenciais.",
               false = if_else((grepl("\\bbiogás\\b",x =project_description , ignore.case = TRUE)),true = "Tratamento de água e resíduos para produção de energia a partir do biogás.",
               false = if_else((grepl("\\bcogeração\\b",x =project_description , ignore.case = TRUE)),true = "Produção de vapor e cogeração de energia a partir da cana-de-açúcar.",
-              false = if_else((grepl("\\bCentral Geradora Hidrelétrica",x =project_description , ignore.case = TRUE)),
+              false = if_else((grepl("\\bCentral Geradora Hidrelétrica\\b",x =project_description , ignore.case = TRUE) | (grepl("\\blinhas de transmissão\\b",x =project_description , ignore.case = TRUE))),
               true = "Construção de subestações e linhas de transmissão para conexão à rede elétrica nacional.", false = "Sem Classificacao")))),climate_use = "Mitigação"
             )
 
@@ -301,11 +300,12 @@ InfraTecAgricola <- nint_sectorLandscape %>% filter(
 
 #Quinto Filtro
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(InfraTecAgricola,by = "project_description") 
-nint_sectorLandscape%>% select(verificador_externo,verificador_externo2,cbi) %>% unique %>% view
+
 
 #Para Atividades relacionadas à indústria de florestas plantadas, celulose e papel
 AtividadesIndustriaFlorestasCelulose <- nint_sectorLandscape %>% filter(
-  (grepl("\\bpinus\\b",x =project_description , ignore.case = TRUE))) %>% filter(
+  (grepl("\\bpinus\\b",x =project_description , ignore.case = TRUE)) |
+  (grepl("\\bSuzano\\b",x =project_description , ignore.case = TRUE))) %>% filter(
     (!verificador_externo %in% "https://nintspo.s3.sa-east-1.amazonaws.com/20210602+Integral+Group+BREI+-+Noah.pdf")
   )%>%mutate(activity_landscape = "Para Atividades relacionadas à indústria de florestas plantadas, celulose e papel",
 subactivity_landscape = "Investimentos em modernização industrial e manutenção da capacidade produtiva da indústria de celulose e papel alinhados ao meio ambiente.",
@@ -313,14 +313,38 @@ climate_use = "Mitigação e Adaptação")
 
 #Sexto Filtro
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(AtividadesIndustriaFlorestasCelulose,by = "project_description") 
-nint_sectorLandscape%>% select(verificador_externo,verificador_externo2,cbi) %>% unique %>% view
+
+# Nova Classse ainda sem classificacao landscape
+novos_setores <- nint_sectorLandscape %>% filter(
+  (grepl("\\bagricultura de baixo carbono\\b",x = project_description,ignore.case = TRUE) |
+  (grepl("\\blow-carbon agricultural \\b",x = project_description,ignore.case = TRUE)) |
+  (grepl("\\bimplantação\\b",x = project_description,ignore.case = TRUE) & grepl("\\bcomplexo\\b",x = project_description,ignore.case = TRUE) & grepl("\\beólico\\b",x = project_description,ignore.case = TRUE)))
+) %>%mutate(activity_landscape = "Nova Atividade (possivelmente)",
+            subactivity_landscape = if_else((grepl("\\bagricultura de baixo carbono\\b",x = project_description,ignore.case = TRUE) |grepl("\\blow-carbon agricultural \\b",x = project_description,ignore.case = TRUE)),
+            true = "Nova Atividade - Agricultura de Baixo Carbono",
+            false = if_else((grepl("\\bimplantação\\b",x = project_description,ignore.case = TRUE) & grepl("\\bcomplexo\\b",x = project_description,ignore.case = TRUE) & grepl("\\beólico\\b",x = project_description,ignore.case = TRUE)),
+            true = "Nova Atividade - Implantação de Usina Eólica", false = "Sem Classificacao"))
+            )
+
+#Sétimo Filtro
+nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(novos_setores,by = "project_description") 
+novos_setores%>% view
+
+nint_sectorLandscape_resto_pos_UsoTerra <- nint_sectorLandscape
+nint_sectorLandscape_resto_pos_UsoTerra%>% select(verificador_externo,verificador_externo2,cbi) %>%unique%>% view
+nint_clear_SemSector %>% select(verificador_externo,verificador_externo2,cbi) %>% unique %>% view
 
 
 #Agricultura de baixo carbono
-#https://nintspo.s3.sa-east-1.amazonaws.com/20221212+Agrogalaxy.pdf
+
 #https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf
 
 #Compra soja baixo carbono
 #https://nintspo.s3.sa-east-1.amazonaws.com/20231129+Capal.pdf
+
+#Implantacao complexo eólico
+#https://nintspo.s3.sa-east-1.amazonaws.com/20210806++Alian%C3%A7a+Energia.pdf
+#https://nintspo.s3.sa-east-1.amazonaws.com/20211015+Tucano+II.pdf
+
 
 
