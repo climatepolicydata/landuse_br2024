@@ -3,17 +3,19 @@ library(stringi)
 library(readxl)
 library(xlsx)
 source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
-siop_tratado <- read_rds('./brlanduse_landscape2024_dados/SIOP/Siop_Tratado_2021_2023.rds')
+setwd("A:/finance/siop/cleanData/")
+
+siop_tratado <- read_rds('Siop_Tratado_2021_2023_03_24.rds')
 
 #Tabelas relacionais
-source_landscape <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx", sheet="source_landscape")
+source_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="source_landscape")
 source_landscape <- source_landscape%>%rename(source_original =`source_of finance_original` )
 source_landscape <- source_landscape%>%mutate(source_original = str_trim(str_to_lower(stri_trans_general(source_original,"Latin-ASCII"))))
 
-channel_landscapeV2 <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscapeV2") %>% select(channel_original,channel_landscape)%>%unique
+channel_landscapeV2 <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscapeV2") %>% select(channel_original,channel_landscape)%>%unique
 
-instrument_landscape <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx", sheet="instrument_landscape") 
-climate_use <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx", sheet="climate_use") %>%select(plano_orc,acao,sector_original,sector_landscape,subsector_original,activity_landscape,subactivity_landscape,climate_component,rio_marker,beneficiary_landscape)
+instrument_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="instrument_landscape") 
+climate_use <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="climate_use") %>%select(plano_orc,acao,sector_original,sector_landscape,subsector_original,activity_landscape,subactivity_landscape,climate_component,rio_marker,beneficiary_landscape)
 climate_use <- climate_use%>%mutate(
   plano_orc = str_trim(str_remove(str_remove(str_remove(str_remove(str_to_lower(stri_trans_general(plano_orc, "Latin-ASCII")),"^[[:alnum:]]{4}"),"'"),"^[[:alnum:]]{4}"),"-")),
   acao = str_trim(str_remove(str_to_lower(str_remove(stri_trans_general(acao, "Latin-ASCII"),"^[[:alnum:]]{4}")),"-")),
@@ -67,21 +69,24 @@ crop_siop <- crop_search_pattern_SIOP(data_frame_SIOP = siop_landscape,Coluna_se
 crop_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
 crop_siop_filtrado<- crop_out_SIOP(data_frame_SIOP_crop = crop_siop,Coluna_search = Coluna_search)
 crop_siop_filtrado$sector_landscape = "Crop"
+#crop_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
 multisector_siop <- multisector_search_pattern_SIOP(data_frame_SIOP=siop_landscape ,Coluna_search = Coluna_search) 
 multisector_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
 multisector_siop_filtrado <- multisector_out_SIOP (data_frame_SIOP_multisector = multisector_siop,Coluna_search = Coluna_search)
 multisector_siop_filtrado$sector_landscape = "Multisector"
+#multisector_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
 forest_siop <- forest_search_pattern_SIOP(data_frame_SIOP = siop_landscape,Coluna_search =Coluna_search )
 forest_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
 forest_siop_filtrado <- forest_out_SIOP(data_frame_SIOP_forest = forest_siop,Coluna_search = Coluna_search)
 forest_siop_filtrado%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
 forest_siop_filtrado$sector_landscape = "Forest"
+#forest_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
 siop_sectorlandscape <- rbind(bioenergia_siop_filtrado,crop_siop_filtrado,multisector_siop_filtrado,forest_siop_filtrado)
 
-sem_filtro_dicionario <- siop_landscape %>% filter(!Coluna_search %in% siop_sectorlandscape$Coluna_search)
+siop_resto_noSector <- siop_landscape %>% filter(!Coluna_search %in% siop_sectorlandscape$Coluna_search)
 
 # Fazendo a classificacao climática:
 # Vamos começar pelo Forest_siop
@@ -99,10 +104,11 @@ siop_mitigacao_folha_pagamento <- siop_sectorlandscape %>% filter(
           )
   
 siop_mitigacao_folha_pagamento <- siop_mitigacao_folha_pagamento %>% mutate(activity_landscape = "Folha de pagamento com servidores de órgãos governamentais diretamente ligados às atividades que permitirão que o Brasil alcance seus compromissos climáticos de redução de emissões de GEE",
-subactivity_landscape = if_else(grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE), true= "Ibama", false = if_else(grepl("\\bchico\\b", x = Coluna_search , ignore.case = TRUE), true = "ICMBIO",false = if_else(grepl("\\bfunai\\b", x = Coluna_search , ignore.case = TRUE), true= "Funai", false = if_else(grepl("\\bsfb", x = Coluna_search , ignore.case = TRUE),true = "SFB",false="SemClasse")))),
+subactivity_landscape = if_else(grepl("\\bibama\\b", x = Coluna_search , ignore.case = TRUE), true= "Ibama", false = if_else(grepl("\\bchico\\b", x = Coluna_search , ignore.case = TRUE), true = "ICMBIO",false = if_else(grepl("\\bfunai\\b", x = Coluna_search , ignore.case = TRUE), true= "Funai", false = if_else(grepl("\\bsfb", x = Coluna_search , ignore.case = TRUE),true = "SFB",false="SemClassificacao")))),
 climate_component = "Mitigação"
 ) 
-
+siop_mitigacao_folha_pagamento%>%filter(is.na(subactivity_landscape))%>%view
+siop_mitigacao_folha_pagamento %>% select(subactivity_landscape)%>%unique%>%view
 # Gestao e manutenção dos Orgaos do FUNAI, IBAMA,ICMBIO INPA MMA e SFB são uso climatico de mitigacao e adaptacao
 
 siop_mitigacaoAdaptacao_planejamentocapacitacao <- siop_sectorlandscape %>% anti_join(siop_mitigacao_folha_pagamento, by="Coluna_search") %>% filter(
@@ -372,6 +378,8 @@ siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_11 , by="Colun
 
 # Dando bind nas linhas que tiveram info de sector e climate use
 siop_landscape_climate_use_bind <- bind_rows(filtro_11,siop_landscape_climate_use)
+siop_landscape_climate_use_bind %>% filter(subactivity_landscape == "NA")%>%unique%>%view
+siop_landscape_climate_use_bind %>% filter(subactivity_landscape == "NA")%>%select(activity_landscape)%>%unique%>%view
 # Dando continuidade ao landscape
 siop_landscape_climate_use_bind <- siop_landscape_climate_use_bind %>% mutate(localization_original = localizador,region = regiao,uf = uf,municipality = municipio)
 siop_landscape_climate_use_bind %>% select(
@@ -379,16 +387,25 @@ siop_landscape_climate_use_bind %>% select(
   "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
   "instrument_landscape","sector_original","sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_component","localization_original","region",
   "uf","municipality", "Coluna_search","Pago")) 
-)  %>% write.xlsx("Siop_Landscape_ClimateUse.xlsx")
+)  %>% write.xlsx("A:/projects/landuse_br2024/SIOP/Siop_Landscape_ClimateUse_18_03_2024.xlsx")
 
 #siop_landscape_climate_use_bind %>% select(beneficiary_original,beneficiary_landscape) %>% unique %>% write.xlsx("Beneficiario.xlsx")
 
 # Unindo os que nao tiveram
-siop_rest <- bind_rows(sem_filtro_dicionario %>% mutate(sector_landscape = "Sem Classificacao de Setor"),siop_sectorlandscape)
+siop_rest <- bind_rows(siop_resto_noSector %>% mutate(sector_landscape = "Sem Classificacao de Setor"),siop_sectorlandscape)
 siop_rest %>% select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,sector_landscape,Coluna_search) %>% unique  %>% write.xlsx("Siop_Resto.xlsx")
 siop_rest %>% group_by(sector_landscape) %>% count()
 
-
+siop_rest%>% select(
+  all_of(c("id_original","data_source","year","project_name","project_description","source_original","source_of_finance_landscape",
+  "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
+  "instrument_landscape","sector_original","sector_landscape","subsector_original",
+   "Coluna_search","Pago")) 
+)%>% write.xlsx("A:/projects/landuse_br2024/SIOP/Siop_Resto_18_03_2024.xlsx")
+#Criando o resumo de dados para o SIOP
+create_dict(siop_tratado, write_excel = TRUE, file_name = "Descricao_Dados_SIOP_18_03_24_v2")
+yaImpute
+siop_tratado%>%names
 
 
 
