@@ -82,7 +82,7 @@ forest_siop%>%select(project_name,project_description,sector_original,subsector_
 forest_siop_filtrado <- forest_out_SIOP(data_frame_SIOP_forest = forest_siop,Coluna_search = Coluna_search)
 forest_siop_filtrado%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
 forest_siop_filtrado$sector_landscape = "Forest"
-#forest_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
+forest_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
 siop_sectorlandscape <- rbind(bioenergia_siop_filtrado,crop_siop_filtrado,multisector_siop_filtrado,forest_siop_filtrado)
 
@@ -388,6 +388,15 @@ siop_landscape_climate_use_bind %>% select(
   "instrument_landscape","sector_original","sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_component","localization_original","region",
   "uf","municipality", "Coluna_search","Pago")) 
 )  %>% write.xlsx("A:/projects/landuse_br2024/SIOP/Siop_Landscape_ClimateUse_18_03_2024.xlsx")
+
+siop_landscape_climate_use_bind %>% select(
+  all_of(c("id_original","data_source","year","project_name","project_description","source_original","source_of_finance_landscape",
+  "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
+  "instrument_landscape","sector_original","sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_component","localization_original","region",
+  "uf","municipality", "Coluna_search","Pago")) )%>% select(project_name ,project_description,channel_original,activity_landscape,subactivity_landscape) %>% unique %>% view
+  
+%>% write.xlsx("PesquisaDesenvolvimentoDifusaoConhecimentoMCTI.xlsx")
+
 
 #siop_landscape_climate_use_bind %>% select(beneficiary_original,beneficiary_landscape) %>% unique %>% write.xlsx("Beneficiario.xlsx")
 
