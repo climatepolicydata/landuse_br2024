@@ -3,21 +3,22 @@ library(stringi)
 library(readxl)
 library(xlsx)
 library(pdftools)
-source("C:/Users/eduar/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
+source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
 #Importando tabela relacional
-source_finance_landscape <- read_excel("./brlanduse_landscape2024_dados/NINT/11_nint_relational_tables.xlsx",sheet = "source_finance_landscape") %>% select(-emissor_trade_name)
+source_finance_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "source_finance_landscape") %>% select(-emissor_trade_name)
 source_finance_landscape <- source_finance_landscape %>% mutate(source_original = str_to_lower(stri_trans_general(source_original,"Latin-ASCII")))
 
-channel_landscape <- read_excel("./brlanduse_landscape2024_dados/NINT/11_nint_relational_tables.xlsx",sheet = "channel_landscape") %>% select(-tipo_de_emissor)
+channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "channel_landscape") %>% select(-tipo_de_emissor)
 channel_landscape <- channel_landscape %>% mutate(source_original = str_to_lower(stri_trans_general(source_original,"Latin-ASCII")),
                                 channel_original = str_to_lower(stri_trans_general(channel_original,"Latin-ASCII")))
 channel_landscape <- channel_landscape %>% mutate(left_link = str_c(source_original,channel_original,sep = ";")) %>% select(left_link,channel_landscape)
 
-instrument_landscape <- read_excel("./brlanduse_landscape2024_dados/NINT/11_nint_relational_tables.xlsx",sheet = "instrument_landscape") %>% select(-tipo,-categoria,-instrumento_financeiro)
+instrument_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "instrument_landscape") %>% select(-tipo,-categoria,-instrumento_financeiro)
 instrument_landscape <- instrument_landscape %>% mutate(instrument_original = str_to_lower(stri_trans_general(instrument_original,"Latin-ASCII")))
 #####################################################################################################################
-nint_clear <- read_csv2("./brlanduse_landscape2024_dados/NINT/nint_clear.csv") %>% filter((data >=2021) & (data<= 2023))
+nint_clear <- read_csv2("A:\\finance\\nint\\cleanData\\nint_clear_19_03_2024.csv") %>% filter((data >=2021) & (data<= 2023))
 nint_clear[nint_clear == "N/D"] <- NA
+nint_clear%>%view
 #####################################################################################################################
 # Criando flag de observações que não possuem nenhum hiperlink para os pareceres
 sem_info_nint <-NULL
@@ -61,7 +62,7 @@ for (i in 1:length(pdf_urls)) {
   })  
 }
 nint_clear$Titulo_Verificador_Externo = pdf_titulo_verificador_externo
-
+nint_clear%>%view
 
 #Para Verificador Externo2
 pdf_titulo_verificador_externo2 <- NULL
@@ -221,7 +222,7 @@ filter(
     subactivity_landscape = "Expansão e renovação de canaviais, otimização da colheita e ampliação da capacidade de moagem de cana. Inclui aquisição de máquinas, equipamentos e construção de unidades de armazenamento para etanol e açúcar.",
     climate_use = "Mitigação"
   )
-
+nint_Mitigacao_ProducaoCanaAcucar %>% inner_join(GeracaoEnergiaRenovavelMEdidasEficiencia,by = "project_description")
 #Primeiro Filtro
 
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(nint_Mitigacao_ProducaoCanaAcucar,by = "project_description") 
@@ -241,7 +242,7 @@ Producao_biocomb_biodiesel_etanol <- nint_sectorLandscape %>% filter(
 
 # Segundo filtro
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(Producao_biocomb_biodiesel_etanol,by = "project_description") 
-GeracaoEnergiaRenovavelMEdidasEficiencia %>% filter(Sector_landscape== "MultiSector") %>% view
+
 # Geração de energia renovável e medidas para eficiência energética
 GeracaoEnergiaRenovavelMEdidasEficiencia <- nint_sectorLandscape %>% filter(
   (grepl("\\bsolar\\b",x =project_description , ignore.case = TRUE)) |
@@ -296,7 +297,7 @@ InfraTecAgricola <- nint_sectorLandscape %>% filter(
   (grepl("\\bagricultura de precisão\\b",x =project_description , ignore.case = TRUE))
 ) %>% mutate(activity_landscape = "Infraestrutura e tecnologias agrícolas",
             subactivity_landscape = if_else((grepl("\\bagricultura de precisão\\b",x =project_description , ignore.case = TRUE)),true = "Equipamentos e utensílios para agricultura de precisão",
-            false = "Sem Classificacao"))
+            false = "Sem Classificacao"))%>%mutate(climate_use = "Mitigação e Adaptação")
 
 #Quinto Filtro
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(InfraTecAgricola,by = "project_description") 
@@ -324,15 +325,21 @@ novos_setores <- nint_sectorLandscape %>% filter(
             true = "Nova Atividade - Agricultura de Baixo Carbono",
             false = if_else((grepl("\\bimplantação\\b",x = project_description,ignore.case = TRUE) & grepl("\\bcomplexo\\b",x = project_description,ignore.case = TRUE) & grepl("\\beólico\\b",x = project_description,ignore.case = TRUE)),
             true = "Nova Atividade - Implantação de Usina Eólica", false = "Sem Classificacao"))
-            )
+            )%>%mutate(climate_use = "Novas Atividades")
 
 #Sétimo Filtro
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(novos_setores,by = "project_description") 
-novos_setores%>% view
+length(InfraTecAgricola%>%names)
+# Unindo
+nint_sectorlandscape_climateUse <- rbind(nint_Mitigacao_ProducaoCanaAcucar,Producao_biocomb_biodiesel_etanol,GeracaoEnergiaRenovavelMEdidasEficiencia,
+Gerenciamento_Monitoramento_AguaSaneamento,InfraTecAgricola,AtividadesIndustriaFlorestasCelulose,novos_setores)
+nint_sectorlandscape_climateUse%>%view
+# Sem filtro de clima OU setor
+nint_sectorLandscape_NoClimate <- nint_sectorLandscape
+nint_sectorLandscape_NoClimate %>%unique%>% view
+nint_clear_SemSector %>% unique %>% view
 
-nint_sectorLandscape_resto_pos_UsoTerra <- nint_sectorLandscape
-nint_sectorLandscape_resto_pos_UsoTerra%>% select(verificador_externo,verificador_externo2,cbi) %>%unique%>% view
-nint_clear_SemSector %>% select(verificador_externo,verificador_externo2,cbi) %>% unique %>% view
+
 
 
 #Agricultura de baixo carbono
