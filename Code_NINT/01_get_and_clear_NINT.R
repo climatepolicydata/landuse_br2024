@@ -2,7 +2,7 @@ library(tidyverse)
 library(stringi)
 library(readxl)
 library(xlsx)
-nint <- read_excel("./brlanduse_landscape2024_dados/NINT/NINT_2015_2024.xlsx")
+nint <- read_excel("A:\\finance\\nint\\rawData\\NINT_2015_2024_29_02_2024.xlsx")
 # Limpando colunas
 nint <- nint %>% mutate(
     number = `#` ,
@@ -23,4 +23,4 @@ nint <- nint %>% mutate(
 ) %>% select(number,emissor_trade_name,mercado,instrumento_financeiro,tipo,categoria,tipo_de_emissor,uso_de_recursos,data,moeda,valor,prazo_anos,verificador_externo,verificador_externo2,cbi,verificador_cbi)
 
 
-nint %>% write_csv2("nint_clear.csv")
+nint %>% write_csv2("A:\\finance\\nint\\cleanData\\nint_clear_19_03_2024.csv")
