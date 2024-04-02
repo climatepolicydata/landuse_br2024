@@ -1,11 +1,5 @@
 ##################
 
-# Author : Renan Morais
-# Date: 18-08-2023
-# Email: renanflorias@hotmail.com
-# Goal: clear operações indiretas automaticas BNDES
-# resource:
-
 ########################### Libraries ######################################
 
 
@@ -22,14 +16,22 @@ dir_fnmc_clear <- ("A:/finance/fnmc_Mma/cleanData")
 ##### import datasets #########
 setwd(dir_fnmc_raw)
 
-df_fnmc <- read.csv2("projetos_fnmc___dados_abertos_ago_2022.csv", stringsAsFactors = FALSE) %>% as_tibble
-df_fnmc_clear <- df_fnmc %>% 
-  janitor::clean_names() %>% mutate(nome_do_projeto = str_trim(str_to_lower(stri_trans_general(nome_do_projeto,"Latin-ASCII"))),
-  instituicao_convenente = str_trim(str_to_lower(stri_trans_general(instituicao_convenente,"Latin-ASCII"))),
-  tipo_de_instituicao = str_trim(str_to_lower(stri_trans_general(tipo_de_instituicao,"Latin-ASCII"))),
-  no_convenio_ou_ted = str_trim(no_convenio_ou_ted))
-df_fnmc_clear %>% view
-df_fnmc_clear <- df_fnmc_clear %>% mutate(no_convenio_ou_ted = str_to_lower(stri_trans_general(no_convenio_ou_ted,"Latin-ASCII")))
-setwd(dir_fnmc_clear)
+df_fnmc <- read_csv2("projetos-fnmc-2011-a-2023-dados-abertos_02_04_2024.csv",locale=locale(encoding="latin1")) %>% as_tibble
 
-write.csv2(df_fnmc_clear, "fnmc_dados_abertos_Abril_2024_clear.csv")
+
+df_fnmc_clear <- df_fnmc %>% 
+  janitor::clean_names() %>% mutate(no_do_instrumento_de_repasse =str_trim(str_to_lower(stri_trans_general(no_do_instrumento_de_repasse,"Latin-ASCII"))),
+    no_processo = str_trim(no_processo),
+    nome_do_projeto =str_trim(str_to_lower(stri_trans_general(nome_do_projeto,"Latin-ASCII"))),
+    instituicao_executora = str_trim(str_to_lower(stri_trans_general(instituicao_executora,"Latin-ASCII"))),
+    uf = str_trim(str_to_lower(uf)),
+    tipo_de_instituicao  = str_trim(str_to_lower(stri_trans_general(tipo_de_instituicao,"Latin-ASCII"))))
+df_fnmc_clear <- df_fnmc_clear %>% mutate(valor_fnmc = str_remove_all(valor_fnmc, "\\D") %>% as.numeric()/100,
+                          valor_contrapartida = str_remove_all(valor_contrapartida, "\\D") %>% as.numeric()/100,
+                          valor_total = str_remove_all(valor_total, "\\D") %>% as.numeric()/100,
+                          valor_repassado = str_remove_all(valor_repassado, "\\D") %>% as.numeric()/100,
+                          valor_nao_repassado = str_remove_all(valor_nao_repassado, "\\D") %>% as.numeric()/100)
+df_fnmc_clear %>% glimpse
+setwd(dir_fnmc_clear)
+df_fnmc_clear%>%view
+write.csv2(df_fnmc_clear, "fnmc_dados_abertos_Abril_02_04_2024_clear.csv")
