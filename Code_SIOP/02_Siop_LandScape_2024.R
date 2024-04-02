@@ -51,6 +51,7 @@ climate_use <- climate_use %>% mutate(left_join_key = str_c(plano_orc,acao,secto
 climate_use <- climate_use%>%distinct(left_join_key,.keep_all = TRUE)
 siop_landscape_climate_use <- siop_landscape %>% inner_join(climate_use %>% select(left_join_key,sector_landscape,activity_landscape,subactivity_landscape,climate_component,rio_marker,beneficiary_landscape),by = "left_join_key") 
 siop_landscape_climate_use %>% view
+
 # Filtrando os investimentos que nao tiveram match
 
 siop_landscape <- siop_landscape %>% anti_join(siop_landscape_climate_use, by = "left_join_key")
