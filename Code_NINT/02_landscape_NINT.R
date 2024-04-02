@@ -3,6 +3,7 @@ library(stringi)
 library(readxl)
 library(xlsx)
 library(pdftools)
+library(lexRankr)
 source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
 #Importando tabela relacional
 source_finance_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "source_finance_landscape") %>% select(-emissor_trade_name)
@@ -198,6 +199,7 @@ multisector_nint_filter$Sector_landscape = "MultiSector"
 nint_sectorLandscape <- bind_rows(bioenergia_nint_filter,crop_nint_filter,forest_nint_filter,cattle_NINT_filter,multisector_nint_filter)
 nint_clear_SemSector <- nint_clear_landscape %>% anti_join(nint_sectorLandscape,by = "project_description") 
 # Dando continuidade ao Landscape transform
+
 nint_sectorLandscape <- nint_sectorLandscape %>% mutate(
   subsector_original = "-",
   rio_marker = '-',
@@ -329,7 +331,7 @@ novos_setores <- nint_sectorLandscape %>% filter(
 
 #Sétimo Filtro
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(novos_setores,by = "project_description") 
-length(InfraTecAgricola%>%names)
+
 # Unindo
 nint_sectorlandscape_climateUse <- rbind(nint_Mitigacao_ProducaoCanaAcucar,Producao_biocomb_biodiesel_etanol,GeracaoEnergiaRenovavelMEdidasEficiencia,
 Gerenciamento_Monitoramento_AguaSaneamento,InfraTecAgricola,AtividadesIndustriaFlorestasCelulose,novos_setores)
@@ -338,10 +340,29 @@ nint_sectorlandscape_climateUse%>%view
 nint_sectorLandscape_NoClimate <- nint_sectorLandscape
 nint_sectorLandscape_NoClimate %>%unique%>% view
 nint_clear_SemSector %>% unique %>% view
+# Criação do resumo da descricao dos projetos
+nint_sectorlandscape_climateUse$VetorProcura <- str_c(nint_sectorlandscape_climateUse$Texto_Verificador_Externo,nint_sectorlandscape_climateUse$Texto_Verificador_Externo2,nint_sectorlandscape_climateUse$Texto_cbi)
+nint_sectorlandscape_climateUse <- nint_sectorlandscape_climateUse %>% mutate(VetorProcura = gsub("\n","",VetorProcura))
 
-
-
-
+top_3_words <- NULL
+for(i in 1:nrow(nint_sectorlandscape_climateUse)){
+  top_3_words[[i]] <- lexRankr::lexRank(nint_sectorlandscape_climateUse$VetorProcura[[i]],
+                                        docId = 1,
+                                        n = 3,
+                                        continuous = TRUE)
+}
+resumo_colapse <- NULL
+for(i in 1:length(top_3_words)){
+  resumo_colapse[[i]] <- paste(top_3_words[[i]][[3]],collapse = "  ||||  ")
+}
+df_unico <- NULL
+for(i in 1:length(resumo_colapse)){
+  df_unico[[i]] <- nint_sectorlandscape_climateUse %>% slice(i) %>% mutate(project_description_3 =resumo_colapse[[i]]) %>% mutate(project_description_3 = str_to_lower(stri_trans_general(project_description_3,"Latin-ASCII")))
+}
+df_unico[[55]] %>% select(project_description_3,sector_original)%>% view
+rbind(df_unico)
+do.call(rbind,df_unico)%>% select(project_description_3,sector_original)%>% write_csv2("asd.csv")
+df_unico[[2]] %>% view
 #Agricultura de baixo carbono
 
 #https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf
