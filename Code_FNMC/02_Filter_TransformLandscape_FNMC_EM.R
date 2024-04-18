@@ -1,18 +1,18 @@
 library(tidyverse)
 library(readxl)
-fnmc <- read.csv2("A:\\finance\\fnmc_mma\\cleanData\\fnmc_dados_abertos_Abril_02_04_2024_clear.csv")
+fnmc <- read.csv2("A:\\projects\\landuse_br2024\\fnmc\\Clean_Data\\fnmc_dados_abertos_Abril_02_04_2024_clear.csv")
 glimpse(fnmc)
 source_landscape_contrapartida <- read_excel("A:\\projects\\landuse_br2024\\fnmc\\09_fnmc_relational_tables.xlsx",sheet = "source_landscape_contrapartida") 
 channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\fnmc\\09_fnmc_relational_tables.xlsx",sheet = "channel_landscape") 
 sector_landscape_climate_use <- read_excel("A:\\projects\\landuse_br2024\\fnmc\\09_fnmc_relational_tables.xlsx",sheet = "sector_landscape_climate_use") 
-
-source_landscape_contrapartida <- source_landscape_contrapartida%>% rename(key_join = source_original,source_finance_landscape = source_landscape) %>% select(-tipo_de_instituicao, -instituicao_convenente)
+source_landscape_contrapartida
+source_landscape_contrapartida <- source_landscape_contrapartida%>% rename(key_join = source_original,source_finance_landscape = source_landscape) %>% select(-tipo_de_instituicao, -instituicao_executora)
 channel_landscape <- channel_landscape %>% select(channel_original,channel_landscape)
 sector_landscape_climate_use <- sector_landscape_climate_use %>% select(-id_pdf_fnmc)
 # Separando em Concedido e contrapartida
 
-fnmc <- fnmc %>% filter((ano >= 2021) & (ano <= 2023)) 
-fnmc %>% view
+fnmc <- fnmc %>% filter((ano >= 2015) & (ano <= 2020)) 
+fnmc %>% names
 fnmc_concedido <- fnmc %>% select(-valor_contrapartida) %>% as_tibble()
 fnmc_contrapartida<- fnmc %>% select(-valor_fnmc) %>% as_tibble()
 
@@ -32,7 +32,7 @@ original_currency = "BRL", channel_original = str_c(tipo_de_instituicao,institui
   ) %>%mutate(rio_marker="-",beneficiary_original = "-",beneficiary_public_private="-",localization_original = uf,region="-",
   uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-X,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-")
 
-
+fnmc_contrapartida_landscape %>% view
 #Realizando landscape para concedido
 fnmc_concedido_landscape <- fnmc_concedido %>% mutate(id_original = no_do_instrumento_de_repasse,
 data_source = "FNMC",
@@ -108,7 +108,7 @@ teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 base_select_deflator <- FNMC_Landscape %>% 
     left_join(teste, by= "year")%>%
     mutate(value_brl_deflated = value_original_currency * deflator)
-base_select_deflator 
+base_select_deflator %>% view
 # Fazendo a dolarizacao
 coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(Sys.time(), "%d/%m/%Y")){
   #Argumentos: vetor de séries, datainicial que pode ser manualmente alterada e datafinal que automaticamente usa a data de hoje
@@ -138,12 +138,33 @@ coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(
 }
 cambio_sgs = coleta_dados_sgs(3694) 
 tabela_cambio <-cambio_sgs %>% 
-  filter(year >= 2015 & year <= 2020)
+  filter(year >= 2021 & year <= 2023)
 
 base_select_deflator = base_select_deflator %>% 
   left_join(tabela_cambio,by='year') %>% 
   mutate(value_usd = value_brl_deflated/cambio)
 FNMC_Landscape_Final <- base_select_deflator %>% select(-deflator,-cambio)
-FNMC_Landscape_Final %>% group_by(year) %>% summarise(Soma = sum(value_original_currency))
-FNMC_Landscape_Final %>% write.csv2("A:\\projects\\brlanduse_landscape102023\\gov_fnmc\\FNMC_Landscape_02_04_2024.csv")
-FNMC_Landscape_Final %>% write_rds("A:\\projects\\brlanduse_landscape102023\\gov_fnmc\\FNMC_Landscape_02_04_2024.rds")
+FNMC_Landscape_Final%>%view
+FNMC_Landscape_Final %>% write.csv2("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.csv")
+FNMC_Landscape_Final %>% write_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds")
+
+# Criando gráficos de evolução
+fnmc_2024 <- read_rds("A:\\projects\\landuse_br2024\\fnmc\\Preview Data\\FNMC_Landscape2024.rds")
+FNMC_Landscape_02_04_2024 %>% view
+FNMC_Landscape_02_04_2024%>% names
+
+ano_ini = 2015
+ano_fim = 2023
+anos = seq(ano_fim,ano_ini, -1)
+teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+base_select_deflator_2024 <- fnmc_2024 %>% select(climate_component,value_original_currency,year) %>% 
+  left_join(teste, by= "year")%>%
+  mutate(value_brl_deflated = value_original_currency * deflator)
+
+base_select_deflator_2023 <- FNMC_Landscape_02_04_2024 %>% select(climate_component,value_original_currency,year) %>% 
+  left_join(teste, by= "year")%>%
+  mutate(value_brl_deflated = value_original_currency * deflator)
+base_select_deflator_2023
+a <- rbind(base_select_deflator_2023,base_select_deflator_2024)
+a%>%view
+a %>% group_by(climate_component,year) %>% summarize(sum(value_brl_deflated) )%>% view
