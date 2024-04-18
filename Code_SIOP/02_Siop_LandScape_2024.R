@@ -33,7 +33,7 @@ grupo_despesa %>% filter(select != 1) %>% select(grupo_despesa) %>% as.vector()
 siop_tratado <- siop_tratado %>% filter(grupo_de_despesa != "juros e encargos da divida" & grupo_de_despesa!= "amortizacao da divida" & grupo_de_despesa != "reserva de contingencia") #141.998 registros
 
 # Filtrando as Unidades Orçamentárias baseado no channel landscape:
-siop_tratado_unidade_orcamentaria <- siop_tratado %>% inner_join(channel_landscape %>% select(und_orc)%>% unique, by= "und_orc") 
+siop_tratado_unidade_orcamentaria <- siop_tratado %>% inner_join(channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc)%>% unique, by= "und_orc") 
 siop_tratado_unidade_orcamentaria %>% view #21.733 registros
 # Criando o que não entrou de unidade orçamentaria -> df_remainder_SIOP1
 df_remainder_SIOP1 <- siop_tratado %>% anti_join(channel_landscape %>% select(und_orc )%>% unique, by= "und_orc") 
@@ -45,7 +45,7 @@ df_remainder_SIOP1 <- siop_tratado %>% anti_join(channel_landscape %>% select(un
 siop_tratado_unidade_orcamentaria_acao <- siop_tratado_unidade_orcamentaria %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) #10.833 registros
 df_remainder_siop2 <- siop_tratado_unidade_orcamentaria %>% anti_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa"))
 df_remainder_siop2 %>% select(programa,acao,plano_orc)%>% view
-siop_tratado_unidade_orcamentaria_acao %>% view
+
 
 ###################################### RODAR APENAS UMA VEZ ESSA PARTE############################################
 acao_plan_orc_count <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_acao_plano_orc_replication_tables.xlsx",sheet = "acao_plan_orc_count")
@@ -53,7 +53,9 @@ acao_plan_orc_count_unique <- acao_plan_orc_count %>% mutate(plano_orc_clean = s
 und_orc_admn_und_folha_pagament <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_acao_plano_orc_replication_tables.xlsx",sheet = "und_orc_admn_und_folha_pagament")
 
 siop_tratado_unidade_orcamentaria_acao_plano_orc <- siop_tratado_unidade_orcamentaria_acao %>% filter(Ano >= 2015 & Ano <= 2020) %>% filter(plano_orc %in% as.vector(acao_plan_orc_count_unique$plano_orc_clean))
-adm_unidades <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao != "administracao da unidade")
+
+
+adm_unidades <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao == "administracao da unidade")
 resto <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao != "administracao da unidade")
 adm_unidades_target <- adm_unidades %>% filter(und_orc == "ministerio da ciencia, tecnologia e inovacao - administracao direta" | und_orc == "ministerio do meio ambiente e mudanca do clima - administracao direta"|
                           und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
@@ -61,10 +63,28 @@ adm_unidades_target <- adm_unidades %>% filter(und_orc == "ministerio da ciencia
                           und_orc == "servico florestal brasileiro - sfb" |
                           und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") 
 
+folha_pagamento <- resto %>% filter((acao == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
+                   acao == "assistencia pre-escolar aos dependentes dos servidores civis, empregados e militares"|
+                   acao == "auxilio-transporte aos servidores civis, empregados e militares"|
+                   acao == "auxilio-alimentacao aos servidores civis, empregados e militares"|
+                   acao == "beneficios assistenciais decorrentes do auxilio-funeral e natalidade"|
+                   acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|
+                   acao=="ativos civis da uniao"| acao == "pagamento de pessoal ativo da uniao"|
+                   acao == "pessoal ativo da uniao"| acao == "beneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes"|
+                   acao == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"))
+
+folha_pagamento_certo <- folha_pagamento %>% filter( und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
+                             und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
+                             und_orc == "servico florestal brasileiro - sfb" ) 
+resto2 <- resto %>% anti_join(folha_pagamento)
+
+data_siop_final <- bind_rows(adm_unidades_target,resto2,folha_pagamento_certo)
 
 
-data_siop_final <- bind_rows(adm_unidades_target,resto)
-data_siop_final %>% group_by(acao,plano_orc) %>% summarize(SomaNominal = sum(Pago)) %>% write.csv2("Agrupamento_Acao_PlanoOrc_Sum.csv")
+
+data_siop_final %>% group_by(acao,plano_orc,und_orc) %>% summarize(SomaNominal = sum(Pago)) %>% write.csv2("Agrupamento_Acao_PlanoOrc_Sum.csv")
+
+data_siop_final$Pago %>% sum
 
 ###################################################################################################################################
 # Inicio da Transformacao para o landscape
@@ -580,10 +600,10 @@ siop_antigo_climate <- siop_antigo_climate %>% mutate(origin_domestic_internatio
 siop_antigo_climate %>% write_rds("Siop_Revisado_LandScape_15_20.rds")
 siop_antigo_climate%>% view
 
-FNMC_Landscape2024 %>% filter(value_original_currency == 0) %>% view
-library(tidyverse)
-library(terra)
-library(sf)
-asd <- MunRasterInteraction %>% st_as_sf(coords = c("x","y" )) 
-asd %>% st_write("21321321321.shp")
-asd%>%st_geometry%>% st_write("asdasdsad.shp")
+
+
+
+
+channel_landscape %>% filter(is.na(und_orc))
+
+
