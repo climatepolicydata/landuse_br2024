@@ -3,54 +3,100 @@ library(stringi)
 library(readxl)
 library(xlsx)
 source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
-setwd("A:/finance/siop/cleanData/")
+setwd("A:\\projects\\landuse_br2024\\SIOP\\Clean_Data")
 
-siop_tratado <- read_rds('Siop_Tratado_2021_2023_03_24.rds')
+siop_tratado <- read_rds('Siop_Tratado_2015_2023_05_24.rds') #258.437 registros
 
 #Tabelas relacionais
+grupo_despesa <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="grupo_despesa")
+channel_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscape")
+sector_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="sector_landscape")
+sector_landscape <- sector_landscape %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
+sector_landscape <- sector_landscape %>%select(acao_des_limpa,sector_landscape)%>% distinct(acao_des_limpa,.keep_all=TRUE) 
+
+####################################################
 source_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="source_landscape")
-source_landscape <- source_landscape%>%rename(source_original =`source_of finance_original` )
+
 source_landscape <- source_landscape%>%mutate(source_original = str_trim(str_to_lower(stri_trans_general(source_original,"Latin-ASCII"))))
 
-channel_landscapeV2 <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscapeV2") %>% select(channel_original,channel_landscape)%>%unique
+instrument_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="instrument_landscape")
 
-instrument_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="instrument_landscape") 
-climate_use <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="climate_use") %>%select(plano_orc,acao,sector_original,sector_landscape,subsector_original,activity_landscape,subactivity_landscape,climate_component,rio_marker,beneficiary_landscape)
-climate_use <- climate_use%>%mutate(
-  plano_orc = str_trim(str_remove(str_remove(str_remove(str_remove(str_to_lower(stri_trans_general(plano_orc, "Latin-ASCII")),"^[[:alnum:]]{4}"),"'"),"^[[:alnum:]]{4}"),"-")),
-  acao = str_trim(str_remove(str_to_lower(str_remove(stri_trans_general(acao, "Latin-ASCII"),"^[[:alnum:]]{4}")),"-")),
-  sector_original = str_trim(str_to_lower(str_remove(str_remove(str_remove(stri_trans_general(sector_original,"Latin-ASCII"),"21"),"28"),"-"))),
-  subsector_original = str_trim(str_remove(str_remove(str_remove(str_to_lower(stri_trans_general(subsector_original, "Latin-ASCII")),"244"),"846"),"-"))
-
-  )
-
+climate_use <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="climate_use")
+climate_use <- climate_use %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
 
 ######################################################################
-siop_landscape <- siop_tratado %>% mutate(
-    id_original = "-",
-    data_source = 'siop_painel',
-    year = Ano,
-    project_name = acao,
-    project_description = plano_orc,
-    source_original = fonte_recursos)%>%
-    left_join(source_landscape%>%select(c(source_original,source_of_finance_landscape,domestic_internacional,source_private_public)), by ="source_original") %>% #Fazendo o join para selecionar as fontes landscape 
-     filter((!is.na(source_of_finance_landscape)) | (!is.na(domestic_internacional)) | (!is.na(source_private_public))) %>% #Filtrando para reter registros que não estao presentes no source origina da tabela relacional
-        mutate(original_currency = "BRL",
-           channel_original = str_c(modalidade,und_orc,sep=";")
-           ) %>% left_join(channel_landscapeV2, by = "channel_original")%>% #Fazendo o join para selecionar os canais landscape
-            filter(!is.na(channel_landscape))%>%#Filtrando apenas os canais landscape que aparecem
-            mutate(sector_original = str_c(modalidade,und_orc,sep = ";"), subsector_original = programa,) %>% 
-            filter(Pago != 0) %>%  # Filtrando apenas contratos que pagaram algum valor
-             mutate(beneficiary_original = str_c(project_name,project_description,sep = ";")) %>% mutate(instrument_original = grupo_de_despesa) %>%
-             left_join(instrument_landscape , by = "instrument_original") 
+# Filtrando as observações que nao pagaram nada
+siop_tratado <- siop_tratado %>% filter(Pago != 0)
+# Eliminando grupo de despesas que nao queremos
+grupo_despesa %>% filter(select != 1) %>% select(grupo_despesa) %>% as.vector()
 
-# Aplicando o left join para filtro climatico que existe no excel do relational base
-# Criando as colunas para esse join
-siop_landscape <- siop_landscape %>% mutate(left_join_key = str_c(project_description,project_name,funcao,subfuncao,sep = ";"))
-climate_use <- climate_use %>% mutate(left_join_key = str_c(plano_orc,acao,sector_original,subsector_original,sep = ";"))
-climate_use <- climate_use%>%distinct(left_join_key,.keep_all = TRUE)
-siop_landscape_climate_use <- siop_landscape %>% inner_join(climate_use %>% select(left_join_key,sector_landscape,activity_landscape,subactivity_landscape,climate_component,rio_marker,beneficiary_landscape),by = "left_join_key") 
-siop_landscape_climate_use %>% view
+siop_tratado <- siop_tratado %>% filter(grupo_de_despesa != "juros e encargos da divida" & grupo_de_despesa!= "amortizacao da divida" & grupo_de_despesa != "reserva de contingencia") #141.998 registros
+
+# Filtrando as Unidades Orçamentárias baseado no channel landscape:
+siop_tratado_unidade_orcamentaria <- siop_tratado %>% inner_join(channel_landscape %>% select(und_orc)%>% unique, by= "und_orc") 
+siop_tratado_unidade_orcamentaria %>% view #21.733 registros
+# Criando o que não entrou de unidade orçamentaria -> df_remainder_SIOP1
+df_remainder_SIOP1 <- siop_tratado %>% anti_join(channel_landscape %>% select(und_orc )%>% unique, by= "und_orc") 
+
+################################################################## RODAR APENAS UMA VEZ ESTAS LINHAS ################################################################################################
+#siop_tratado_unidade_orcamentaria %>% group_by(modalidade,und_orc)%>% unique%>% count()%>% write_csv2("Modalidade_UnidadeOrcamentaria_SIOP_2015_2023_CriadoEm05_04_2023.csv")
+######################################################################################################################################################################################################
+#Filtrar as ações que compoem o sector landscape
+siop_tratado_unidade_orcamentaria_acao <- siop_tratado_unidade_orcamentaria %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) #10.833 registros
+df_remainder_siop2 <- siop_tratado_unidade_orcamentaria %>% anti_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa"))
+df_remainder_siop2 %>% select(programa,acao,plano_orc)%>% view
+siop_tratado_unidade_orcamentaria_acao %>% view
+
+###################################### RODAR APENAS UMA VEZ ESSA PARTE############################################
+acao_plan_orc_count <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_acao_plano_orc_replication_tables.xlsx",sheet = "acao_plan_orc_count")
+acao_plan_orc_count_unique <- acao_plan_orc_count %>% mutate(plano_orc_clean = str_trim(str_to_lower(stri_trans_general(plano_orc_clean,"Latin-ASCII")),side="both")) %>% select(plano_orc_clean)%>%unique
+und_orc_admn_und_folha_pagament <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_acao_plano_orc_replication_tables.xlsx",sheet = "und_orc_admn_und_folha_pagament")
+
+siop_tratado_unidade_orcamentaria_acao_plano_orc <- siop_tratado_unidade_orcamentaria_acao %>% filter(Ano >= 2015 & Ano <= 2020) %>% filter(plano_orc %in% as.vector(acao_plan_orc_count_unique$plano_orc_clean))
+adm_unidades <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao != "administracao da unidade")
+resto <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao != "administracao da unidade")
+adm_unidades_target <- adm_unidades %>% filter(und_orc == "ministerio da ciencia, tecnologia e inovacao - administracao direta" | und_orc == "ministerio do meio ambiente e mudanca do clima - administracao direta"|
+                          und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
+                          und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
+                          und_orc == "servico florestal brasileiro - sfb" |
+                          und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") 
+
+
+
+data_siop_final <- bind_rows(adm_unidades_target,resto)
+data_siop_final %>% group_by(acao,plano_orc) %>% summarize(SomaNominal = sum(Pago)) %>% write.csv2("Agrupamento_Acao_PlanoOrc_Sum.csv")
+
+###################################################################################################################################
+# Inicio da Transformacao para o landscape
+siop_tratado_unidade_orcamentaria_acao%>%
+  mutate(id_original = "-",
+         data_source = "siop_painel",
+         year = Ano,
+         project_name = acao,
+         project_description = plano_orc,
+         source_original = fonte_recursos) %>% left_join(source_landscape%>%select(fonte_recursos, source_finance_landscape, origin_domestic_international,origin_private_public),
+                                                         by = "fonte_recursos") %>% 
+  mutate(value_original_currency = Pago,
+         original_currency = "BRL",
+         channel_original = str_c(modalidade,und_orc,sep=";")) %>% left_join(channel_landscape %>% select(channel_original,channel_landscape),by = "channel_original") %>%
+  mutate(instrument_original = grupo_de_despesa) %>% left_join(instrument_landscape, by ="instrument_original") %>% 
+  mutate(sector_original = str_c(funcao,subfuncao,sep = ";")) %>% left_join(sector_landscape, by = c("acao" = "acao_des_limpa")) %>%
+  mutate(subsector_original = programa)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Filtrando os investimentos que nao tiveram match
 
@@ -533,3 +579,11 @@ siop_antigo_climate <- siop_antigo_climate %>% mutate(origin_domestic_internatio
 
 siop_antigo_climate %>% write_rds("Siop_Revisado_LandScape_15_20.rds")
 siop_antigo_climate%>% view
+
+FNMC_Landscape2024 %>% filter(value_original_currency == 0) %>% view
+library(tidyverse)
+library(terra)
+library(sf)
+asd <- MunRasterInteraction %>% st_as_sf(coords = c("x","y" )) 
+asd %>% st_write("21321321321.shp")
+asd%>%st_geometry%>% st_write("asdasdsad.shp")
