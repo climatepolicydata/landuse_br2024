@@ -8,9 +8,9 @@
 library(tidyverse)
 library(stringi)
 library(readxl)
-siop = read_csv2('A:/finance/siop/rawData/siop_2021-2023_03_24.csv')
+siop = read_csv2('A:/finance/siop/rawData/siop_2012-2022_09jan2024.csv')
 siop <- siop %>% slice(-1)
-siop%>%glimpse
+siop%>%select(`Unidade Orçamentária`) %>% unique %>% view
 
 siop_tratado = siop %>%
   select(-c(`Resultado Primário`, `Projeto de Lei`, `Dotação Inicial`, `Dotação Atual`)) %>%
@@ -71,8 +71,8 @@ siop_tratado = siop %>%
 
     liquidado = as.numeric(Liquidado)
   )
-siop_tratado%>%view
 
-siop_tratado%>%write_rds('A:\\finance\\siop\\cleanData\\Siop_Tratado_2021_2023_03_24.rds')
+siop_tratado %>% filter(Ano >= 2015 & Ano <=2020)
+siop_tratado %>% filter(Ano >= 2015 & Ano <=2020)%>%write_rds('A:\\finance\\siop\\cleanData\\Siop_Tratado_2015_2020_05_24.rds')
 
-
+print("asd")
