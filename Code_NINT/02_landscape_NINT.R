@@ -17,7 +17,7 @@ channel_landscape <- channel_landscape %>% mutate(left_link = str_c(source_origi
 instrument_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "instrument_landscape") %>% select(-tipo,-categoria,-instrumento_financeiro)
 instrument_landscape <- instrument_landscape %>% mutate(instrument_original = str_to_lower(stri_trans_general(instrument_original,"Latin-ASCII")))
 #####################################################################################################################
-nint_clear <- read_csv2("A:\\finance\\nint\\cleanData\\nint_clear_19_03_2024.csv") %>% filter((data >=2021) & (data<= 2023))
+nint_clear <- read_csv2("A:\\projects\\landuse_br2024\\NINT\\Clean_data\\nint_clear_19_03_2024.csv") %>% filter((data >=2021) & (data<= 2023))
 nint_clear[nint_clear == "N/D"] <- NA
 nint_clear%>%view
 #####################################################################################################################
@@ -170,31 +170,31 @@ nint_clear_landscape <- nint_clear %>% mutate(
                 channel_original =tipo_de_emissor,left_link = str_c(source_original,channel_original,sep = ";")) %>% left_join(channel_landscape,by="left_link") %>% select(-left_link) %>%
                 mutate(instrument_original= str_c(instrumento_financeiro,categoria,sep = "_")) %>% left_join(instrument_landscape,by = "instrument_original") %>% mutate(sector_original = str_c(emissor_trade_name,uso_de_recursos,sep = "_"))
 
-
+nint_clear_landscape %>% view
 # Iniciando a classificação setorial
 
 #Para bioenergia
 bioenergia_nint <- bioenergia_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 bioenergia_nint_filter <- bioenergia_NINT_out(data_frame_NINT = bioenergia_nint)
-bioenergia_nint_filter$Sector_landscape = "Bioenergy and Fuels"
+bioenergia_nint_filter$sector_landscape = "Bioenergy and Fuels"
 # Para Crop
 crop_nint <- crop_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 crop_nint_filter <- crop_NINT_out(data_frame_NINT = crop_nint)
-crop_nint_filter$Sector_landscape = "Crop"
+crop_nint_filter$sector_landscape = "Crop"
 
 # Para Forest
 forest_nint <- forest_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 forest_nint_filter <- forest_NINT_out(data_frame_NINT = forest_nint)
-forest_nint_filter$Sector_landscape = "Forest"
+forest_nint_filter$sector_landscape = "Forest"
 # Para Cattle
 cattle_nint <- cattle_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 cattle_NINT_filter <- cattle_NINT_out(data_frame_NINT = cattle_nint)
-cattle_NINT_filter$Sector_landscape = "Cattle"
+cattle_NINT_filter$sector_landscape = "Cattle"
 
 #Para MultiSector
 multisector_nint <- multisector_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 multisector_nint_filter <- multisector_NINT_out(multisector_nint)
-multisector_nint_filter$Sector_landscape = "MultiSector"
+multisector_nint_filter$sector_landscape = "MultiSector"
 
 nint_sectorLandscape <- bind_rows(bioenergia_nint_filter,crop_nint_filter,forest_nint_filter,cattle_NINT_filter,multisector_nint_filter)
 nint_clear_SemSector <- nint_clear_landscape %>% anti_join(nint_sectorLandscape,by = "project_description") 
@@ -211,7 +211,7 @@ nint_sectorLandscape <- nint_sectorLandscape %>% mutate(
 # Fazendo o filtro de atividade e componente climático
 
 #  Produção de cana-de-açúcar, inclusive para geração de energia
-nint_Mitigacao_ProducaoCanaAcucar <- nint_sectorLandscape%>%filter((Sector_landscape== "Bioenergy and Fuels") | (Sector_landscape== "Crop")) %>% 
+nint_Mitigacao_ProducaoCanaAcucar <- nint_sectorLandscape%>%filter((sector_landscape== "Bioenergy and Fuels") | (sector_landscape== "Crop")) %>% 
 filter(
   (grepl("\\bplantio e trato de canavial\\b",x = project_description,ignore.case = TRUE)) |
   (grepl("\\brenovação de canavial\\b",x = project_description,ignore.case = TRUE)) |
@@ -359,10 +359,140 @@ df_unico <- NULL
 for(i in 1:length(resumo_colapse)){
   df_unico[[i]] <- nint_sectorlandscape_climateUse %>% slice(i) %>% mutate(project_description_3 =resumo_colapse[[i]]) %>% mutate(project_description_3 = str_to_lower(stri_trans_general(project_description_3,"Latin-ASCII")))
 }
-df_unico[[55]] %>% select(project_description_3,sector_original)%>% view
-rbind(df_unico)
-do.call(rbind,df_unico)%>% select(project_description_3,sector_original)%>% write_csv2("asd.csv")
-df_unico[[2]] %>% view
+
+nint_sectorlandscape_climateUse_V2 <- do.call(rbind,df_unico)
+nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% mutate(verificador_externo = if_else(is.na(verificador_externo),"SEM VERIFICADOR",false = verificador_externo),
+verificador_externo2 = if_else(is.na(verificador_externo2),true = "SEM VERIFICADOR",false = verificador_externo2),
+cbi = if_else(is.na(cbi),true = "SEM VERIFICADOR",false = cbi))
+
+nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% mutate(project_name2 = str_c(verificador_externo,verificador_externo2,cbi,sep = " /// "))
+nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% mutate(beneficiary_original = "-",beneficiary_landscape = "-",beneficiary_public_private = "-") %>% select(id_original,data_source,year,project_name2,project_description_3,source_original,source_finance_landscape,origin_domestic_international,
+origin_private_public,value_original_currency,original_currency,channel_original,channel_landscape,instrument_original,instrument_landscape,sector_original,sector_landscape,
+subsector_original,activity_landscape,subactivity_landscape,climate_use,beneficiary_original,beneficiary_landscape,beneficiary_public_private,rio_marker,localization_original,region,uf,municipality)
+nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% rename(project_name = project_name2 , project_description = project_description_3)
+nint_sectorlandscape_climateUse_V2 %>% view
+# Realizando a deflação
+ibge_ipca <- read_excel("A:\\macro\\IPCA\\cleanData\\ipca_ibge_cl.xlsx")
+ibge_ipca <- ibge_ipca %>% 
+  mutate(variacao_doze_meses = suppressWarnings(as.numeric(variacao_doze_meses)))
+
+#criando a funcao
+
+deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
+  
+  # Defina o seu projeto no Google Cloud, é importante criar o projeto e colar o id no "set_billing_id". Fora isso, nao funcionarah
+  # Existe um bug no datalake da Base dos Dados que não permite o download direto.
+  # set_billing_id("scenic-notch-360215")
+  # 
+  # # criacao do data frame direto da base de dados
+  # serie_basedosdados <- basedosdados::bdplyr("br_ibge_ipca.mes_brasil") %>% bd_collect()
+  
+  serie_basedosdados <- base
+  
+  # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
+  serie_filtrada <- serie_basedosdados %>% 
+    select(ano, mes, variacao_doze_meses) %>% 
+    filter(mes == 12,ano >= ano_ini & ano <= ano_fim ) %>% 
+    arrange(desc(ano))
+  
+  indice = 1
+  
+  #criacao do data frame para o deflator
+  for (l in anos) {
+    # chamei novamente a base feita pela funcao do api, pois a base precisa ser percorrida ano a ano e
+    # se nao criarmos essa tabela, a tabela a ser percorrida novamente terá sempre o ano inicial como observacao
+    tabela <- serie_filtrada 
+    
+    tabela <- tabela %>% 
+    filter(ano == l)
+    
+    if (l == ano_fim) {
+      tabela <- tabela %>%  mutate(deflator = indice)
+      tabela_final <- tabela
+      indice_ano_anterior = indice * (1+ (tabela$variacao_doze_meses/100))
+    } else {
+      tabela <- tabela %>% mutate(deflator = indice_ano_anterior)
+      
+      tabela_final <- rbind(tabela_final, tabela)
+      indice_ano_anterior = indice_ano_anterior * (1 + (tabela$variacao_doze_meses/100))
+    }
+  }
+  tabela_final <- tabela_final %>% 
+    select(ano, deflator) %>%
+    dplyr::rename(year = ano) %>% 
+    arrange(year)
+  return(tabela_final)
+}
+
+#aplicando a funcao na base 
+#essa funcao eh arbitraria, devido as diferentes variáveis que queremos multiplicar e diferentes bases
+
+calculo_deflator <- function(tabela_deflator, base_select_deflator) {
+  
+  base_select_deflator <- base_select_deflator %>% 
+    left_join(tabela_deflator, by= "year")%>%
+    mutate(value_brl_deflated = as.numeric(value_original_currency * deflator))
+  
+  
+  return(base_select_deflator)
+  
+}
+# eh necessario a escolha dos anos nos quais quer criar os indices. Assim, a funcao toma como base/indice = 1 o ano final
+
+ano_ini = 2021
+ano_fim = 2023
+
+#a variavel anos completa os anos no intervalo de anos escolhidos acima.
+anos = seq(ano_fim,ano_ini, -1)
+
+teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+nint_sectorlandscape_climateUse_V2_deflated <- calculo_deflator(tabela_deflator = teste, base_select_deflator = nint_sectorlandscape_climateUse_V2)
+# Dolarizando
+
+coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(Sys.time(), "%d/%m/%Y")){
+  #Argumentos: vetor de séries, datainicial que pode ser manualmente alterada e datafinal que automaticamente usa a data de hoje
+  #Cria estrutura de repetição para percorrer vetor com códigos de séries e depois juntar todas em um único dataframe
+  for (i in 1:length(series)){
+    dados = read.csv(url(paste("http://api.bcb.gov.br/dados/serie/bcdata.sgs.",series[i],"/dados?formato=csv&dataInicial=",datainicial,"&dataFinal=",datafinal,sep="")),sep=";")
+    dados[,-1] = as.numeric(gsub(",",".",dados[,-1])) #As colunas do dataframe em objetos numéricos exceto a da data
+    nome_coluna = series[i] #Nomeia cada coluna do dataframe com o código da série
+    colnames(dados) = c('data', nome_coluna)
+    nome_arquivo = paste("dados", i, sep = "") #Nomeia os vários arquivos intermediários que são criados com cada série
+    assign(nome_arquivo, dados)
+    
+    if(i==1)
+      base = dados1 #Primeira repetição cria o dataframe
+    else
+      base = merge(base, dados, by = "data", all = T) #Demais repetições agregam colunas ao dataframe criado
+    print(paste(i, length(series), sep = '/')) #Printa o progresso da repetição
+  }
+  
+  base$data = as.Date(base$data, "%d/%m/%Y")
+  base$ano = as.integer(format(base$data,"%Y"))#Transforma coluna de data no formato de data
+  base = base[order(base$data),] #Ordena o dataframe de acordo com a data
+  
+  base <- base %>% select(ano, `3694`)
+  base <- base %>% dplyr::rename(c(year = ano, cambio = `3694`))
+  return(base)
+}
+cambio_sgs = coleta_dados_sgs(3694) 
+tabela_cambio <-cambio_sgs %>% 
+  filter(year >= 2021 & year <= 2023)
+tabela_cambio
+nint_sectorlandscape_climateUse_V2_deflated_dolar <- nint_sectorlandscape_climateUse_V2_deflated %>% left_join(tabela_cambio,by="year")%>% mutate(value_usd = value_brl_deflated / cambio)
+
+nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>% write_csv2("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.csv")
+
+nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>%select(instrument_original,instrument_landscape)%>% write_csv2("A:\\projects\\landuse_br2024\\NINT\\instrumentos.csv")
+
+
+
+
+
+
+
+
+
 #Agricultura de baixo carbono
 
 #https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf
