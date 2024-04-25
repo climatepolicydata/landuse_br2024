@@ -1,7 +1,8 @@
 library(tidyverse)
 library(readxl)
-fnmc <- read.csv2("A:\\projects\\landuse_br2024\\fnmc\\Clean_Data\\fnmc_dados_abertos_Abril_02_04_2024_clear.csv")
-glimpse(fnmc)
+fnmc <- read_rds("A:\\projects\\landuse_br2024\\fnmc\\Clean_Data\\fnmc_dados_abertos_Abril_02_04_2024_clear.rds")
+
+
 source_landscape_contrapartida <- read_excel("A:\\projects\\landuse_br2024\\fnmc\\09_fnmc_relational_tables.xlsx",sheet = "source_landscape_contrapartida") 
 channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\fnmc\\09_fnmc_relational_tables.xlsx",sheet = "channel_landscape") 
 sector_landscape_climate_use <- read_excel("A:\\projects\\landuse_br2024\\fnmc\\09_fnmc_relational_tables.xlsx",sheet = "sector_landscape_climate_use") 
@@ -30,7 +31,7 @@ original_currency = "BRL", channel_original = str_c(tipo_de_instituicao,institui
   instrument_original = "Contrapartida Fundo Clima não reembolsáveis",instrument_landscape = "Grants")  %>% left_join(
     sector_landscape_climate_use, by = "id_original"
   ) %>%mutate(rio_marker="-",beneficiary_original = "-",beneficiary_public_private="-",localization_original = uf,region="-",
-  uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-X,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-")
+  uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-")
 
 fnmc_contrapartida_landscape %>% view
 #Realizando landscape para concedido
@@ -47,7 +48,7 @@ value_original_currency = valor_fnmc,
 original_currency = "BRL",
 channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% left_join(channel_landscape,by = "channel_original") %>% mutate(instrument_original = "Fundo Clima não reembolsáveis",instrument_landscape = "Grants") %>% left_join(sector_landscape_climate_use,by = "id_original")%>%mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-",
 rio_marker = "-", beneficiary_original="-",beneficiary_public_private = "-",localization_original = uf,region = "-",uf = uf,municipality="-") %>%
-    select(-valor_repassado,-no_processo,-valor_fnmc,-X,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_nao_repassado,-valor_total)
+    select(-valor_repassado,-no_processo,-valor_fnmc,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_nao_repassado,-valor_total)
 # Dando rowbind
 FNMC_Landscape <- rbind(fnmc_concedido_landscape,fnmc_contrapartida_landscape)
 
@@ -101,8 +102,8 @@ deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
   return(tabela_final)
 }
 
-ano_ini = 2021
-ano_fim = 2023
+ano_ini = 2015
+ano_fim = 2020
 anos = seq(ano_fim,ano_ini, -1)
 teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 base_select_deflator <- FNMC_Landscape %>% 
@@ -138,13 +139,15 @@ coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(
 }
 cambio_sgs = coleta_dados_sgs(3694) 
 tabela_cambio <-cambio_sgs %>% 
-  filter(year >= 2021 & year <= 2023)
+  filter(year >= 2015 & year <= 2020)
 
 base_select_deflator = base_select_deflator %>% 
   left_join(tabela_cambio,by='year') %>% 
   mutate(value_usd = value_brl_deflated/cambio)
 FNMC_Landscape_Final <- base_select_deflator %>% select(-deflator,-cambio)
 FNMC_Landscape_Final%>%view
+FNMC_Landscape_Final$value_original_currency %>% sum
+
 FNMC_Landscape_Final %>% write.csv2("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.csv")
 FNMC_Landscape_Final %>% write_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds")
 
