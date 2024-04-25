@@ -11,7 +11,7 @@ siop_tratado <- read_rds('Siop_Tratado_2015_2023_05_24.rds') #258.437 registros
 grupo_despesa <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="grupo_despesa")
 channel_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscape")
 sector_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="sector_landscape")
-sector_landscape <- sector_landscape %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
+sector_landscape <- sector_landscape %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des_orig,"Latin-ASCII"))))
 sector_landscape <- sector_landscape %>%select(acao_des_limpa,sector_landscape)%>% distinct(acao_des_limpa,.keep_all=TRUE) 
 
 ####################################################
@@ -23,7 +23,7 @@ instrument_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_rela
 
 climate_use <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="climate_use")
 climate_use <- climate_use %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
-
+climate_use$acao_des_limpa
 ######################################################################
 # Filtrando as observações que nao pagaram nada
 siop_tratado <- siop_tratado %>% filter(Pago != 0)
@@ -42,11 +42,11 @@ df_remainder_SIOP1 <- siop_tratado %>% anti_join(channel_landscape %>% select(un
 #siop_tratado_unidade_orcamentaria %>% group_by(modalidade,und_orc)%>% unique%>% count()%>% write_csv2("Modalidade_UnidadeOrcamentaria_SIOP_2015_2023_CriadoEm05_04_2023.csv")
 ######################################################################################################################################################################################################
 #Filtrar as ações que compoem o sector landscape
-siop_tratado_unidade_orcamentaria_acao <- siop_tratado_unidade_orcamentaria %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) #10.833 registros
+siop_tratado_unidade_orcamentaria_acao <- siop_tratado_unidade_orcamentaria %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) #10.922 registros
 df_remainder_siop2 <- siop_tratado_unidade_orcamentaria %>% anti_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa"))
 df_remainder_siop2 %>% select(programa,acao,plano_orc)%>% view
 
-
+sector_landscape %>% anti_join(siop_tratado_unidade_orcamentaria,by = c("acao_des_limpa" = "acao")) %>% view
 ###################################### RODAR APENAS UMA VEZ ESSA PARTE############################################
 acao_plan_orc_count <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_acao_plano_orc_replication_tables.xlsx",sheet = "acao_plan_orc_count")
 acao_plan_orc_count_unique <- acao_plan_orc_count %>% mutate(plano_orc_clean = str_trim(str_to_lower(stri_trans_general(plano_orc_clean,"Latin-ASCII")),side="both")) %>% select(plano_orc_clean)%>%unique
@@ -85,6 +85,11 @@ data_siop_final <- bind_rows(adm_unidades_target,resto2,folha_pagamento_certo)
 data_siop_final %>% group_by(acao,plano_orc,und_orc) %>% summarize(SomaNominal = sum(Pago)) %>% write.csv2("Agrupamento_Acao_PlanoOrc_Sum.csv")
 
 data_siop_final$Pago %>% sum
+
+
+data_siop_final %>% group_by(acao,plano_orc,und_orc)  %>% summarise(SomaNominal = sum(Pago),
+                                                                    Contagem_Acao = table(acao)) %>% write.csv2("Agrupamento_Acao_PlanoOrc_UnidadeOrc_25_04_2024.csv")
+
 
 ###################################################################################################################################
 # Inicio da Transformacao para o landscape
