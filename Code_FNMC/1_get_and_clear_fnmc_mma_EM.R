@@ -16,7 +16,7 @@ dir_fnmc_clear <- ("A:/finance/fnmc_Mma/cleanData")
 ##### import datasets #########
 setwd(dir_fnmc_raw)
 
-df_fnmc <- read_csv2("projetos-fnmc-2011-a-2023-dados-abertos_02_04_2024.csv",locale=locale(encoding="latin1")) %>% as_tibble
+df_fnmc <- read_csv2("projetos-fnmc-2011-a-2023-dados-abertos_02_04_2024_UTF8.csv") %>% as_tibble
 
 
 df_fnmc_clear <- df_fnmc %>% 
@@ -34,4 +34,4 @@ df_fnmc_clear <- df_fnmc_clear %>% mutate(valor_fnmc = str_remove_all(valor_fnmc
 df_fnmc_clear %>% glimpse
 setwd(dir_fnmc_clear)
 df_fnmc_clear%>%view
-write.csv2(df_fnmc_clear, "fnmc_dados_abertos_Abril_02_04_2024_clear.csv")
+write_rds(df_fnmc_clear, "fnmc_dados_abertos_Abril_02_04_2024_clear.rds")
