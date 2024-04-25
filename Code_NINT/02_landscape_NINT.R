@@ -169,7 +169,6 @@ nint_clear_landscape <- nint_clear %>% mutate(
                 original_currency = moeda,
                 channel_original =tipo_de_emissor,left_link = str_c(source_original,channel_original,sep = ";")) %>% left_join(channel_landscape,by="left_link") %>% select(-left_link) %>%
                 mutate(instrument_original= str_c(instrumento_financeiro,categoria,sep = "_")) %>% left_join(instrument_landscape,by = "instrument_original") %>% mutate(sector_original = str_c(emissor_trade_name,uso_de_recursos,sep = "_"))
-
 nint_clear_landscape %>% view
 # Iniciando a classificação setorial
 
@@ -224,7 +223,7 @@ filter(
     subactivity_landscape = "Expansão e renovação de canaviais, otimização da colheita e ampliação da capacidade de moagem de cana. Inclui aquisição de máquinas, equipamentos e construção de unidades de armazenamento para etanol e açúcar.",
     climate_use = "Mitigação"
   )
-nint_Mitigacao_ProducaoCanaAcucar %>% inner_join(GeracaoEnergiaRenovavelMEdidasEficiencia,by = "project_description")
+
 #Primeiro Filtro
 
 nint_sectorLandscape <- nint_sectorLandscape %>% anti_join(nint_Mitigacao_ProducaoCanaAcucar,by = "project_description") 
@@ -483,16 +482,21 @@ nint_sectorlandscape_climateUse_V2_deflated_dolar <- nint_sectorlandscape_climat
 
 nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>% write_csv2("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.csv")
 
-nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>%select(instrument_original,instrument_landscape)%>% write_csv2("A:\\projects\\landuse_br2024\\NINT\\instrumentos.csv")
+nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>% write_rds("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.rds")
 
 
 
+passado <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_nint_landscape_final_replication.rds")
+ano_ini = 2015
+ano_fim = 2023
+anos = seq(ano_fim,ano_ini, -1)
+passado <- passado %>% select(-value_brl_deflated)
+teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+passado_deflated <- calculo_deflator(tabela_deflator = teste, base_select_deflator = passado)
+passado_agrupado <- passado_deflated %>% group_by(year) %>% summarise(SomaAno_deflacionado = sum(value_brl_deflated),SomaAno = sum(value_original_currency))
 
-
-
-
-
-
+nint_sectorlandscape_climateUse_V2_deflated_dolar %>% group_by(year) %>% summarise(SomaAno_deflacionado = sum(value_brl_deflated),SomaAno = sum(value_original_currency))
+bind_rows(passado_agrupado,nint_sectorlandscape_climateUse_V2_deflated_dolar %>% group_by(year) %>% summarise(SomaAno_deflacionado = sum(value_brl_deflated),SomaAno = sum(value_original_currency))) %>% write.csv2("asd.csv")
 #Agricultura de baixo carbono
 
 #https://nintspo.s3.sa-east-1.amazonaws.com/20211020+JF+Citrus.pdf
