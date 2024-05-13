@@ -12,7 +12,7 @@ pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, r
 
 ##### directory #########
 
-dir_bndes_n_aut_raw <- ("A:/finance/bndes_N_aut/rawData")
+dir_bndes_n_aut_raw <- ("A:\\finance\\bndes_naut\\rawData\\")
 
 dir_bndes_n_aut_clear <- ("A:/finance/bndes_N_aut/CleanData")
 
