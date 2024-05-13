@@ -33,7 +33,7 @@ dir_oecd_output <- ("A:/projects/landuse_br2024/oecd_cf/output")
 
 setwd(dir_oecd_output)
 
-df_ocde_filter <- readRDS("df_oecd_final_filte.rds")
+df_ocde_filter <- readRDS("df_oecd_final_filter.rds")
 
 # df_ocde_filter <- readRDS("ocde_filter_reviewed.rds")
 
@@ -230,8 +230,14 @@ df_ocde_calculus <- df_ocde_calculus %>%
 
 setwd(dir_oecd_output)
 
+oecd_publicado_deflated_2023 <- readRDS("df_ocde_landscape_final_2020.rds")
+
+df_ocde_calculus_join <- rbind(oecd_publicado_deflated_2023, df_ocde_calculus)
+
 write.xlsx(df_ocde_calculus,"df_ocde_landscape_final_att.xlsx")
 
 saveRDS(df_ocde_calculus,"df_ocde_landscape_final_att.rds")
+
+write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_year.xlsx")
 
 # saveRDS(df_ocde_calculus,"df_ocde_landscape_final_reviewed.rds")
