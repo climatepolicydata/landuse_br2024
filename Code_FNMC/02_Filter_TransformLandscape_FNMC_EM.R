@@ -152,22 +152,23 @@ FNMC_Landscape_Final %>% write.csv2("A:\\projects\\landuse_br2024\\fnmc\\FNMC_La
 FNMC_Landscape_Final %>% write_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds")
 
 # Criando gráficos de evolução
+fnmc_2023 <- read_csv2("A:\\projects\\brlanduse_landscape102023\\gov_fnmc\\FNMC_Landscape_02_04_2024.csv")
 fnmc_2024 <- read_rds("A:\\projects\\landuse_br2024\\fnmc\\Preview Data\\FNMC_Landscape2024.rds")
-FNMC_Landscape_02_04_2024 %>% view
-FNMC_Landscape_02_04_2024%>% names
 
 ano_ini = 2015
 ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
 teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
-base_select_deflator_2024 <- fnmc_2024 %>% select(climate_component,value_original_currency,year) %>% 
+base_select_deflator_2023 <- fnmc_2023 %>% 
   left_join(teste, by= "year")%>%
-  mutate(value_brl_deflated = value_original_currency * deflator)
+  mutate(value_brl_deflated_23 = value_original_currency * deflator)
 
-base_select_deflator_2023 <- FNMC_Landscape_02_04_2024 %>% select(climate_component,value_original_currency,year) %>% 
+base_select_deflator_2024 <- fnmc_2024 %>% 
   left_join(teste, by= "year")%>%
-  mutate(value_brl_deflated = value_original_currency * deflator)
-base_select_deflator_2023
-a <- rbind(base_select_deflator_2023,base_select_deflator_2024)
-a%>%view
-a %>% group_by(climate_component,year) %>% summarize(sum(value_brl_deflated) )%>% view
+  mutate(value_brl_deflated_23 = value_original_currency * deflator)
+
+
+asd <- base_select_deflator_2024 %>% group_by(year) %>% summarize(SomaNominal = sum(value_original_currency),
+                                                           SomaDeflacao = sum(value_brl_deflated_23))
+asd %>% write.xlsx("asd.xlsx")
+getwd()
