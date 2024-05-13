@@ -26,7 +26,7 @@ coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(
     dados = read.csv(url(paste("http://api.bcb.gov.br/dados/serie/bcdata.sgs.",series[i],"/dados?formato=csv&dataInicial=",datainicial,"&dataFinal=",datafinal,sep="")),sep=";")
     dados[,-1] = as.numeric(gsub(",",".",dados[,-1])) #As colunas do dataframe em objetos numéricos exceto a da data
     nome_coluna = series[i] #Nomeia cada coluna do dataframe com o código da série
-    colnames(dados) = c('data', nome_coluna)
+    # colnames(dados) = c('data', nome_coluna)
     nome_arquivo = paste("dados", i, sep = "") #Nomeia os vários arquivos intermediários que são criados com cada série
     assign(nome_arquivo, dados)
     
@@ -42,7 +42,7 @@ coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(
   base = base[order(base$data),] #Ordena o dataframe de acordo com a data
   
   base <- base %>% select(ano, `3694`)
-  base <- base %>% dplyr::rename(c(year = ano, cambio = `3694`))
+  base <- base %>% dplyr::rename(year = ano, cambio = `3694`)
   return(base)
 }
 
