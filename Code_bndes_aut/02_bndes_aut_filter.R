@@ -51,7 +51,7 @@ sector_bndes_n_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "
 ###### filter year #####
 
 df_bndes_aut_filter <- df_bndes_aut %>%
-  filter(ano >= 2015 & ano <= 2020)
+  filter(ano >= 2015 & ano <= 2023)
 
 ##### select variables ########
 remove <- c("valor_desembolsado_reais", "custo_financeiro", "juros", "prazo_carencia_meses",
