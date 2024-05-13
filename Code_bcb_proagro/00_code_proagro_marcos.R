@@ -50,15 +50,15 @@ for (i in anos) {
   # Realize a seleção e a mutação
   df <- df %>%
     select(Programa, Subprograma, Produto, ValorAdiconal) %>%
-    mutate(ano = i) 
+    dplyr::mutate(ano = i) 
   # Adicione o data frame à lista
   lista_de_dataframes[[i - 2014]] <- df
 }
 ## REVISAR ISTO
 
 clean_proagro <- bind_rows(lista_de_dataframes) %>%
-  mutate(ValorAdiconal = gsub("\\.", "", ValorAdiconal)) %>% ## retirando os pontos 
-  mutate(ValorAdiconal = as.numeric(str_replace_all(ValorAdiconal, ",", "."))) ## substituindo as virgulas por pontos 
+  dplyr::mutate(ValorAdiconal = gsub("\\.", "", ValorAdiconal)) %>% ## retirando os pontos 
+  dplyr::mutate(ValorAdiconal = as.numeric(str_replace_all(ValorAdiconal, ",", "."))) ## substituindo as virgulas por pontos 
 colnames(clean_proagro)
 saveRDS(clean_proagro,'A:/projects/landuse_br2024/bcb_proagro/output/01_clean_proagro.rds'
  )
@@ -71,7 +71,7 @@ saveRDS(clean_proagro,'A:/projects/landuse_br2024/bcb_proagro/output/01_clean_pr
 
 relational_proagro <- clean_proagro %>%
   mutate_all(tolower) %>%
-  mutate(Produto = gsub('"', '', Produto),
+  dplyr::mutate(Produto = gsub('"', '', Produto),
          sector_original = case_when(
            Produto %in% c('eucalipto', 'madeira', 'seringueira') ~ 'agrícola',
            Produto %in% c('bovinos') ~ 'pecuária',
@@ -114,7 +114,7 @@ unique(relational_proagro$Programa)
 
 
 output_proagro <- relational_proagro %>%
-  mutate(
+  dplyr::mutate(
          data_sorce = 'bcb_proagro',
          year = ano,
          project_name = paste0('proagro_',Subprograma),
@@ -133,9 +133,9 @@ ipca_year_f <- function(year, base) {
   
   if (year == 2020) {
     base1 <- base %>%
-      mutate(ano = as.double(year)) %>%
+      dplyr::mutate(ano = as.double(year)) %>%
       left_join(ipca, by = c("ano" = "ano")) %>%
-      mutate(
+      dplyr::mutate(
         value_original_currency = as.numeric(value_original_currency),
         ipca_index_2020 = as.numeric(ipca_index_2020),
         value_brl_deflated = round(value_original_currency / ipca_index_2020,2)
@@ -150,19 +150,19 @@ ipca_year_f <- function(year, base) {
 
 output_proagro <- ipca_year_f(2020, output_proagro) %>%
   select(-mês, -ipca_ano, -ipca_index_2021 ,-ipca_index_2022) %>%
-  mutate(instrument_original = paste0('proagro', Subprograma))
+  dplyr::mutate(instrument_original = paste0('proagro', Subprograma))
 
 path_usd <- paste0(root_servidor, 'macro/txcambio_BRL_USD/rawData/')
 usd_exchange <- read.csv(paste0(path_usd,'bcb_sgs_3694_Exchange rate.eng.csv'), sep = ';')
 colnames(usd_exchange) <- c('year','exchange_cmu_usd')
 usd_exchange <-usd_exchange %>%
-  mutate(exchange_cmu_usd = as.numeric(exchange_cmu_usd)) 
+  dplyr::mutate(exchange_cmu_usd = as.numeric(exchange_cmu_usd)) 
 
 output_proagro <- left_join(output_proagro, usd_exchange, by = 'year') %>%
-  mutate(value_usd = value_brl_deflated/exchange_cmu_usd  )
+  dplyr::mutate(value_usd = value_brl_deflated/exchange_cmu_usd  )
 ###
 output_proagro <- output_proagro %>%
-  mutate(
+  dplyr::mutate(
     project_description = 'contribuição dos beneficiários do programa, denominada Adicional do proagro',
     instrument_original = paste0('proagro', Subprograma),
     instrument_landscape = 'Risk Management',
