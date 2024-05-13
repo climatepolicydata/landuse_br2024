@@ -162,7 +162,7 @@ df_sicor <- mutate_all(df_sicor, ~replace_na(.,0))
 
 
 ####AGGREGATE BY ID
-
+set.seed(42)
 df_sicor <- df_sicor %>%
   group_by(ANO, ATIVIDADE,CODIGO_FINALIDADE, CD_PROGRAMA, CD_TIPO_CULTIVO,CODIGO_VARIEDADE,
            CD_SUBPROGRAMA, CD_FONTE_RECURSO, CD_TIPO_INTGR_CONSOR,
