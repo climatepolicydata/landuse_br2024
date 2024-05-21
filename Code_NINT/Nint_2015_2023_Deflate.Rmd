@@ -1,0 +1,102 @@
+```{r}
+library(tidyverse)
+nint_1520 <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_nint_landscape_final_reviewed.rds")
+
+nint_2023 <- read_rds("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.rds")
+setdiff(colnames(nint_1520), colnames(nint_2023))
+nint_all <- rbind(nint_1520,nint_2023 %>% rename(climate_component = climate_use))
+nint_all
+
+ibge_ipca <- read_excel("A:\\macro\\IPCA\\cleanData/ipca_ibge_cl.xlsx")
+ibge_ipca <- ibge_ipca %>% 
+  dplyr::mutate(variacao_doze_meses = suppressWarnings(as.numeric(variacao_doze_meses)))
+deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
+  
+  # Defina o seu projeto no Google Cloud, é importante criar o projeto e colar o id no "set_billing_id". Fora isso, nao funcionarah
+  # Existe um bug no datalake da Base dos Dados que não permite o download direto.
+  # set_billing_id("scenic-notch-360215")
+  # 
+  # # criacao do data frame direto da base de dados
+  # serie_basedosdados <- basedosdados::bdplyr("br_ibge_ipca.mes_brasil") %>% bd_collect()
+  
+  serie_basedosdados <- base
+  
+  # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
+  serie_filtrada <- serie_basedosdados %>% 
+    select(ano, mes, variacao_doze_meses) %>% 
+    dplyr::filter(mes == 12,ano >= ano_ini & ano <= ano_fim ) %>% 
+    dplyr::arrange(desc(ano))
+  
+  indice = 1
+  
+  #criacao do data frame para o deflator
+  for (l in anos) {
+    # chamei novamente a base feita pela funcao do api, pois a base precisa ser percorrida ano a ano e
+    # se nao criarmos essa tabela, a tabela a ser percorrida novamente terá sempre o ano inicial como observacao
+    tabela <- serie_filtrada 
+    
+    tabela <- tabela %>% 
+      dplyr::filter(ano == l)
+    
+    if (l == ano_fim) {
+      tabela <- tabela %>%  dplyr::mutate(deflator = indice)
+      tabela_final <- tabela
+      indice_ano_anterior = indice * (1+ (tabela$variacao_doze_meses/100))
+    } else {
+      tabela <- tabela %>% dplyr::mutate(deflator = indice_ano_anterior)
+      
+      tabela_final <- rbind(tabela_final, tabela)
+      indice_ano_anterior = indice_ano_anterior * (1 + (tabela$variacao_doze_meses/100))
+    }
+  }
+  tabela_final <- tabela_final %>% 
+    select(ano, deflator) %>%
+    dplyr::rename(year = ano) %>% 
+    dplyr::arrange(year)
+  return(tabela_final)
+}
+
+ano_ini = 2015
+ano_fim = 2023
+anos = seq(ano_fim,ano_ini, -1)
+teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+base_select_deflator <- nint_all %>% 
+  left_join(teste, by= "year")%>%
+  dplyr::mutate(value_brl_deflated = value_original_currency * deflator)
+base_select_deflator 
+# Fazendo a dolarizacao
+coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(Sys.time(), "%d/%m/%Y")){
+  #Argumentos: vetor de séries, datainicial que pode ser manualmente alterada e datafinal que automaticamente usa a data de hoje
+  #Cria estrutura de repetição para percorrer vetor com códigos de séries e depois juntar todas em um único dataframe
+  for (i in 1:length(series)){
+    dados = read.csv(url(paste("http://api.bcb.gov.br/dados/serie/bcdata.sgs.",series[i],"/dados?formato=csv&dataInicial=",datainicial,"&dataFinal=",datafinal,sep="")),sep=";")
+    dados[,-1] = as.numeric(gsub(",",".",dados[,-1])) #As colunas do dataframe em objetos numéricos exceto a da data
+    nome_coluna = series[i] #Nomeia cada coluna do dataframe com o código da série
+    colnames(dados) = c('data', nome_coluna)
+    nome_arquivo = paste("dados", i, sep = "") #Nomeia os vários arquivos intermediários que são criados com cada série
+    assign(nome_arquivo, dados)
+    
+    if(i==1)
+      base = dados1 #Primeira repetição cria o dataframe
+    else
+      base = merge(base, dados, by = "data", all = T) #Demais repetições agregam colunas ao dataframe criado
+    print(paste(i, length(series), sep = '/')) #Printa o progresso da repetição
+  }
+  
+  base$data = as.Date(base$data, "%d/%m/%Y")
+  base$ano = as.integer(format(base$data,"%Y"))#Transforma coluna de data no formato de data
+  base = base[order(base$data),] #Ordena o dataframe de acordo com a data
+  
+  base <- base %>% select(ano, `3694`)
+  base <- base %>% dplyr::rename(c(year = ano, cambio = `3694`))
+  return(base)
+}
+cambio_sgs = coleta_dados_sgs(3694) 
+tabela_cambio <-cambio_sgs %>% 
+  dplyr::filter(year >= 2015 & year <= 2023)
+
+base_select_deflator = base_select_deflator %>% 
+  left_join(tabela_cambio,by='year') %>% 
+  dplyr::mutate(value_usd = value_brl_deflated/cambio)
+base_select_deflator %>% write.xlsx("A:\\projects\\landuse_br2024\\NINT\\NIN_Landscape_2015_2023.xlsx")
+```
