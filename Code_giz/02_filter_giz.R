@@ -57,7 +57,7 @@ data_both2 <- giz_clear[data_filter,]
 
 data_anti_join_giz <- anti_join(giz_clear, data_both) %>% 
   dplyr::filter(year > 2022) %>% 
-  dplyr::filter(sector %in% c("agriculture", "fisheries", "environmental protection in general", "state and civil society in general"))
+  dplyr::filter(sector %in% c("agriculture", "fisheries", "environmental protection in general", "state and civil society in general","water and sewage/waste disposal"))
 
 
 

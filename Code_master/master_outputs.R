@@ -110,12 +110,16 @@ data_landscape_final <- data_landscape_final %>%
                 value_usd_mean = value_usd / 9) %>% 
   dplyr::mutate(climate_component = ifelse(climate_component == "Dual", "Mitigation and Adaptation", climate_component)) 
 
+############## AGGREGATION DATA #############
+
+data_aggregated <- aggregate(cbind(value_original_currency, value_brl_deflated, value_usd) ~ data_source + source_finance_landscape + origin_domestic_international
++ origin_private_public + channel_landscape + instrument_landscape + sector_landscape + climate_component + year , data = data_landscape_final, FUN = sum)
 
 
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion_16052024.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_21052023.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion_16052024.csv")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_21052023.csv")

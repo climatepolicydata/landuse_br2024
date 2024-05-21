@@ -218,7 +218,6 @@ df_ocde_calculus <- deflate_and_exchange(tabela_deflator, df_ocde_transform, tab
 
 #### validate data sector
 
-rm(cambio_sgs,df_ocde_transform, ibge_ipca, tabela_cambio, tabela_deflator, teste)
 
 df_ocde_calculus <- df_ocde_calculus %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
@@ -264,7 +263,7 @@ oecd_publicado_deflated_2023 <- oecd_publicado_deflated_2023 %>%
 
 saveRDS(oecd_publicado_deflated_2023,"oecd_15_20_deflated_23.rds")
 
-
+rm(cambio_sgs,df_ocde_transform, ibge_ipca, tabela_cambio, tabela_deflator, teste)
 
 ############## save data########
 setwd(dir_oecd_output)
