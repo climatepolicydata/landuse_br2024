@@ -12,7 +12,7 @@ channel_landscape <- channel_landscape %>% select(channel_original,channel_lands
 sector_landscape_climate_use <- sector_landscape_climate_use %>% select(-id_pdf_fnmc)
 # Separando em Concedido e contrapartida
 
-fnmc <- fnmc %>% dplyr::filter((ano >= 2015) & (ano <= 2020)) 
+fnmc <- fnmc %>% dplyr::filter((ano >= 2021) & (ano <= 2023)) 
 fnmc %>% names
 fnmc_concedido <- fnmc %>% select(-valor_contrapartida) %>% as_tibble()
 fnmc_contrapartida<- fnmc %>% select(-valor_fnmc) %>% as_tibble()
@@ -26,9 +26,9 @@ data_source = "FNMC" ,
 year = ano,
 project_name = nome_do_projeto,
 project_description = "-",
-source_original = "FNMC contrapartida") %>% left_join(source_landscape_contrapartida,by = "key_join") %>% dplyr::mutate(value_original_currency = valor_contrapartida,
-original_currency = "BRL", channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% left_join(channel_landscape, by = "channel_original") %>% dplyr::mutate(
-  instrument_original = "Contrapartida Fundo Clima não reembolsáveis",instrument_landscape = "Grants")  %>% left_join(
+source_original = "FNMC contrapartida") %>% inner_join(source_landscape_contrapartida,by = "key_join") %>% dplyr::mutate(value_original_currency = valor_contrapartida,
+original_currency = "BRL", channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% inner_join(channel_landscape, by = "channel_original") %>% dplyr::mutate(
+  instrument_original = "Contrapartida Fundo Clima não reembolsáveis",instrument_landscape = "Grants")  %>% inner_join(
     sector_landscape_climate_use, by = "id_original"
   ) %>%dplyr::mutate(rio_marker="-",beneficiary_original = "-",beneficiary_public_private="-",localization_original = uf,region="-",
   uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% dplyr::mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-")
@@ -46,7 +46,7 @@ origin_domestic_international = "National",
 origin_private_public = "Public",
 value_original_currency = valor_fnmc,
 original_currency = "BRL",
-channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% left_join(channel_landscape,by = "channel_original") %>% dplyr::mutate(instrument_original = "Fundo Clima não reembolsáveis",instrument_landscape = "Grants") %>% left_join(sector_landscape_climate_use,by = "id_original")%>%dplyr::mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-",
+channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% inner_join(channel_landscape,by = "channel_original") %>% dplyr::mutate(instrument_original = "Fundo Clima não reembolsáveis",instrument_landscape = "Grants") %>% inner_join(sector_landscape_climate_use,by = "id_original")%>%dplyr::mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-",
 rio_marker = "-", beneficiary_original="-",beneficiary_public_private = "-",localization_original = uf,region = "-",uf = uf,municipality="-") %>%
     select(-valor_repassado,-no_processo,-valor_fnmc,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_nao_repassado,-valor_total)
 # Dando rowbind
@@ -102,8 +102,8 @@ deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
   return(tabela_final)
 }
 
-ano_ini = 2015
-ano_fim = 2020
+ano_ini = 2021
+ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
 teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 base_select_deflator <- FNMC_Landscape %>% 
@@ -139,7 +139,7 @@ coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(
 }
 cambio_sgs = coleta_dados_sgs(3694) 
 tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2015 & year <= 2020)
+  dplyr::filter(year >= 2021 & year <= 2023)
 
 base_select_deflator = base_select_deflator %>% 
   left_join(tabela_cambio,by='year') %>% 
