@@ -13,7 +13,9 @@ channel_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relatio
 sector_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="sector_landscape")
 sector_landscape <- sector_landscape %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des_orig,"Latin-ASCII"))))
 sector_landscape <- sector_landscape %>%select(acao_des_limpa,sector_landscape)%>% distinct(acao_des_limpa,.keep_all=TRUE) 
-sector_landscape %>% view
+beneficiary_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="beneficiary_landscape")
+beneficiary_landscape <- beneficiary_landscape%>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
+beneficiary_landscape <- beneficiary_landscape %>% select(acao_des_limpa,beneficiary_landscape)
 ####################################################
 source_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="source_landscape")
 
@@ -23,122 +25,149 @@ instrument_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_rela
 
 climate_use <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="climate_use")
 climate_use <- climate_use %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
-climate_use$acao_des_limpa
-######################################################################
-# Filtrando as observações que nao pagaram nada
-siop_tratado <- siop_tratado %>% filter(Pago != 0)
-# Eliminando grupo de despesas que nao queremos
-grupo_despesa %>% filter(select != 1) %>% select(grupo_despesa) %>% as.vector()
 
-siop_tratado <- siop_tratado %>% filter(grupo_de_despesa != "juros e encargos da divida" & grupo_de_despesa!= "amortizacao da divida" & grupo_de_despesa != "reserva de contingencia") #141.998 registros
-
-# Filtrando as Unidades Orçamentárias baseado no channel landscape:
-siop_tratado_unidade_orcamentaria <- siop_tratado %>% inner_join(channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc)%>% unique, by= "und_orc") 
-
-# Criando o que não entrou de unidade orçamentaria -> df_remainder_SIOP1
-df_remainder_SIOP1 <- siop_tratado %>% anti_join(siop_tratado_unidade_orcamentaria %>% select(und_orc )%>% unique, by= "und_orc") 
-
-################################################################## RODAR APENAS UMA VEZ ESTAS LINHAS ################################################################################################
-#siop_tratado_unidade_orcamentaria %>% group_by(modalidade,und_orc)%>% unique%>% count()%>% write_csv2("Modalidade_UnidadeOrcamentaria_SIOP_2015_2023_CriadoEm05_04_2023.csv")
-######################################################################################################################################################################################################
-#Filtrar as ações que compoem o sector landscape
-siop_tratado_unidade_orcamentaria_acao <- siop_tratado_unidade_orcamentaria %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) #10.922 registros
-df_remainder_siop2 <- siop_tratado_unidade_orcamentaria %>% anti_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa"))
-df_remainder_siop2 %>% select(programa,acao,plano_orc)%>% view
-
-sector_landscape %>% anti_join(siop_tratado_unidade_orcamentaria,by = c("acao_des_limpa" = "acao")) %>% view # Todas as ações foram pegas
-###################################### RODAR APENAS UMA VEZ ESSA PARTE############################################
 acao_plan_orc_count <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx",sheet = "acao_plan_orc_filter")
 acao_plan_orc_count_unique <- acao_plan_orc_count %>% mutate(plano_orc_clean = str_trim(str_to_lower(stri_trans_general(plano_orc_clean,"Latin-ASCII")),side="both")) %>% select(plano_orc_clean)%>%unique
+######################################################################
+# Filtrando as observações que nao pagaram nada e filtro para ano
+siop_tratado_ano <- siop_tratado %>% filter(Pago != 0)
+siop_tratado_ano <- siop_tratado_ano%>%  filter(Ano >= 2021 & Ano <= 2023) 
 
-siop_tratado_unidade_orcamentaria_acao_plano_orc <- siop_tratado_unidade_orcamentaria_acao %>%  filter(Ano >= 2015 & Ano <= 2020) %>% inner_join(acao_plan_orc_count_unique,by = c("plano_orc"="plano_orc_clean")) 
+# 2.1 Filter Grupo Despesa
+grupo_despesa %>% filter(select != 1) %>% select(grupo_despesa) %>% as.vector()
+siop_tratado_ano <- siop_tratado_ano %>% filter(grupo_de_despesa != "juros e encargos da divida" & grupo_de_despesa!= "amortizacao da divida" & grupo_de_despesa != "reserva de contingencia") #141.998 registros
 
-acao_plan_orc_count_unique %>% anti_join(siop_tratado_unidade_orcamentaria_acao_plano_orc,by = c("plano_orc_clean"="plano_orc")) %>% view #Sobrou nada
+# 2.3 Filtro de unidade orçamentária baseado na sheet channel landscape:
+siop_tratado_unidade_orcamentaria <- siop_tratado_ano %>% inner_join(channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc)%>% unique, by= "und_orc") 
+channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc) %>% anti_join(siop_tratado_ano, by= "und_orc") %>% view
 
-# Filtro de Ajuste 1:
+# Pelo anti Join podemos ver que a unidade orçamentaria secretaria especial de agricultura familiar e do desenvolvimento agrario
+# nao existe para os anos de 21 até 2023
 
-# Tirando Ministerio de Ciencia e Tecnologia perdemos a acao Administracao Direta e plano orcamentario Capacitacao de Recursos Humanos no INPE ( essa combinacao tem na publicada)
-adm_unidades_filter <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao == "administracao da unidade")  %>% filter(und_orc == "ministerio do meio ambiente e mudanca do clima - administracao direta"|
-                                                                                                                              und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
-                                                                                                                              und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
-                                                                                                                              und_orc == "servico florestal brasileiro - sfb" |
-                                                                                                                              und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") 
+# 2.3 Criando o primeiro Remainder:
+df_remainder_SIOP1 <- siop_tratado_ano %>% anti_join(siop_tratado_unidade_orcamentaria %>% select(und_orc )%>% unique, by= "und_orc")
+
+#df_remainder_SIOP1 %>% select(und_orc) %>% unique  %>% write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\UnidadesOrcamentarias_2021_2023_Fora.xlsx")
+
+#3.1 Seleção Setorial: É baseado nas ações
+siop_tratado_unidade_orcamentaria_acao <- siop_tratado_unidade_orcamentaria %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) 
+sector_landscape%>% select(acao_des_limpa) %>% anti_join(siop_tratado_unidade_orcamentaria,by =c( "acao_des_limpa" ="acao" ) )
+
+# Tivemos ações da tabela relacional que nao tiveram match pois essas ações para os anos de 21 ate 23 tiveram valor pago de ZERO ou Acoes que nao existem
+# para os anos em questao
+# Esta explicacao encontra-se na pasta ExploracoesDados
+#3.1 Criando o Remainder 2
+df_remainder_siop2 <- siop_tratado_unidade_orcamentaria %>% anti_join(siop_tratado_unidade_orcamentaria_acao %>% select(acao),by = "acao" )
+#df_remainder_siop2 %>% select(acao,plano_orc,und_orc) %>% unique %>%  write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\Acoes_2021_2023_Fora.xlsx")
+
+# 3.2: Fitro de Planos Orcamentários
+siop_tratado_unidade_orcamentaria_acao_plano_orc <- siop_tratado_unidade_orcamentaria_acao  %>% inner_join(acao_plan_orc_count_unique,by = c("plano_orc"="plano_orc_clean")) 
+#acao_plan_orc_count_unique %>% anti_join(siop_tratado_unidade_orcamentaria_acao,by = c("plano_orc_clean" = "plano_orc")) %>% unique %>% write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\Planos_orcDeForaFiltro3.2.xlsx")
+
+# 3.2: Criando o Remainder Tres:
+df_remainder_siop3 <- siop_tratado_unidade_orcamentaria_acao%>% anti_join(siop_tratado_unidade_orcamentaria_acao_plano_orc,by = "plano_orc")
+
+df_remainder_siop3 %>% select(plano_orc,acao,und_orc) %>% unique %>%  write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\Planos_orc_2021_2023_Fora.xlsx")
+
+
+siop_tratado_unidade_orcamentaria_acao_plano_orc$Pago %>% sum
+52.465.588.665
+######################################################################################
+acao_plan_orc_count_unique %>% anti_join(siop_tratado_unidade_orcamentaria_acao_plano_orc,by = c("plano_orc_clean"="plano_orc")) %>% view 
+
+adm_unidades_filter <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao == "administracao da unidade")  %>% filter(und_orc =="ministerio do meio ambiente e mudanca do clima - administracao direta"|und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" | und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |  und_orc == "servico florestal brasileiro - sfb" | und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj")%>%
+  filter(plano_orc == "administracao da sede"| plano_orc == "administracao das unidades regionais"| plano_orc=="administracao das unidades regionais - regra de ouro" |plano_orc=="administracao da unidade" |plano_orc=="administracao da unidade - despesas diversas"|plano_orc=="administracao da unidade - despesas diversas - regra de ouro" | plano_orc == "capacitacao de servidores publicos federais do ibama" | plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao" | plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area fim" |
+           plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area meio" | plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - regra de ouro" | plano_orc == "coronavirus (covid-19)" |
+           plano_orc == "educacao ambiental" |plano_orc == "emenda individual"|
+           plano_orc == "gestao administrativa da politica contra as mudancas do clima e de promocao da qualidade ambiental"|plano_orc == "gestao administrativa da politica da biodiversidade"|
+           plano_orc == "gestao administrativa da politica das mudancas do clima e de florestas"|
+           plano_orc == "gestao administrativa da politica de articulacao e cidadania ambiental"|
+           plano_orc == "gestao administrativa da politica de desenvolvimento rural e extrativismo"|
+           plano_orc == "gestao administrativa da politica de meio ambiente"|
+           plano_orc == "gestao administrativa da politica de recursos hidricos e de qualidade ambiental"|
+           plano_orc == "gestao administrativa da politica de relacoes internacionais"|
+           plano_orc=="gestao administrativa da politica florestal e da biodiversidade"|
+           plano_orc == "gestao administrativa da politica residuos solidos, ambientes urbanos e recursos hidricos"|
+           plano_orc == "gestao de politicas de meio ambiente"|
+           plano_orc == "manutencao e adaptacao de imoveis"|
+           plano_orc == "manutencao e adaptacao de imoveis - regra de ouro"|
+           plano_orc == "manutencao e modernizacao da infraestrutura fisica da sede e das unidades descentralizadas"|
+           plano_orc == "modernizacao da estrutura de informatica do ibama"|
+           plano_orc == "modernizacao da estrutura de informatica do ministerio do meio ambiente"|
+           plano_orc == "modernizacao da estrutura de informatica do ministerio do meio ambiente - regra de ouro"|
+           plano_orc == "outras despesas administrativas"|
+           plano_orc == "outras despesas administrativas - regra de ouro"|
+           plano_orc == "reuniao dos comites regionais"|
+           plano_orc == "tecnologia da informacao"|
+           plano_orc == "tecnologia da informacao - regra de ouro") # Esta de acordo com o Ajuste 1
 
 
 
-#%>%
-#filter(plano_orc=="administracao da unidade" |plano_orc=="administracao da unidade - despesas diversas"|plano_orc=="administracao da unidade - despesas diversas - regra de ouro")
 
 resto <- siop_tratado_unidade_orcamentaria_acao_plano_orc%>% filter(acao != "administracao da unidade")
-resto <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% anti_join(adm_unidades_filter)
 
-# Ajuste Filtro 2 e 3
+# Aplicando Ajuste 2 e 3 ao mesmo tempo
 folha_pagamento <- resto %>% filter(acao == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
-                   acao == "assistencia pre-escolar aos dependentes dos servidores civis, empregados e militares"|
-                   acao == "auxilio-transporte aos servidores civis, empregados e militares"|
-                   acao == "auxilio-alimentacao aos servidores civis, empregados e militares"|
-                   acao == "beneficios assistenciais decorrentes do auxilio-funeral e natalidade"|
-                   acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|
-                   acao=="ativos civis da uniao"| acao == "pagamento de pessoal ativo da uniao"|
-                   acao == "pessoal ativo da uniao"| acao == "beneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes"|
-                   acao == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos")
-
+                                      acao == "assistencia pre-escolar aos dependentes dos servidores civis, empregados e militares"|
+                                      acao == "auxilio-transporte aos servidores civis, empregados e militares"|
+                                      acao == "auxilio-alimentacao aos servidores civis, empregados e militares"|
+                                      acao == "beneficios assistenciais decorrentes do auxilio-funeral e natalidade"|
+                                      acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|
+                                      acao=="ativos civis da uniao"| acao == "pagamento de pessoal ativo da uniao"|
+                                      acao == "pessoal ativo da uniao"| acao == "beneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes"|
+                                      acao == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
+                                      acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais")
+# Aqui entra o Ajuste 2 e 3
 folha_pagamento_certo <- folha_pagamento %>% filter( und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
-                             und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
-                             und_orc == "servico florestal brasileiro - sfb" | und_orc=="ministerio do meio ambiente e mudanca do clima - administracao direta"|
-                               und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") 
+                                                       und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
+                                                       und_orc == "servico florestal brasileiro - sfb" | und_orc=="ministerio do meio ambiente e mudanca do clima - administracao direta"|
+                                                       und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") %>% filter(plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
+                                                                                                                                                  plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos - despesas diversas"|
+                                                                                                                                                  plano_orc == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
+                                                                                                                                                  plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                  plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                  plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
+                                                                                                                                                  plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
+                                                                                                                                                  plano_orc == "auxilio-alimentacao aos servidores civis, empregados e militares"|
+                                                                                                                                                  plano_orc == "auxilio-transporte aos servidores civis, empregados e militares"|
+                                                                                                                                                  plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                  plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                  plano_orc == "auxilio-alimentacao de civis"|plano_orc == "auxilio-transporte - civis"|
+                                                                                                                                                  plano_orc== "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
+                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao"|
+                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - regra de ouro"|
+                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area fim"|
+                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area meio"|
+                                                                                                                                                  plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos - despesas diversas - regra de ouro"|
+                                                                                                                                                  plano_orc == "ativos civis da uniao"|
+                                                                                                                                                  plano_orc == "auxilio-funeral e natalidade de civis"|
+                                                                                                                                                  plano_orc == "assistencia pre-escolar aos dependentes de servidores civis e de empregados"|
+                                                                                                                                                  plano_orc == "auxilio-funeral e natalidade de civis"|
+                                                                                                                                                  plano_orc == "auxilio-transporte de civis"|
+                                                                                                                                                  plano_orc == "regra de ouro: assistencia pre-escolar aos dependentes de servidores civis e de empregados"|
+                                                                                                                                                  plano_orc == "regra de ouro: auxilio-alimentacao de civis"|
+                                                                                                                                                  plano_orc == "regra de ouro: auxilio-funeral e natalidade de civis"|
+                                                                                                                                                  plano_orc == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|plano_orc == "pagamento de pessoal ativo da uniao"|plano_orc == "ativos civis da uniao"|plano_orc == "pessoal ativo da uniao")
 
-
-
-
-
-# %>% filter(plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
-#              plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos - despesas diversas"|
-#              plano_orc == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
-#              plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
-#              plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
-#              plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
-#              plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
-#              plano_orc == "auxilio-alimentacao aos servidores civis, empregados e militares"|
-#              plano_orc == "auxilio-transporte aos servidores civis, empregados e militares"|
-#              plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
-#              plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
-#              plano_orc == "auxilio-alimentacao de civis"|
-#              plano_orc== "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
-#              plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao"|
-#              plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - regra de ouro"|
-#              plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area fim"|
-#              plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area meio")
-
-
-siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao == "auxilio-transporte aos servidores civis, empregados e militares")%>% filter( und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
-                                                                                                                                                    und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
-                                                                                                                                                    und_orc == "servico florestal brasileiro - sfb" | und_orc=="ministerio do meio ambiente e mudanca do clima - administracao direta"|
-                                                                                                                                                    und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") %>% 
-  select(und_orc,plano_orc) %>% unique %>% view
-
-# Serm observacao para a acao auxilio-transporte aos servidores civis, empregados e militares  
-# sem observacao para a acao beneficios assistenciais decorrentes do auxilio-funeral e natalidade
-# sem observacao para a acao contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais
-# sem observacao para a acao ativos civis da uniao
-# Sem observacao para a acao pagamento de pessoal ativo da uniao
-# sem observacao para a acao pessoal ativo da uniao
-  
 
 
 resto2 <- resto %>% anti_join(folha_pagamento)
-
-
 data_siop_final <- bind_rows(adm_unidades_filter,resto2,folha_pagamento_certo)
 data_siop_final$Pago %>% sum
+#Valor sem rio_marker 23.549.526.033  
 
-# Resto sendo um filtro de tudo que nao é adm da unidade: 15.385.472.486
-# Resto sendo tudo que não é adm unidades certos : 17.804.185.342
-23.382.689.848
 
-###################################################################################################################################
+ficou_fora_landscape<- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% anti_join(data_siop_final)
+restante <- ficou_fora_landscape %>% filter((acao == "administracao da unidade" & plano_orc == "administracao da unidade - inpa")|
+                                              (acao == "administracao da unidade" & plano_orc == "administracao da unidade - inpa - regra de ouro")|
+                                              (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpa")|
+                                              (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpe")|
+                                              (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpe - regra de ouro"))
+
+data_siop_final2 <- rbind(restante,data_siop_final)
+
 # Inicio da Transformacao para o landscape
-data_siop_final_landscape <- data_siop_final%>%
+data_siop_final_landscape <- data_siop_final2%>%
   mutate(id_original = "-",
          data_source = "siop_painel",
          year = Ano,
@@ -155,7 +184,9 @@ data_siop_final_landscape <- data_siop_final%>%
 
 #Filtro Climático
 data_siop_final_landscape2 <- data_siop_final_landscape %>% left_join(climate_use %>% select(acao_des_limpa,rio_marker,climate_component ,activity_landscape ),by = c("acao"="acao_des_limpa")) 
-# Filtro do Ajuste 5
+
+
+# Filtro do Ajuste 5 (FOI APLICADO A AJUSTE 5 POIES ELE ESTA CERTO)
 data_siop_final_landscape2 <- data_siop_final_landscape2 %>%
   mutate(rio_marker = case_when(plano_orc == "licenca, avaliacao , registro e autorizacoes ambientais" ~ 0.4,
                                 plano_orc == "licenca, avaliacao, registro e autorizacoes ambientais" ~ 0.4,
@@ -165,20 +196,212 @@ data_siop_final_landscape2 <- data_siop_final_landscape2 %>%
                                 plano_orc == "fomento a indicacao geografica de produtos agropecuarios - ig"~0.4,
                                 plano_orc == "funcionamento do conselho nacional de recursos hidricos"~0.4,
                                 .default = rio_marker)) 
-#Filtro de Ajuste 4
+#Filtro de Ajuste 4 (FOI APLICADO O AJUSETE 4 POIS ELE ESTA CERTO TBM)
 data_siop_final_landscape2 <- data_siop_final_landscape2 %>% 
   mutate(rio_marker = case_when(plano_orc=="desenvolvimento dos satelites da serie amazonia"~1,
                                 plano_orc == "desenvolvimento dos satelites da serie amazonia - regra de ouro"~1,
                                 .default = rio_marker)) 
-  
-
-
 
 
 # Aplicacao Rio Marker
-data_siop_final_landscape2 <- data_siop_final_landscape2 %>% mutate(value_original_currency = value_original_currency*rio_marker)
-data_siop_final_landscape2$value_original_currency %>% sum #16.913.371.927
-data_siop_final_landscape2 %>% filter(acao == "administracao da unidade") %>% filter(plano_orc=="capacitacao de recursos humanos no inpe") %>% view
+data_siop_final_landscape2_metodologiaPadrao <- data_siop_final_landscape2 %>% mutate(value_original_currency = value_original_currency*rio_marker)
+data_siop_final_landscape2_metodologiaPadrao$value_original_currency %>% sum #23.562.480.565
+data_siop_final_landscape2_metodologiaPadrao %>% select(sector_landscape) %>% unique
+# Pequena alteração nas classes dos dados para padronizar e Ajustar sectors faltantes
+data_siop_final_landscape2_metodologiaPadrao <- data_siop_final_landscape2_metodologiaPadrao %>% mutate(channel_landscape = case_when(channel_landscape == "Civil society organizations" ~ "Civil society organization",
+                                                                                      channel_landscape == "Financial Institutions"  ~"Financial Institution",
+                                                                                      .default = channel_landscape),
+                                                        origin_private_public = case_when(origin_private_public == "Other"~"Others",
+                                                                                          .default = origin_private_public),
+                                                        origin_domestic_international = case_when(origin_domestic_international == "Domestic" ~"National",
+                                                                                                  .default =origin_domestic_international )) 
+
+
+
+data_siop_final_landscape2_metodologiaPadrao <- data_siop_final_landscape2_metodologiaPadrao %>% mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "servico florestal brasileiro - sfb",
+                                                                                   true = "Forest",false = sector_landscape)) %>% 
+  mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "ministerio da ciencia, tecnologia e inovacao - administracao direta",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "fundacao nacional do indio - funai",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "ministerio do meio ambiente e mudanca do clima - administracao direta",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "instituto chico mendes de conservacao da biodiversidade",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "apoio ao desenvolvimento de agricultura de baixa emissao de carbono - abc" & und_orc == "ministerio da agricultura e pecuaria - administracao direta",
+                                    true = "Crop",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "avaliacao das medidas de ordenamento do uso de recursos pesqueiros" & und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama",
+                                    true = "Cattle",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "avaliacao de periculosidade e controle de produtos, substancias quimicas e residuos perigosos" & und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "avaliacao dos estoques e do potencial sustentavel dos recursos pesqueiros" & und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "controle ambiental de produtos, substancias, residuos e atividades potencialmente poluidoras" & und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento de sistemas espaciais" & plano_orc == "desenvolvimento e lancamento do veiculo lancador de microssatelites vlm-1",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento de sistemas espaciais" & plano_orc == "desenvolvimento e lancamento do satelite sino-brasileiro cbers-4a",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento de sistemas espaciais" & plano_orc == "desenvolvimento e lancamento de satelites cientificos",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento de sistemas espaciais" & plano_orc == "desenvolvimento e lancamento do satelite sino-brasileiro cbers-4a - regra de ouro",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento de sistemas espaciais" & plano_orc == "desenvolvimento dos satelites da serie amazonia",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento de sistemas espaciais" & plano_orc == "desenvolvimento dos satelites da serie amazonia - regra de ouro",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento e lancamento de foguetes suborbitais e de veiculos lancadores de satelites" & und_orc == "agencia espacial brasileira",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento e lancamento de foguetes suborbitais e de veiculos lancadores de satelites, com a infraestrutura associada" & und_orc == "agencia espacial brasileira",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento e lancamento de satelites" & plano_orc == "desenvolvimento dos satelites da serie amazonia",
+                                    true = "Forest",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "desenvolvimento e lancamento de satelites" & plano_orc == "desenvolvimento dos satelites sino-brasileiros cbers-4",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "monitoramento hidroambiental nos reservatorios do dnocs" & und_orc == "departamento nacional de obras contra as secas - dnocs",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "monitoramento, avaliacao e controle de substancias, produtos quimicos e biologicos e de atividades potencialmente poluidoras e utilizadoras de recursos ambientais" & und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama",
+                                    true = "Forest",false = sector_landscape))%>% 
+mutate(sector_landscape = if_else(acao == "pesquisa e desenvolvimento no setor aeroespacial" & und_orc == "comando da aeronautica",
+                                  true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "pesquisa e desenvolvimento no setor aeroespacial" & und_orc == "fundo aeronautico",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "regulacao e fiscalizacao dos usos de recursos hidricos, dos servicos de irrigacao e aducao de agua bruta e da seguranca de barragens" & und_orc == "agencia nacional de aguas e saneamento basico - ana",
+                                    true = "Multi-sector",false = sector_landscape))  %>% 
+  mutate(sector_landscape=case_when(sector_landscape=="Agriculture" ~"Crop",
+                                    .default = sector_landscape))
+  
+
+
+data_siop_final_landscape2_metodologiaPadrao_final<- data_siop_final_landscape2_metodologiaPadrao %>% left_join(beneficiary_landscape %>% distinct(acao_des_limpa,.keep_all = T) ,by=c("acao"="acao_des_limpa")) %>% 
+  mutate(beneficiary_landscape = case_when(acao == "regularizacao da estrutura fundiaria na area de abrangencia da lei 11.952, de 2009"~"Smallholders",
+                                           acao == "desenvolvimento economico e social dos produtores rurais"~"Rural Producers",
+                                           acao == "abastecimento publico de agua em comunidades ribeirinhas dos rios sao francisco, do parnaiba, do itapecuru e do mearim. - agua para todos"~"Indigenous Peoples, Traditional Populations and Other Local Communities",
+                                           acao == "manutencao de contrato de gestao com organizacoes sociais (lei nº 9.637, de 15 de maio de 1998)"~"Not Specified",
+                                           acao == "gestao ambientalmente adequada de substancias quimicas"~"Not Specified",
+                                           .default = beneficiary_landscape)) %>% 
+  mutate(beneficiary_original = "-",
+         beneficiary_public_private="-",
+         localization_original = localizador,region = regiao,uf = uf,municipality=municipio,subactivity_landscape="-")
+  
+  
+
+
+data_siop_final_landscape2_metodologiaPadrao_final$value_original_currency %>% sum
+23.562.480.565
+#Fazendo Deflacao
+ibge_ipca <- read_excel("A:\\macro\\IPCA\\cleanData/ipca_ibge_cl.xlsx")
+ibge_ipca <- ibge_ipca %>% 
+  dplyr::mutate(variacao_doze_meses = suppressWarnings(as.numeric(variacao_doze_meses)))
+deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
+  
+  # Defina o seu projeto no Google Cloud, é importante criar o projeto e colar o id no "set_billing_id". Fora isso, nao funcionarah
+  # Existe um bug no datalake da Base dos Dados que não permite o download direto.
+  # set_billing_id("scenic-notch-360215")
+  # 
+  # # criacao do data frame direto da base de dados
+  # serie_basedosdados <- basedosdados::bdplyr("br_ibge_ipca.mes_brasil") %>% bd_collect()
+  
+  serie_basedosdados <- base
+  
+  # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
+  serie_filtrada <- serie_basedosdados %>% 
+    select(ano, mes, variacao_doze_meses) %>% 
+    dplyr::filter(mes == 12,ano >= ano_ini & ano <= ano_fim ) %>% 
+    dplyr::arrange(desc(ano))
+  
+  indice = 1
+  
+  #criacao do data frame para o deflator
+  for (l in anos) {
+    # chamei novamente a base feita pela funcao do api, pois a base precisa ser percorrida ano a ano e
+    # se nao criarmos essa tabela, a tabela a ser percorrida novamente terá sempre o ano inicial como observacao
+    tabela <- serie_filtrada 
+    
+    tabela <- tabela %>% 
+      dplyr::filter(ano == l)
+    
+    if (l == ano_fim) {
+      tabela <- tabela %>%  dplyr::mutate(deflator = indice)
+      tabela_final <- tabela
+      indice_ano_anterior = indice * (1+ (tabela$variacao_doze_meses/100))
+    } else {
+      tabela <- tabela %>% dplyr::mutate(deflator = indice_ano_anterior)
+      
+      tabela_final <- rbind(tabela_final, tabela)
+      indice_ano_anterior = indice_ano_anterior * (1 + (tabela$variacao_doze_meses/100))
+    }
+  }
+  tabela_final <- tabela_final %>% 
+    select(ano, deflator) %>%
+    dplyr::rename(year = ano) %>% 
+    dplyr::arrange(year)
+  return(tabela_final)
+}
+
+ano_ini = 2015
+ano_fim = 2023
+anos = seq(ano_fim,ano_ini, -1)
+teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+base_select_deflator <- data_siop_final_landscape2_metodologiaPadrao_final %>% 
+  left_join(teste, by= "year")%>%
+  dplyr::mutate(value_brl_deflated = value_original_currency * deflator)
+base_select_deflator$value_brl_deflated %>% sum
+# Fazendo a dolarizacao
+coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(Sys.time(), "%d/%m/%Y")){
+  #Argumentos: vetor de séries, datainicial que pode ser manualmente alterada e datafinal que automaticamente usa a data de hoje
+  #Cria estrutura de repetição para percorrer vetor com códigos de séries e depois juntar todas em um único dataframe
+  for (i in 1:length(series)){
+    dados = read.csv(url(paste("http://api.bcb.gov.br/dados/serie/bcdata.sgs.",series[i],"/dados?formato=csv&dataInicial=",datainicial,"&dataFinal=",datafinal,sep="")),sep=";")
+    dados[,-1] = as.numeric(gsub(",",".",dados[,-1])) #As colunas do dataframe em objetos numéricos exceto a da data
+    nome_coluna = series[i] #Nomeia cada coluna do dataframe com o código da série
+    colnames(dados) = c('data', nome_coluna)
+    nome_arquivo = paste("dados", i, sep = "") #Nomeia os vários arquivos intermediários que são criados com cada série
+    assign(nome_arquivo, dados)
+    
+    if(i==1)
+      base = dados1 #Primeira repetição cria o dataframe
+    else
+      base = merge(base, dados, by = "data", all = T) #Demais repetições agregam colunas ao dataframe criado
+    print(paste(i, length(series), sep = '/')) #Printa o progresso da repetição
+  }
+  
+  base$data = as.Date(base$data, "%d/%m/%Y")
+  base$ano = as.integer(format(base$data,"%Y"))#Transforma coluna de data no formato de data
+  base = base[order(base$data),] #Ordena o dataframe de acordo com a data
+  
+  base <- base %>% select(ano, `3694`)
+  base <- base %>% dplyr::rename(c(year = ano, cambio = `3694`))
+  return(base)
+}
+cambio_sgs = coleta_dados_sgs(3694) 
+tabela_cambio <-cambio_sgs %>% 
+  dplyr::filter(year >= 2015 & year <= 2023)
+
+base_select_deflator = base_select_deflator %>% 
+  left_join(tabela_cambio,by='year') %>% 
+  dplyr::mutate(value_usd = value_brl_deflated/cambio)
+
+# Finalizando e salvando
+base_select_deflator<- base_select_deflator %>% select(id_original,data_source,year,project_name,project_description,source_original,
+                                source_finance_landscape,origin_domestic_international,origin_private_public,
+                                value_original_currency,original_currency,value_brl_deflated,value_usd,channel_original,
+                                channel_landscape,instrument_original,instrument_landscape,sector_original,sector_landscape,
+                                subsector_original,activity_landscape,subactivity_landscape,climate_component,rio_marker,
+                                beneficiary_original,beneficiary_landscape,beneficiary_public_private,localization_original,region,
+                                uf,municipality)
+
+
+
+
+
+
+
+######### A partir daqui é aplicação de Dicionario de dados ##################################################################################
 
 # Filtrando os investimentos que nao tiveram match
 
