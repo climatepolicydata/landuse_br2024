@@ -43,29 +43,32 @@ setwd(dir_b3_output)
 
 df_b3_cbios_calculus <- readRDS("b3_cbios_landscape_final.rds")
 
-output_proagro <- read.csv('A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.rds') %>% 
-  select(-X)
+output_proagro <- readRDS('A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.rds')
 
 # setwd(dir_bndes_output)
 
-df_bndes_naut_calculus <- readRDS("A:\\finance\\bndes_N_aut\\cleanData\\operacoes_financiamento_operacoes_nao_automaticas_clear_03_24.rds")
+df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\output\\df_bndes_naut_bind_2015_2023.rds")
 
 setwd(dir_oecd_output)
 
-df_ocde_calculus <- readRDS("df_ocde_landscape_final_2020.rds")
+df_ocde_calculus <- readRDS("df_ocde_landscape_final_att.rds")
+
+df_ocde_calculus_published <- readRDS("oecd_15_20_deflated_23.rds")
+
+df_ocde_calculus_join <- rbind(df_ocde_calculus,df_ocde_calculus_published)
 
 # setwd(dir_nint_output)
 
-df_nint_calculus <- readRDS("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.rds")
+df_nint_calculus <- read.xlsx("A:\\projects\\landuse_br2024\\NINT\\NINT_Landscape_2015_2023.xlsx") %>% select(-deflator,-cambio, -X1)
 
-setwd(dir_idb_output)
+# setwd(dir_idb_output)
+# 
+# df_idb_calculus <- readRDS("idb_landscape_final.RDS")
 
-df_idb_calculus <- readRDS("idb_landscape_final.RDS")
-
-setwd(fnmc_output)
+# setwd(fnmc_output)
 
 
-fnmc_landscape <- readRDS("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds") %>% select(-"Subactivity Landscape")
+fnmc_landscape <- readRDS("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds")
 
 
 setwd(dir_susep_output)
@@ -77,9 +80,9 @@ setwd(sicor_output)
 df_sicor_calculus <- readRDS("df_sicor_format_landscape_final_att.rds")
 
 
-setwd(dir_fund_amaz)
+# setwd(dir_fund_amaz)
 
-df_fund_amaz <- readRDS("A:\\projects\\brlanduse_landscape102023\\FundoAmazonia_BNDES\\data\\FundoAmazonia_BNDES_N_Aut_LandScape.rds")
+df_fund_amaz <- read.xlsx("A:\\projects\\landuse_br2024\\Fundo Amazonia\\FundoAmazonia_Landscape_2015_2023.xlsx") %>% select(-deflator,-cambio, -X1)
 
 setwd(dir_bndes_aut) 
 
@@ -89,21 +92,22 @@ df_bndes_aut <- readRDS("df_bndes_aut_landscape_final.rds")
 
 data_landscape_final <- do.call("rbind",
                                 list(df_ses_calculus,
-                                     fnmc_landscape ,
+                                     fnmc_landscape,
                                      df_atlas_calculus,
                                      output_proagro,
                                      df_bndes_naut_calculus,
                                      df_b3_cbios_calculus,
-                                     df_ocde_calculus,
+                                     df_ocde_calculus_join,
                                      df_nint_calculus,
-                                     df_idb_calculus,
+                                     # df_idb_calculus,
                                      df_sicor_calculus,
-                                     df_fund_amaz))
+                                     df_fund_amaz,
+                                     df_bndes_aut))
 
 
 data_landscape_final <- data_landscape_final %>% 
-  dplyr::mutate(value_brl_deflated_mean  = value_brl_deflated / 6,
-                value_usd_mean = value_usd / 6) %>% 
+  dplyr::mutate(value_brl_deflated_mean  = value_brl_deflated / 9,
+                value_usd_mean = value_usd / 9) %>% 
   dplyr::mutate(climate_component = ifelse(climate_component == "Dual", "Mitigation and Adaptation", climate_component)) 
 
 
@@ -111,7 +115,7 @@ data_landscape_final <- data_landscape_final %>%
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_16052024.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion.rds.csv",fileEncoding = "ISO-8859-1")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_16052024.csv")

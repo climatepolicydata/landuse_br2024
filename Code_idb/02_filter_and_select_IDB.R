@@ -221,6 +221,8 @@ setwd(dir_idb_output)
 
 saveRDS(data_filter_sectors,"df_idb_filter.rds")
 
+write.xlsx(data_filter_sectors,"df_idb_filter.xlsx")
+
 
 
 

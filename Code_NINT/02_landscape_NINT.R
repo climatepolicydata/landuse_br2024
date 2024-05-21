@@ -367,7 +367,7 @@ cbi = if_else(is.na(cbi),true = "SEM VERIFICADOR",false = cbi))
 nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% mutate(project_name2 = str_c(verificador_externo,verificador_externo2,cbi,sep = " /// "))
 nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% mutate(beneficiary_original = "-",beneficiary_landscape = "-",beneficiary_public_private = "-") %>% select(id_original,data_source,year,project_name2,project_description_3,source_original,source_finance_landscape,origin_domestic_international,
 origin_private_public,value_original_currency,original_currency,channel_original,channel_landscape,instrument_original,instrument_landscape,sector_original,sector_landscape,
-subsector_original,activity_landscape,subactivity_landscape,climate_use,beneficiary_original,beneficiary_landscape,beneficiary_public_private,rio_marker,localization_original,region,uf,municipality)
+subsector_original,activity_landscape,subactivity_landscape,climate_component,beneficiary_original,beneficiary_landscape,beneficiary_public_private,rio_marker,localization_original,region,uf,municipality)
 nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% rename(project_name = project_name2 , project_description = project_description_3)
 nint_sectorlandscape_climateUse_V2 %>% view
 # Realizando a deflação
@@ -479,6 +479,14 @@ tabela_cambio <-cambio_sgs %>%
   filter(year >= 2021 & year <= 2023)
 tabela_cambio
 nint_sectorlandscape_climateUse_V2_deflated_dolar <- nint_sectorlandscape_climateUse_V2_deflated %>% left_join(tabela_cambio,by="year")%>% mutate(value_usd = value_brl_deflated / cambio)
+
+nint_sectorlandscape_climateUse_V2_deflated_dolar <- nint_sectorlandscape_climateUse_V2_deflated_dolar%>% 
+  select(id_original, data_source, year, project_name, project_description, source_original,
+         source_finance_landscape, origin_domestic_international, origin_private_public,
+         value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
+         channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
+         subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
+         beneficiary_public_private, localization_original, region, uf, municipality)
 
 nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>% write_csv2("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.csv")
 
