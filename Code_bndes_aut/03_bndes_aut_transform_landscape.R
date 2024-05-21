@@ -86,7 +86,8 @@ df_bndes_transform_landscape <- df_bndes_transform %>%
                 municipality = municipio,
                 source_original = source_of.finance_original,
                 origin_domestic_international = national_internacional,
-                origin_private_public = source_private_public) %>% 
+                origin_private_public = source_private_public,
+                source_finance_landscape = source_of_finance_landscape) %>% 
   dplyr::mutate(data_source = "bndes_aut",
          original_currency = "BRL",
          localization_original = uf,
@@ -96,7 +97,7 @@ df_bndes_transform_landscape <- df_bndes_transform %>%
          project_description = "-",
          id_original = "-",
          activity_landscape = "-",
-         climate_use = "-",
+         climate_component = "-",
          subactivity_landscape = "-",
          rio_marker = "-")
 
@@ -146,10 +147,10 @@ rm(cambio_sgs,df_bndes_transform_landscape, ibge_ipca, tabela_cambio, tabela_def
 
 df_bndes_aut_calculus <- df_bndes_aut_calculus %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
-         source_of_finance_landscape, origin_domestic_international, origin_private_public,
+         source_finance_landscape, origin_domestic_international, origin_private_public,
          value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
-         subsector_original, activity_landscape, subactivity_landscape, climate_use, rio_marker, 
+         subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, 
          beneficiary_original, beneficiary_landscape,
          beneficiary_public_private, localization_original, region, uf, municipality)
 

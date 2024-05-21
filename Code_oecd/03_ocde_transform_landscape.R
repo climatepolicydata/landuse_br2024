@@ -6,18 +6,18 @@
 # resource: OECD Miltilateral Climate Funds
 
 
-########################### Libraries ######################################
-# pacman::p_load(tidyverse,
-#                stringi,
-#                janitor,
-#                writexl,
-#                openxlsx,
-#                httr,
-#                readr,
-#                data.table,
-#                dplyr,
-#                plyr,
-#                pivottabler)
+########################## Libraries ######################################
+pacman::p_load(tidyverse,
+               stringi,
+               janitor,
+               writexl,
+               openxlsx,
+               httr,
+               readr,
+               data.table,
+               dplyr,
+               plyr,
+               pivottabler)
 
 ##### directory #########
 
@@ -53,7 +53,7 @@ instrument_ocde <- read.xlsx("10_oecd_relational_tables_review.xlsx", sheet = "i
 
 instrument_ocde$instrument_landscape <- str_to_sentence(instrument_ocde$instrument_landscape)
 
-sector_ocde <- read.xlsx("10_oecd_relational_tables_review.xlsx", sheet = "sector_landscape_review")
+sector_ocde <- read.xlsx("10_oecd_relational_tables_review.xlsx", sheet = "sector_landscape")
 
 # climate_ocde <- read.xlsx("10_oecd_relational_tables.xlsx", sheet = "project_selection")
 
@@ -241,3 +241,41 @@ saveRDS(df_ocde_calculus,"df_ocde_landscape_final_att.rds")
 write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_year.xlsx")
 
 # saveRDS(df_ocde_calculus,"df_ocde_landscape_final_reviewed.rds")
+
+
+#################### calculus oecd 2015 to 2020 ###############
+setwd("A:\\projects\\brlanduse_landscape102023\\oecd\\output")
+
+oecd_publicado_deflated_2023 <- readRDS("df_ocde_landscape_final_reviewed.rds") %>% 
+  select(-value_brl_deflated,-value_usd)
+
+
+oecd_publicado_deflated_2023 <- deflate_and_exchange(tabela_deflator, oecd_publicado_deflated_2023, tabela_cambio)
+
+setwd(dir_oecd_output)
+
+oecd_publicado_deflated_2023 <- oecd_publicado_deflated_2023 %>% 
+  select(id_original, data_source, year, project_name, project_description, source_original,
+         source_finance_landscape, origin_domestic_international, origin_private_public,
+         value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
+         channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
+         subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
+         beneficiary_public_private, localization_original, region, uf, municipality)
+
+saveRDS(oecd_publicado_deflated_2023,"oecd_15_20_deflated_23.rds")
+
+
+
+############## save data########
+setwd(dir_oecd_output)
+
+df_ocde_calculus_join <- rbind(oecd_publicado_deflated_2023, df_ocde_calculus)
+
+write.xlsx(df_ocde_calculus,"df_ocde_landscape_final_att.xlsx")
+
+saveRDS(df_ocde_calculus,"df_ocde_landscape_final_att.rds")
+
+write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_year.xlsx")
+
+saveRDS(df_ocde_calculus_join, "df_ocde_landscape_final_join_year.rds")
+

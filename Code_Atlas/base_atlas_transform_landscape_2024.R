@@ -39,7 +39,7 @@ setwd(dir_sisser_mapa_dt_clean)
 df_atlas <- readRDS("atlas_2006_2022_clear.rds")
 
 df_atlas_2015_2022 <- df_atlas %>% 
-  filter(ano_apolice >= 2015 & ano_apolice <= 2022,
+  dplyr::filter(ano_apolice >= 2015 & ano_apolice <= 2022,
          !nm_cultura_global %in% c("Pecuário"))
 
 
@@ -58,7 +58,7 @@ df_atlas <- df_atlas_2015_2022 %>%
 "remove values with count for 'livestock' "
 
 df_atlas <- df_atlas %>% 
-  filter(!nm_cultura_global %in% c("Pecuário"))
+  dplyr::filter(!nm_cultura_global %in% c("Pecuário"))
 
 df_atlas_sub_negative <- aggregate( vl_subvencao_federal ~ id_equals + nm_razao_social + nm_municipio_propriedade + 
                                       sg_uf_propriedade + nm_classif_produto+ nm_cultura_global+ vl_subvencao_federal+
@@ -91,9 +91,9 @@ df_atlas_subvencao <- join(df_atlas_subvencao,relational_table %>% select(nm_cul
 df_atlas_sub_negative <- df_atlas_sub_negative %>% 
   dplyr::rename(year = ano_apolice, channel_original = nm_razao_social,
                 subsector_original = evento_preponderante, region = sg_uf_propriedade, uf = nm_municipio_propriedade) %>% 
-  mutate(data_source = "atlas_seguro_mapa",project_name = "Abate no SES para Subvenção PSR",
+  dplyr::mutate(data_source = "atlas_seguro_mapa",project_name = "Abate no SES para Subvenção PSR",
          project_description = "nm_classif_produto", source_original = "Produtores Rurais",
-         source_finance_landscape = "Rural Producers", origin_domestic_international = "Domestic",
+         source_finance_landscape = "Rural Producers", origin_domestic_international = "National",
          origin_private_public = "Private", channel_landscape= "Financial institutions",
          instrument_original = "-", instrument_landscape= "Risk management",
          sector_original = paste0(nm_classif_produto,nm_cultura_global),
@@ -102,19 +102,19 @@ df_atlas_sub_negative <- df_atlas_sub_negative %>%
          beneficiary_original = "-", beneficiary_landscape = "Rural producers", 
          beneficiary_public_private = "-", localization_original = "-",
          municipality = "-")%>%
-  mutate(id_original = paste(id_equals,"VLN", sep = ""),
+  dplyr::mutate(id_original = paste(id_equals,"VLN", sep = ""),
          subactivity_landscape = "Tipo de Produto") %>% 
   dplyr::rename(value_brl = vl_subvencao_federal) %>% 
-  mutate(value_brl = -1*value_brl)
+  dplyr::mutate(value_brl = -1*value_brl)
 
 "base para valor da subvenção"
 
 df_atlas_subvencao <- df_atlas_subvencao %>% 
   dplyr::rename(year = ano_apolice, channel_original = nm_razao_social,
                 subsector_original = evento_preponderante, region = sg_uf_propriedade, uf = nm_municipio_propriedade) %>% 
-  mutate(data_source = "atlas_seguro_mapa",project_name = "Subvenção PSR",
+  dplyr::mutate(data_source = "atlas_seguro_mapa",project_name = "Subvenção PSR",
          project_description = "nm_classif_produto", source_original = "MAPA",
-         source_finance_landscape = "Federal and state governments", origin_domestic_international = "Domestic",
+         source_finance_landscape = "Federal and state governments", origin_domestic_international = "National",
          origin_private_public = "Public", channel_landscape= "Financial institutions",
          instrument_original = "Subvenção PSR", instrument_landscape= "Risk management",
          sector_original = paste0(nm_classif_produto,nm_cultura_global),
@@ -123,7 +123,7 @@ df_atlas_subvencao <- df_atlas_subvencao %>%
          beneficiary_original = "-", beneficiary_landscape = "Rural producers", 
          beneficiary_public_private = "-", localization_original = "-",
          municipality = "-")%>% 
-  mutate(id_original = paste(id_equals,"SUB", sep = ""),
+  dplyr::mutate(id_original = paste(id_equals,"SUB", sep = ""),
          subactivity_landscape = "Rural insurance for farming and forestry") %>% 
   dplyr::rename(value_brl = vl_subvencao_federal)
 
@@ -134,14 +134,14 @@ df_atlas_sub_negative <- df_atlas_sub_negative %>%
          source_finance_landscape, origin_domestic_international, origin_private_public, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf)
+         beneficiary_public_private, localization_original, region, uf,municipality)
 
 df_atlas_subvencao <- df_atlas_subvencao %>% 
   select(id_original, value_brl, data_source, year, project_name, project_description, source_original,
          source_finance_landscape, origin_domestic_international, origin_private_public, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf)
+         beneficiary_public_private, localization_original, region, uf,municipality)
 
 
 "JUNÇÃO DAS BASES"
@@ -152,7 +152,7 @@ df_atlas_premio_liq_sub <- rbind(df_atlas_sub_negative,df_atlas_subvencao)
 
 df_atlas_final <- df_atlas_premio_liq_sub %>% 
   dplyr::rename(value_original_currency = value_brl) %>% 
-  mutate(original_currency = "BRL",
+  dplyr::mutate(original_currency = "BRL",
          year = as.numeric(year)) %>%
   relocate(original_currency, .after = value_original_currency)
 
@@ -171,7 +171,7 @@ source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/Funca
 
 
 ano_ini = 2015
-ano_fim = 2020
+ano_fim = 2023
 
 #a variavel anos completa os anos no intervalo de anos escolhidos acima.
 anos = seq(ano_fim,ano_ini, -1)
@@ -183,7 +183,7 @@ tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 cambio_sgs = coleta_dados_sgs(serie) 
 
 tabela_cambio <-cambio_sgs %>% 
-  filter(year >= 2015 & year <= 2020)
+  dplyr::filter(year >= 2015 & year <= 2023)
 
 
 deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
@@ -191,7 +191,7 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
   base_select_deflator <- base_select_deflator %>% 
     left_join(tabela_deflator, by= "year") %>%
     left_join(tabela_cambio, by= "year")  %>%  
-    mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
+    dplyr::mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
            value_usd = value_brl_deflated/cambio)
   
   
@@ -209,56 +209,10 @@ df_atlas_calculus <- df_atlas_calculus %>%
          value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf)
+         beneficiary_public_private, localization_original, region, uf,municipality)
 
 setwd("A:/projects/landuse_br2024/atlas/output")
 
 saveRDS(df_atlas_calculus,"database_atlas_landscape_2024.rds")
 
 
-############################### agregado por ramo do produto ############
-
-# ptn <- PivotTable$new()
-# 
-# ptn$addData(df_atlas_premio_liq_sub)
-# ptn$addColumnDataGroups("project_name")
-# ptn$addColumnDataGroups("instrument_original")
-# ptn$addRowDataGroups("year")
-# ptn$defineCalculation(calculationName = "TOTAL_VALUE_BRL", summariseExpression = "sum(value_brl)")
-# ptn$renderPivot()
-# 
-# wb <- createWorkbook(creator = Sys.getenv("USERNAME"))
-# addWorksheet(wb, "valor_parc_credito")
-# 
-# writeData(wa,"my sheet 1",ptn$writeToExcelWorksheet(wb=wb, wsName = "valor_parc_credito", 
-#                                                           topRowNumber=1, leftMostColumnNumber=1, 
-#                                                           applyStyles=TRUE, mapStylesFromCSS=TRUE))
-# 
-# saveWorkbook(wb, file="df_atlas_prem_Sub_agregado_ramo_do_produto.xlsx", overwrite = TRUE)
-
-
-############### backup data atlas clean ########
-# setwd(dir_susep_dt_clean)
-# 
-# saveRDS(df_atlas,"df_atlas_cleaned.RDS")
-# 
-# saveRDS(df_atlas_prem_liq,"df_atlas_premio_produtor_landscape.rds")
-# 
-# saveRDS(df_atlas_subvencao,"df_atlas_subvencao.rds")
-# 
-# saveRDS(df_atlas_sub_negative,"df_atlas_sub_negativo.rds")
-# 
-# saveRDS(df_atlas_premio_liq_sub, "df_atlas_transform_complete.RDS")
-# 
-# write.csv2(df, "df_atlas_transform_complete_v2.csv", fileEncoding = "latin1")
-# 
-# 
-# ############### base final  ########
-# 
-# saveRDS(df_atlas_subvencao,"df_atlas_subvencao.rds")
-# 
-# saveRDS(df_atlas_sub_negative,"df_atlas_sub_negativo.rds")
-# 
-# write.csv(df_atlas_sub_negative, "df_atlas_sub_negativo.csv", fileEncoding = "latin1")
-# 
-# write.csv(df_atlas_subvencao, "df_atlas_subvencao.csv", fileEncoding = "latin1")

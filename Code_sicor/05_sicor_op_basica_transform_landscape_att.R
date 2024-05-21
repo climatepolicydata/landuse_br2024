@@ -39,7 +39,7 @@ setwd(dir_sicor_output)
 df <-readRDS("sicor_op_basica_sum_dummies_aggregate_v2.RDS")
 
 # Read description tables
-setwd(dir_sicor_doc)
+setwd("A:\\projects\\landuse_br2024\\sicor\\auxiliary")
 tb_irrigacao <- read.csv("TipoIrrigacao.csv", sep = "," ,encoding = "latin1") %>% 
   dplyr::rename(CD_TIPO_IRRIGACAO = X.CODIGO,
                 DESC_IRRIGACAO = DESCRICAO)
@@ -135,10 +135,15 @@ tabela_climate_produto <- tabela_climate_use %>% select(CODIGO_PRODUTO,USE_PRODU
   filter(CODIGO_PRODUTO != "NULL") %>% 
   mutate(CODIGO_PRODUTO = as.numeric(CODIGO_PRODUTO))
 
-tabela_climate_produto2 <- tabela_climate_use %>% select(CD_PRODUTO_2,USE_PRODUTO_2) %>% 
-  filter(CD_PRODUTO_2 != "NULL") %>% 
-  mutate(CD_PRODUTO_2 = as.numeric(CD_PRODUTO_2)) %>% 
-  dplyr::rename(CODIGO_PRODUTO = CD_PRODUTO_2)
+tabela_climate_produto2 <- tabela_climate_use %>% select(CODIGO_PRODUTO_2
+,USE_PRODUTO_2) %>% 
+  filter(CODIGO_PRODUTO_2
+ != "NULL") %>% 
+  mutate(CODIGO_PRODUTO_2
+ = as.numeric(CODIGO_PRODUTO_2
+)) %>% 
+  dplyr::rename(CODIGO_PRODUTO = CODIGO_PRODUTO_2
+)
 
 tabela_climate_programa <- tabela_climate_use %>% select(CD_PROGRAMA,USE_PROGRAMA_ABC) %>% 
   filter(CD_PROGRAMA != "NULL") %>% 
@@ -230,7 +235,7 @@ rm(tabela_instrument,tabela_recipient,tabela_fonte_recurso)
 df <- df %>% 
   mutate(
     data_source = "SICOR_BCB",
-    channel_original = "Financial Institutions",
+    channel_original = "Financial Institution",
     ecossystem_layer = "Política de Credito Agropecuário"
   )
 
@@ -249,7 +254,7 @@ mdcr_op_basica_if <- df_ajust %>%
                         "COOPECREDI GUARIBA - CC","BCO BOCOM BBM S.A.","BCO RABOBANK INTL BRASIL S.A.",
                         "BCO ABC BRASIL S.A.","BCO SAFRA S.A.","CC SICOOB CREDICOONAI","COOP SICREDI UNIÃO RS",
                         "BANCO BTG PACTUAL S.A.", "CC COCRE", "BD REGIONAL DO EXTREMO SUL", "BANCO SICOOB S.A.",
-                        "COOP SICREDI CAMPOS GERAIS", "COOP SICREDI PLANALTO RS/MG"), NOME_IF, "Other"))
+                        "COOP SICREDI CAMPOS GERAIS", "COOP SICREDI PLANALTO RS/MG"), NOME_IF, "Others"))
 
 mdcr_op_basica_if <- mdcr_op_basica_if %>% 
   mutate(channel_original = paste(SEGMENTO_IF,NOME_IF, sep = "_")) %>% 
@@ -262,7 +267,7 @@ mdcr_op_basica_if_sort <- mdcr_op_basica_if%>%
                 value_brl = VL_PARC_CREDITO,
                 sector_original = ATIVIDADE,
                 climate_component = climate_use) %>% 
-  mutate(channel_landscape = "Financial Institutions",
+  mutate(channel_landscape = "Financial Institution",
          activity_landscape = "-",
          region = "-",
          uf = "-",
@@ -300,7 +305,7 @@ df_final <- mdcr_op_basica_sort %>%
   mutate(project_description = gsub(";"," ", mdcr_op_basica_sort$project_description)) %>%
   mutate(source_finance_landscape = if_else(source_original 
                                                %in% c("LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA FAVORECIDA",
-                                                      "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"Other", 
+                                                      "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"Others", 
                                                if_else(source_original %in%
                                                          c("FUNCAFE-FUNDO DE DEFESA DA ECONOMIA CAFEEIRA"), 
                                                        "Federal and state governments", source_finance_landscape))) %>% 

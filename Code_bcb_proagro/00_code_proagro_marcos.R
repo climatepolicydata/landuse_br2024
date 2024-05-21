@@ -120,48 +120,88 @@ output_proagro <- relational_proagro %>%
          project_name = paste0('proagro_',Subprograma),
          project_description = '-',
          source_original = 'produtor rural',
-         source_finance_landscape = 'rural producers',
-         origin_domestic_international = 'domestic',
-         origin_private_public = 'private',
+         source_finance_landscape = 'Rural producers',
+         origin_domestic_international = 'National',
+         origin_private_public = 'Private',
          value_original_currency = ValorAdiconal,
-         original_currency = 'BRL'
-         )
-## IPCA Fuction - real currency
-ipca_year_f <- function(year, base) {
-  path_ipca <- paste0(root_servidor, 'macro/IPCA/cleanData/')
-  ipca <- read_excel(paste0(path_ipca, 'IPCA.xlsx'), sheet = 'export_ano')
+         original_currency = 'BRL',
+         year = as.numeric(year),
+         value_original_currency = as.numeric(value_original_currency))
+
+
+
+source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
+
+source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/Funcao_taxa_cambio_v2.r"))
+
+ano_ini = 2015
+ano_fim = 2023
+
+#a variavel anos completa os anos no intervalo de anos escolhidos acima.
+anos = seq(ano_fim,ano_ini, -1)
+
+
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+
+
+cambio_sgs = coleta_dados_sgs(serie) 
+
+tabela_cambio <-cambio_sgs %>% 
+  dplyr::filter(year >= 2015 & year <= 2023)
+
+
+deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
   
-  if (year == 2020) {
-    base1 <- base %>%
-      dplyr::mutate(ano = as.double(year)) %>%
-      left_join(ipca, by = c("ano" = "ano")) %>%
-      dplyr::mutate(
-        value_original_currency = as.numeric(value_original_currency),
-        ipca_index_2020 = as.numeric(ipca_index_2020),
-        value_brl_deflated = round(value_original_currency / ipca_index_2020,2)
-      ) %>%
-      select(-ano)
-    
-    return(base1)
-  }
+  base_select_deflator <- base_select_deflator %>% 
+    left_join(tabela_deflator, by= "year")%>%
+    left_join(tabela_cambio, by= "year") %>%  
+    dplyr::mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
+                  value_usd = value_brl_deflated/cambio)
+  
+  
+  return(base_select_deflator)
 }
 
 
+output_proagro_calculus <- deflate_and_exchange(tabela_deflator, output_proagro, tabela_cambio)
 
-output_proagro <- ipca_year_f(2020, output_proagro) %>%
-  select(-mês, -ipca_ano, -ipca_index_2021 ,-ipca_index_2022) %>%
-  dplyr::mutate(instrument_original = paste0('proagro', Subprograma))
 
-path_usd <- paste0(root_servidor, 'macro/txcambio_BRL_USD/rawData/')
-usd_exchange <- read.csv(paste0(path_usd,'bcb_sgs_3694_Exchange rate.eng.csv'), sep = ';')
-colnames(usd_exchange) <- c('year','exchange_cmu_usd')
-usd_exchange <-usd_exchange %>%
-  dplyr::mutate(exchange_cmu_usd = as.numeric(exchange_cmu_usd)) 
-
-output_proagro <- left_join(output_proagro, usd_exchange, by = 'year') %>%
-  dplyr::mutate(value_usd = value_brl_deflated/exchange_cmu_usd  )
+# ## IPCA Fuction - real currency
+# ipca_year_f <- function(year, base) {
+#   path_ipca <- paste0(root_servidor, 'macro/IPCA/cleanData/')
+#   ipca <- read_excel(paste0(path_ipca, 'IPCA.xlsx'), sheet = 'export_ano')
+#   
+#   if (year == 2020) {
+#     base1 <- base %>%
+#       dplyr::mutate(ano = as.double(year)) %>%
+#       left_join(ipca, by = c("ano" = "ano")) %>%
+#       dplyr::mutate(
+#         value_original_currency = as.numeric(value_original_currency),
+#         ipca_index_2020 = as.numeric(ipca_index_2020),
+#         value_brl_deflated = round(value_original_currency / ipca_index_2020,2)
+#       ) %>%
+#       select(-ano)
+#     
+#     return(base1)
+#   }
+# }
+# 
+# 
+# 
+# output_proagro <- ipca_year_f(2020, output_proagro) %>%
+#   select(-mês, -ipca_ano, -ipca_index_2021 ,-ipca_index_2022) %>%
+#   dplyr::mutate(instrument_original = paste0('proagro', Subprograma))
+# 
+# path_usd <- paste0(root_servidor, 'macro/txcambio_BRL_USD/rawData/')
+# usd_exchange <- read.csv(paste0(path_usd,'bcb_sgs_3694_Exchange rate.eng.csv'), sep = ';')
+# colnames(usd_exchange) <- c('year','exchange_cmu_usd')
+# usd_exchange <-usd_exchange %>%
+#   dplyr::mutate(exchange_cmu_usd = as.numeric(exchange_cmu_usd)) 
+# 
+# output_proagro <- left_join(output_proagro, usd_exchange, by = 'year') %>%
+#   dplyr::mutate(value_usd = value_brl_deflated/exchange_cmu_usd  )
 ###
-output_proagro <- output_proagro %>%
+output_proagro_calculus <- output_proagro_calculus %>%
   dplyr::mutate(
     project_description = 'contribuição dos beneficiários do programa, denominada Adicional do proagro',
     instrument_original = paste0('proagro', Subprograma),
@@ -169,7 +209,7 @@ output_proagro <- output_proagro %>%
     subsector_original = '-',
     activity_landscape = 'serviços financeiros',
     subactivity_landscape = 'proagro',
-    climate_component = 'adaptation',
+    climate_component = 'Adaptation',
     rio_marker = '-',
     beneficiary_landscape = '-',
     beneficiary_public_private = '-',
@@ -181,7 +221,7 @@ output_proagro <- output_proagro %>%
     value_usd_ave_bi = (value_usd / 6) * (1 / 1e8),
     data_source = 'bcb_proagro',
     channel_original = 'Instituições Financeiras',
-    channel_landscape = 'Financial Institutions',
+    channel_landscape = 'Financial Institution',
     id_original = "-") %>%
   select(id_original,
     data_source,
@@ -219,10 +259,10 @@ output_proagro <- output_proagro %>%
 
 ### SAVE OUTPUT LANDSCAPE
 
-write.csv(output_proagro,'A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.csv'
+write.csv(output_proagro_calculus,'A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.csv'
 )
-write_xlsx(output_proagro, 'A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.xlsx')
-saveRDS(output_proagro,'A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.rds')
+write_xlsx(output_proagro_calculus, 'A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.xlsx')
+saveRDS(output_proagro_calculus,'A:/projects/landuse_br2024/bcb_proagro/output/05_output_proagro.rds')
 
 rm(df,lista_de_dataframes,relational_proagro, usd_exchange, clean_proagro)
 
