@@ -184,7 +184,7 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/Funcao_taxa_cambio_v2.r"))
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
 
 ano_ini = 2015
 ano_fim = 2023
