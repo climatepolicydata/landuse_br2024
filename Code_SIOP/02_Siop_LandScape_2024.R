@@ -3,79 +3,63 @@ library(stringi)
 library(readxl)
 library(xlsx)
 source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
-setwd("A:\\projects\\landuse_br2024\\SIOP\\Clean_Data")
 
-siop_tratado <- read_rds('Siop_Tratado_2015_2023_05_24.rds') #258.437 registros
+siop_tratado <- read_rds("A:\\projects\\landuse_br2024\\siop\\Clean_Data\\Siop_Tratado_2015_2023_05_24.rds") #258.437
+siop_tratado%>% filter(plano_orc == "censo demografico 2020")   %>% select(Pago) %>% view
+grupo_despesa <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="grupo_despesa")
 
-#Tabelas relacionais
-grupo_despesa <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="grupo_despesa")
-channel_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="channel_landscape")
-sector_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="sector_landscape")
+channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="channel_landscape")
+
+sector_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="sector_landscape")
 sector_landscape <- sector_landscape %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des_orig,"Latin-ASCII"))))
-sector_landscape <- sector_landscape %>%select(acao_des_limpa,sector_landscape)%>% distinct(acao_des_limpa,.keep_all=TRUE) 
-beneficiary_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="beneficiary_landscape")
+sector_landscape <- sector_landscape%>%select(acao_des_limpa,sector_landscape)
+sector_landscape <- sector_landscape %>% distinct(acao_des_limpa,.keep_all = TRUE) 
+
+
+beneficiary_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="beneficiary_landscape")
 beneficiary_landscape <- beneficiary_landscape%>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
-beneficiary_landscape <- beneficiary_landscape %>% select(acao_des_limpa,beneficiary_landscape)
+beneficiary_landscape[duplicated(beneficiary_landscape$acao_des_limpa),] %>% view
+beneficiary_landscape <- beneficiary_landscape %>% distinct(acao_des_limpa,.keep_all = TRUE)
+beneficiary_landscape <- beneficiary_landscape %>% select(acao_des_limpa,beneficiary_landscape,Fonte)
+
 ####################################################
-source_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="source_landscape")
+source_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="source_landscape")
 
 source_landscape <- source_landscape%>%mutate(source_original = str_trim(str_to_lower(stri_trans_general(source_original,"Latin-ASCII"))))
 
-instrument_landscape <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="instrument_landscape")
+instrument_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="instrument_landscape")
 
-climate_use <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx", sheet="climate_use")
+climate_use <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="climate_use")
 climate_use <- climate_use %>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
-
-acao_plan_orc_count <- read_excel("A:/projects/landuse_br2024/SIOP/12_siop_relational_tables.xlsx",sheet = "acao_plan_orc_filter")
-acao_plan_orc_count_unique <- acao_plan_orc_count %>% mutate(plano_orc_clean = str_trim(str_to_lower(stri_trans_general(plano_orc_clean,"Latin-ASCII")),side="both")) %>% select(plano_orc_clean)%>%unique
-######################################################################
-# Filtrando as observações que nao pagaram nada e filtro para ano
-siop_tratado_ano <- siop_tratado %>% filter(Pago != 0)
-siop_tratado_ano <- siop_tratado_ano%>%  filter(Ano >= 2021 & Ano <= 2023) 
-
-# 2.1 Filter Grupo Despesa
-grupo_despesa %>% filter(select != 1) %>% select(grupo_despesa) %>% as.vector()
-siop_tratado_ano <- siop_tratado_ano %>% filter(grupo_de_despesa != "juros e encargos da divida" & grupo_de_despesa!= "amortizacao da divida" & grupo_de_despesa != "reserva de contingencia") #141.998 registros
-
-# 2.3 Filtro de unidade orçamentária baseado na sheet channel landscape:
-siop_tratado_unidade_orcamentaria <- siop_tratado_ano %>% inner_join(channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc)%>% unique, by= "und_orc") 
-channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc) %>% anti_join(siop_tratado_ano, by= "und_orc") %>% view
-
-# Pelo anti Join podemos ver que a unidade orçamentaria secretaria especial de agricultura familiar e do desenvolvimento agrario
-# nao existe para os anos de 21 até 2023
-
-# 2.3 Criando o primeiro Remainder:
-df_remainder_SIOP1 <- siop_tratado_ano %>% anti_join(siop_tratado_unidade_orcamentaria %>% select(und_orc )%>% unique, by= "und_orc")
-
-#df_remainder_SIOP1 %>% select(und_orc) %>% unique  %>% write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\UnidadesOrcamentarias_2021_2023_Fora.xlsx")
-
-#3.1 Seleção Setorial: É baseado nas ações
-siop_tratado_unidade_orcamentaria_acao <- siop_tratado_unidade_orcamentaria %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) 
-sector_landscape%>% select(acao_des_limpa) %>% anti_join(siop_tratado_unidade_orcamentaria,by =c( "acao_des_limpa" ="acao" ) )
-
-# Tivemos ações da tabela relacional que nao tiveram match pois essas ações para os anos de 21 ate 23 tiveram valor pago de ZERO ou Acoes que nao existem
-# para os anos em questao
-# Esta explicacao encontra-se na pasta ExploracoesDados
-#3.1 Criando o Remainder 2
-df_remainder_siop2 <- siop_tratado_unidade_orcamentaria %>% anti_join(siop_tratado_unidade_orcamentaria_acao %>% select(acao),by = "acao" )
-#df_remainder_siop2 %>% select(acao,plano_orc,und_orc) %>% unique %>%  write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\Acoes_2021_2023_Fora.xlsx")
-
-# 3.2: Fitro de Planos Orcamentários
-siop_tratado_unidade_orcamentaria_acao_plano_orc <- siop_tratado_unidade_orcamentaria_acao  %>% inner_join(acao_plan_orc_count_unique,by = c("plano_orc"="plano_orc_clean")) 
-#acao_plan_orc_count_unique %>% anti_join(siop_tratado_unidade_orcamentaria_acao,by = c("plano_orc_clean" = "plano_orc")) %>% unique %>% write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\Planos_orcDeForaFiltro3.2.xlsx")
-
-# 3.2: Criando o Remainder Tres:
-df_remainder_siop3 <- siop_tratado_unidade_orcamentaria_acao%>% anti_join(siop_tratado_unidade_orcamentaria_acao_plano_orc,by = "plano_orc")
-
-df_remainder_siop3 %>% select(plano_orc,acao,und_orc) %>% unique %>%  write.xlsx("A:\\projects\\landuse_br2024\\siop\\ExploracoesDados\\Planos_orc_2021_2023_Fora.xlsx")
+climate_use<-climate_use %>% distinct(acao_des_limpa,.keep_all = TRUE)
 
 
-siop_tratado_unidade_orcamentaria_acao_plano_orc$Pago %>% sum
-52.465.588.665
-######################################################################################
-acao_plan_orc_count_unique %>% anti_join(siop_tratado_unidade_orcamentaria_acao_plano_orc,by = c("plano_orc_clean"="plano_orc")) %>% view 
 
-adm_unidades_filter <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filter(acao == "administracao da unidade")  %>% filter(und_orc =="ministerio do meio ambiente e mudanca do clima - administracao direta"|und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" | und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |  und_orc == "servico florestal brasileiro - sfb" | und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj")%>%
+acao_plan_orc_count <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx",sheet = "acao_plan_orc_filter")
+acao_plan_orc_count_unique <- acao_plan_orc_count %>% mutate(plano_orc_clean = str_trim(str_to_lower(stri_trans_general(plano_orc_clean,"Latin-ASCII")),side="both")) 
+acao_plan_orc_count_unique[duplicated(acao_plan_orc_count_unique$plano_orc_clean),] %>% view
+acao_plan_orc_count_unique<- acao_plan_orc_count_unique %>% distinct(plano_orc_clean,.keep_all = TRUE)
+# Iniciando as analises
+siop_tratado_new = siop_tratado
+siop_tratado_new_ano <- siop_tratado_new %>% filter(Pago != 0)
+siop_tratado_new_ano <- siop_tratado_new_ano%>%  filter(Ano >= 2021 & Ano <= 2023) 
+siop_tratado_new_ano$Pago %>% sum #1.228545e+13
+siop_tratado_new_ano<- siop_tratado_new_ano %>% filter(grupo_de_despesa != "juros e encargos da divida" & grupo_de_despesa!= "amortizacao da divida" & grupo_de_despesa != "reserva de contingencia") #141.998 registros
+siop_tratado_new_ano$Pago %>% sum #6.558356e+12
+siop_tratado_unidade_orcamentaria_new <- siop_tratado_new_ano %>% inner_join(channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc)%>% unique, by= "und_orc")
+siop_tratado_unidade_orcamentaria_new$Pago %>% sum #289.978.075.877
+#Criacao do Reminder. É nele que vamos aplicar o dicionario
+df_remainder_SIOP1 <- siop_tratado_new_ano %>% anti_join(siop_tratado_unidade_orcamentaria_new %>% select(und_orc )%>% unique, by= "und_orc")
+siop_tratado_unidade_orcamentaria_new %>% filter(plano_orc == "censo demografico 2020") %>% select(Pago) %>% sum
+######################################################### ANALISE SECTOR (ACAO) ######################################
+siop_tratado_unidade_orcamentaria_acao_new <- siop_tratado_unidade_orcamentaria_new %>% inner_join(sector_landscape %>% select(acao_des_limpa),by = c("acao" = "acao_des_limpa")) 
+siop_tratado_unidade_orcamentaria_acao_new$Pago %>% sum #67.118.894.476   APOS CORREÇÃO MIGUEL -> 67.692.665.947 APOS SEGUNDA CORREÇÃO MIGUEL -> 67.694.530.564  
+
+####################################### ANALISE PLANO ORC #########################################
+siop_tratado_unidade_orcamentaria_acao_plano_orc_new <- siop_tratado_unidade_orcamentaria_acao_new  %>% inner_join(acao_plan_orc_count_unique,by = c("plano_orc"="plano_orc_clean"))
+siop_tratado_unidade_orcamentaria_acao_plano_orc_new$Pago %>% sum #58.377.261.263 APOS CORREÇÃO MIGUEL -> 59.032.171.262 APOS SEGUNDA CORRECAO MIGUEL -> 59.109.473.899 
+################################# CRIAÇÃO DAS EXCEÇÕES ###################################################
+adm_unidades_filter_new <- siop_tratado_unidade_orcamentaria_acao_plano_orc_new %>% filter(acao == "administracao da unidade")  %>% filter(und_orc =="ministerio do meio ambiente e mudanca do clima - administracao direta"|und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" | und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |  und_orc == "servico florestal brasileiro - sfb" | und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj")%>%
   filter(plano_orc == "administracao da sede"| plano_orc == "administracao das unidades regionais"| plano_orc=="administracao das unidades regionais - regra de ouro" |plano_orc=="administracao da unidade" |plano_orc=="administracao da unidade - despesas diversas"|plano_orc=="administracao da unidade - despesas diversas - regra de ouro" | plano_orc == "capacitacao de servidores publicos federais do ibama" | plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao" | plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area fim" |
            plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area meio" | plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - regra de ouro" | plano_orc == "coronavirus (covid-19)" |
            plano_orc == "educacao ambiental" |plano_orc == "emenda individual"|
@@ -99,73 +83,79 @@ adm_unidades_filter <- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% filt
            plano_orc == "outras despesas administrativas - regra de ouro"|
            plano_orc == "reuniao dos comites regionais"|
            plano_orc == "tecnologia da informacao"|
-           plano_orc == "tecnologia da informacao - regra de ouro") # Esta de acordo com o Ajuste 1
+           plano_orc == "tecnologia da informacao - regra de ouro"|
+           plano_orc == "implementacao da a3p nos orgaos publicos federais"|
+           plano_orc == "promover a transformacao digital com foco na qualidade dos servicos de ti") 
 
+adm_filtro_especifico_MAPA <- siop_tratado_unidade_orcamentaria_acao_plano_orc_new %>% filter(acao == "administracao da unidade") %>% 
+  filter(und_orc == 'ministerio da agricultura e pecuaria - administracao direta') %>% filter(plano_orc == "operacao dos servicos administrativos da secretaria de agricultura familiar e cooperativismo"|
+                                                                                                plano_orc == "operacao dos servicos da comissao executiva do plano de lavoura cacaueira"|
+                                                                                                plano_orc == "operacao dos servicos administrativos de assuntos fundiarios")
 
-
-
-resto <- siop_tratado_unidade_orcamentaria_acao_plano_orc%>% filter(acao != "administracao da unidade")
-
+resto_new <- siop_tratado_unidade_orcamentaria_acao_plano_orc_new%>% filter(acao != "administracao da unidade")
 # Aplicando Ajuste 2 e 3 ao mesmo tempo
-folha_pagamento <- resto %>% filter(acao == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
-                                      acao == "assistencia pre-escolar aos dependentes dos servidores civis, empregados e militares"|
-                                      acao == "auxilio-transporte aos servidores civis, empregados e militares"|
-                                      acao == "auxilio-alimentacao aos servidores civis, empregados e militares"|
-                                      acao == "beneficios assistenciais decorrentes do auxilio-funeral e natalidade"|
-                                      acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|
-                                      acao=="ativos civis da uniao"| acao == "pagamento de pessoal ativo da uniao"|
-                                      acao == "pessoal ativo da uniao"| acao == "beneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes"|
-                                      acao == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
-                                      acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais")
+
+folha_pagamento_new <- resto_new %>% filter(acao == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
+                                              acao == "assistencia pre-escolar aos dependentes dos servidores civis, empregados e militares"|
+                                              acao == "auxilio-transporte aos servidores civis, empregados e militares"|
+                                              acao == "auxilio-alimentacao aos servidores civis, empregados e militares"|
+                                              acao == "beneficios assistenciais decorrentes do auxilio-funeral e natalidade"|
+                                              acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|
+                                              acao=="ativos civis da uniao"| acao == "pagamento de pessoal ativo da uniao"|
+                                              acao == "pessoal ativo da uniao"| acao == "beneficios obrigatorios aos servidores civis, empregados, militares e seus dependentes"|
+                                              acao == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
+                                              acao == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais")
 # Aqui entra o Ajuste 2 e 3
-folha_pagamento_certo <- folha_pagamento %>% filter( und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
-                                                       und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
-                                                       und_orc == "servico florestal brasileiro - sfb" | und_orc=="ministerio do meio ambiente e mudanca do clima - administracao direta"|
-                                                       und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") %>% filter(plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
-                                                                                                                                                  plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos - despesas diversas"|
-                                                                                                                                                  plano_orc == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
-                                                                                                                                                  plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
-                                                                                                                                                  plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
-                                                                                                                                                  plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
-                                                                                                                                                  plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
-                                                                                                                                                  plano_orc == "auxilio-alimentacao aos servidores civis, empregados e militares"|
-                                                                                                                                                  plano_orc == "auxilio-transporte aos servidores civis, empregados e militares"|
-                                                                                                                                                  plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
-                                                                                                                                                  plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
-                                                                                                                                                  plano_orc == "auxilio-alimentacao de civis"|plano_orc == "auxilio-transporte - civis"|
-                                                                                                                                                  plano_orc== "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
-                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao"|
-                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - regra de ouro"|
-                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area fim"|
-                                                                                                                                                  plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area meio"|
-                                                                                                                                                  plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos - despesas diversas - regra de ouro"|
-                                                                                                                                                  plano_orc == "ativos civis da uniao"|
-                                                                                                                                                  plano_orc == "auxilio-funeral e natalidade de civis"|
-                                                                                                                                                  plano_orc == "assistencia pre-escolar aos dependentes de servidores civis e de empregados"|
-                                                                                                                                                  plano_orc == "auxilio-funeral e natalidade de civis"|
-                                                                                                                                                  plano_orc == "auxilio-transporte de civis"|
-                                                                                                                                                  plano_orc == "regra de ouro: assistencia pre-escolar aos dependentes de servidores civis e de empregados"|
-                                                                                                                                                  plano_orc == "regra de ouro: auxilio-alimentacao de civis"|
-                                                                                                                                                  plano_orc == "regra de ouro: auxilio-funeral e natalidade de civis"|
-                                                                                                                                                  plano_orc == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|plano_orc == "pagamento de pessoal ativo da uniao"|plano_orc == "ativos civis da uniao"|plano_orc == "pessoal ativo da uniao")
+
+folha_pagamento_certo_new <- folha_pagamento_new %>% filter( und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama" |
+                                                               und_orc == "fundacao nacional do indio - funai" | und_orc == "instituto chico mendes de conservacao da biodiversidade" |
+                                                               und_orc == "servico florestal brasileiro - sfb" | und_orc=="ministerio do meio ambiente e mudanca do clima - administracao direta"|
+                                                               und_orc == "instituto de pesquisas jardim botanico do rio de janeiro - jbrj") %>% filter(plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
+                                                                                                                                                          plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos - despesas diversas"|
+                                                                                                                                                          plano_orc == "assistencia medica e odontologica aos servidores civis, empregados, militares e seus dependentes"|
+                                                                                                                                                          plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                          plano_orc == "assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                          plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
+                                                                                                                                                          plano_orc == "assistencia pre-escolar aos dependentes dos servidores civis e de empregados"|
+                                                                                                                                                          plano_orc == "auxilio-alimentacao aos servidores civis, empregados e militares"|
+                                                                                                                                                          plano_orc == "auxilio-transporte aos servidores civis, empregados e militares"|
+                                                                                                                                                          plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                          plano_orc == "regra de ouro: assistencia medica e odontologica de civis - complementacao da uniao"|
+                                                                                                                                                          plano_orc == "auxilio-alimentacao de civis"|plano_orc == "auxilio-transporte - civis"|
+                                                                                                                                                          plano_orc== "ajuda de custo para moradia ou auxilio-moradia a agentes publicos"|
+                                                                                                                                                          plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao"|
+                                                                                                                                                          plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - regra de ouro"|
+                                                                                                                                                          plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area fim"|
+                                                                                                                                                          plano_orc == "capacitacao de servidores publicos federais em processo de qualificacao e requalificacao - area meio"|
+                                                                                                                                                          plano_orc == "ajuda de custo para moradia ou auxilio-moradia a agentes publicos - despesas diversas - regra de ouro"|
+                                                                                                                                                          plano_orc == "ativos civis da uniao"|
+                                                                                                                                                          plano_orc == "auxilio-funeral e natalidade de civis"|
+                                                                                                                                                          plano_orc == "assistencia pre-escolar aos dependentes de servidores civis e de empregados"|
+                                                                                                                                                          plano_orc == "auxilio-funeral e natalidade de civis"|
+                                                                                                                                                          plano_orc == "auxilio-transporte de civis"|
+                                                                                                                                                          plano_orc == "regra de ouro: assistencia pre-escolar aos dependentes de servidores civis e de empregados"|
+                                                                                                                                                          plano_orc == "regra de ouro: auxilio-alimentacao de civis"|
+                                                                                                                                                          plano_orc == "regra de ouro: auxilio-funeral e natalidade de civis"|
+                                                                                                                                                          plano_orc == "contribuicao da uniao, de suas autarquias e fundacoes para o custeio do regime de previdencia dos servidores publicos federais"|plano_orc == "pagamento de pessoal ativo da uniao"|plano_orc == "pessoal ativo da uniao" | plano_orc == "auxilio-transporte de civis ativos"|
+                                                                                                                                                          plano_orc =="auxilio-alimentacao de civis ativos")
 
 
 
-resto2 <- resto %>% anti_join(folha_pagamento)
-data_siop_final <- bind_rows(adm_unidades_filter,resto2,folha_pagamento_certo)
-data_siop_final$Pago %>% sum
-#Valor sem rio_marker 23.549.526.033  
+resto2_new <- resto_new %>% anti_join(folha_pagamento_new)
 
 
-ficou_fora_landscape<- siop_tratado_unidade_orcamentaria_acao_plano_orc %>% anti_join(data_siop_final)
-restante <- ficou_fora_landscape %>% filter((acao == "administracao da unidade" & plano_orc == "administracao da unidade - inpa")|
-                                              (acao == "administracao da unidade" & plano_orc == "administracao da unidade - inpa - regra de ouro")|
-                                              (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpa")|
-                                              (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpe")|
-                                              (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpe - regra de ouro"))
+data_siop_final<- bind_rows(adm_unidades_filter_new,folha_pagamento_certo_new,resto2_new) 
+data_siop_final$Pago %>% sum #2.8306e+10 ou 28.306.000.000,00  APÓS CORRECAO MIGUEL -> 28.960.914.158 APOS CORRECAO DO MIGUEL NOVA 28.973.904.116
+ficou_fora_landscape_new<- siop_tratado_unidade_orcamentaria_acao_plano_orc_new %>% anti_join(data_siop_final)
 
-data_siop_final2 <- rbind(restante,data_siop_final)
+restante_new <- ficou_fora_landscape_new %>% filter((acao == "administracao da unidade" & plano_orc == "administracao da unidade - inpa")|
+                                                      (acao == "administracao da unidade" & plano_orc == "administracao da unidade - inpa - regra de ouro")|
+                                                      (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpa")|
+                                                      (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpe")|
+                                                      (acao == "administracao da unidade" & plano_orc == "capacitacao de recursos humanos no inpe - regra de ouro"))
 
+data_siop_final2 <- rbind(restante_new,data_siop_final)
+data_siop_final2$Pago %>% sum # 28.342.848.977 APOS CORREÇÃO MIGUEL -> 28.997.758.976 APOS CORRECAO DO MIGUEL 2: 29.010.748.934
 # Inicio da Transformacao para o landscape
 data_siop_final_landscape <- data_siop_final2%>%
   mutate(id_original = "-",
@@ -175,18 +165,20 @@ data_siop_final_landscape <- data_siop_final2%>%
          project_description = plano_orc,
          source_original = fonte_recursos) %>% left_join(source_landscape%>%select(fonte_recursos, source_finance_landscape, origin_domestic_international,origin_private_public),
                                                          by = "fonte_recursos") %>% 
-  mutate(value_original_currency = Pago,
-         original_currency = "BRL",
-         channel_original = str_c(modalidade,und_orc,sep=";")) %>% left_join(channel_landscape %>% select(channel_original,channel_landscape),by = "channel_original") %>%
+  
+  mutate(value_original_currency = Pago,original_currency = "BRL",channel_original = str_c(modalidade,und_orc,sep=";")) %>% left_join(channel_landscape %>% select(channel_original,channel_landscape),by = "channel_original") %>%
   mutate(instrument_original = grupo_de_despesa) %>% left_join(instrument_landscape, by ="instrument_original") %>% 
-  mutate(sector_original = str_c(funcao,subfuncao,sep = ";")) %>% left_join(sector_landscape, by = c("acao" = "acao_des_limpa")) %>%
-  mutate(subsector_original = programa)
+  mutate(sector_original = str_c(funcao,subfuncao,sep = ";")) %>% left_join(sector_landscape, by = c("acao" = "acao_des_limpa")) %>% mutate(subsector_original = programa)
+
+
+
 
 #Filtro Climático
 data_siop_final_landscape2 <- data_siop_final_landscape %>% left_join(climate_use %>% select(acao_des_limpa,rio_marker,climate_component ,activity_landscape ),by = c("acao"="acao_des_limpa")) 
-
+data_siop_final_landscape2 %>% filter(is.na(climate_component))
 
 # Filtro do Ajuste 5 (FOI APLICADO A AJUSTE 5 POIES ELE ESTA CERTO)
+data_siop_final_landscape2 <- data_siop_final_landscape2 %>% mutate(rio_marker=as.numeric(rio_marker)) 
 data_siop_final_landscape2 <- data_siop_final_landscape2 %>%
   mutate(rio_marker = case_when(plano_orc == "licenca, avaliacao , registro e autorizacoes ambientais" ~ 0.4,
                                 plano_orc == "licenca, avaliacao, registro e autorizacoes ambientais" ~ 0.4,
@@ -196,30 +188,32 @@ data_siop_final_landscape2 <- data_siop_final_landscape2 %>%
                                 plano_orc == "fomento a indicacao geografica de produtos agropecuarios - ig"~0.4,
                                 plano_orc == "funcionamento do conselho nacional de recursos hidricos"~0.4,
                                 .default = rio_marker)) 
+
 #Filtro de Ajuste 4 (FOI APLICADO O AJUSETE 4 POIS ELE ESTA CERTO TBM)
+
 data_siop_final_landscape2 <- data_siop_final_landscape2 %>% 
   mutate(rio_marker = case_when(plano_orc=="desenvolvimento dos satelites da serie amazonia"~1,
                                 plano_orc == "desenvolvimento dos satelites da serie amazonia - regra de ouro"~1,
                                 .default = rio_marker)) 
 
-
 # Aplicacao Rio Marker
-data_siop_final_landscape2_metodologiaPadrao <- data_siop_final_landscape2 %>% mutate(value_original_currency = value_original_currency*rio_marker)
-data_siop_final_landscape2_metodologiaPadrao$value_original_currency %>% sum #23.562.480.565
-data_siop_final_landscape2_metodologiaPadrao %>% select(sector_landscape) %>% unique
+data_siop_final_landscape2 <- data_siop_final_landscape2 %>% mutate(value_original_currency = value_original_currency*rio_marker)
+data_siop_final_landscape2$value_original_currency %>% sum #26.810.214.393 APOS AJUSTE MIGUEL -> 27.462.237.025
+
 # Pequena alteração nas classes dos dados para padronizar e Ajustar sectors faltantes
-data_siop_final_landscape2_metodologiaPadrao <- data_siop_final_landscape2_metodologiaPadrao %>% mutate(channel_landscape = case_when(channel_landscape == "Civil society organizations" ~ "Civil society organization",
-                                                                                      channel_landscape == "Financial Institutions"  ~"Financial Institution",
-                                                                                      .default = channel_landscape),
-                                                        origin_private_public = case_when(origin_private_public == "Other"~"Others",
-                                                                                          .default = origin_private_public),
-                                                        origin_domestic_international = case_when(origin_domestic_international == "Domestic" ~"National",
-                                                                                                  .default =origin_domestic_international )) 
+
+data_siop_final_landscape2 <- data_siop_final_landscape2 %>% mutate(channel_landscape = case_when(channel_landscape == "Civil society organizations" ~ "Civil society organization",
+                                                                                                  channel_landscape == "Financial Institutions"  ~"Financial Institution",
+                                                                                                  .default = channel_landscape),
+                                                                    origin_private_public = case_when(origin_private_public == "Other"~"Others",
+                                                                                                      .default = origin_private_public),
+                                                                    origin_domestic_international = case_when(origin_domestic_international == "Domestic" ~"National",
+                                                                                                              .default =origin_domestic_international )) 
 
 
 
-data_siop_final_landscape2_metodologiaPadrao <- data_siop_final_landscape2_metodologiaPadrao %>% mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "servico florestal brasileiro - sfb",
-                                                                                   true = "Forest",false = sector_landscape)) %>% 
+data_siop_final_landscape3 <- data_siop_final_landscape2 %>% mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "servico florestal brasileiro - sfb",
+                                                                                               true = "Forest",false = sector_landscape)) %>% 
   mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "ministerio da ciencia, tecnologia e inovacao - administracao direta",
                                     true = "Multi-sector",false = sector_landscape))%>% 
   mutate(sector_landscape = if_else(acao == "administracao da unidade" & und_orc == "fundacao nacional do indio - funai",
@@ -266,18 +260,22 @@ data_siop_final_landscape2_metodologiaPadrao <- data_siop_final_landscape2_metod
                                     true = "Multi-sector",false = sector_landscape))%>% 
   mutate(sector_landscape = if_else(acao == "monitoramento, avaliacao e controle de substancias, produtos quimicos e biologicos e de atividades potencialmente poluidoras e utilizadoras de recursos ambientais" & und_orc == "instituto brasileiro do meio ambiente e dos recursos naturais renovaveis - ibama",
                                     true = "Forest",false = sector_landscape))%>% 
-mutate(sector_landscape = if_else(acao == "pesquisa e desenvolvimento no setor aeroespacial" & und_orc == "comando da aeronautica",
-                                  true = "Multi-sector",false = sector_landscape))%>% 
+  mutate(sector_landscape = if_else(acao == "pesquisa e desenvolvimento no setor aeroespacial" & und_orc == "comando da aeronautica",
+                                    true = "Multi-sector",false = sector_landscape))%>% 
   mutate(sector_landscape = if_else(acao == "pesquisa e desenvolvimento no setor aeroespacial" & und_orc == "fundo aeronautico",
                                     true = "Multi-sector",false = sector_landscape))%>% 
   mutate(sector_landscape = if_else(acao == "regulacao e fiscalizacao dos usos de recursos hidricos, dos servicos de irrigacao e aducao de agua bruta e da seguranca de barragens" & und_orc == "agencia nacional de aguas e saneamento basico - ana",
                                     true = "Multi-sector",false = sector_landscape))  %>% 
   mutate(sector_landscape=case_when(sector_landscape=="Agriculture" ~"Crop",
-                                    .default = sector_landscape))
-  
+                                    .default = sector_landscape)) %>% 
+  mutate(sector_landscape=if_else(acao == "operacao de sistemas espaciais de observacao da terra" & und_orc == "comando da aeronautica",true= "Multi-sector",false = sector_landscape)) %>% 
+  mutate(sector_landscape = if_else(acao == "apoio ao desenvolvimento da producao agropecuaria sustentavel" & und_orc == "ministerio da agricultura e pecuaria - administracao direta",true = "Crop",false = sector_landscape)) %>% 
+  mutate(sector_landscape=if_else(acao == "desenvolvimento de sistemas espaciais" & und_orc == "agencia espacial brasileira",true = "Multi-sector",false = sector_landscape))
 
+data_siop_final_landscape3<- data_siop_final_landscape3 %>% mutate(sector_landscape= case_when(sector_landscape=="Multi-Sector" ~ "Multi-sector",
+                                                                                               .default = sector_landscape))
 
-data_siop_final_landscape2_metodologiaPadrao_final<- data_siop_final_landscape2_metodologiaPadrao %>% left_join(beneficiary_landscape %>% distinct(acao_des_limpa,.keep_all = T) ,by=c("acao"="acao_des_limpa")) %>% 
+data_siop_final_landscape3<- data_siop_final_landscape3 %>% left_join(beneficiary_landscape %>% distinct(acao_des_limpa,.keep_all = T) %>% select(acao_des_limpa,beneficiary_landscape) ,by=c("acao"="acao_des_limpa")) %>% 
   mutate(beneficiary_landscape = case_when(acao == "regularizacao da estrutura fundiaria na area de abrangencia da lei 11.952, de 2009"~"Smallholders",
                                            acao == "desenvolvimento economico e social dos produtores rurais"~"Rural Producers",
                                            acao == "abastecimento publico de agua em comunidades ribeirinhas dos rios sao francisco, do parnaiba, do itapecuru e do mearim. - agua para todos"~"Indigenous Peoples, Traditional Populations and Other Local Communities",
@@ -287,24 +285,23 @@ data_siop_final_landscape2_metodologiaPadrao_final<- data_siop_final_landscape2_
   mutate(beneficiary_original = "-",
          beneficiary_public_private="-",
          localization_original = localizador,region = regiao,uf = uf,municipality=municipio,subactivity_landscape="-")
-  
-  
 
+data_siop_final_landscape3 <- data_siop_final_landscape3 %>% mutate(channel_landscape = case_when(acao == "indenizacoes e restituicoes relativas ao programa de garantia da atividade agropecuaria - proagro (lei nº 8.171, de 1991)" ~"Financial Institution",
+                                                                                                                                                   .default =channel_landscape )) %>% 
+  mutate(instrument_landscape = case_when(acao == "indenizacoes e restituicoes relativas ao programa de garantia da atividade agropecuaria - proagro (lei nº 8.171, de 1991)"~"Risk Management",
+                                          acao == "contribuicao ao fundo garantia-safra (lei nº 10.420, de 2002)"~"Risk Management",
+                                          .default = instrument_landscape))
 
-data_siop_final_landscape2_metodologiaPadrao_final$value_original_currency %>% sum
-23.562.480.565
-#Fazendo Deflacao
+data_siop_final_landscape3$value_original_currency %>% sum #26.810.214.393  APOS AJUSTE MIGUEL -> 27.462.237.025 APOS SEGUNDO FILTRO: 27.475.226.983 
+# Ultimo ajuste especifico
+data_siop_final_landscape3 %>% filter(plano_orc == "censo demografico 2020")   %>% select(Pago) %>% sum
+#Deflação
 ibge_ipca <- read_excel("A:\\macro\\IPCA\\cleanData/ipca_ibge_cl.xlsx")
 ibge_ipca <- ibge_ipca %>% 
   dplyr::mutate(variacao_doze_meses = suppressWarnings(as.numeric(variacao_doze_meses)))
 deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
   
-  # Defina o seu projeto no Google Cloud, é importante criar o projeto e colar o id no "set_billing_id". Fora isso, nao funcionarah
-  # Existe um bug no datalake da Base dos Dados que não permite o download direto.
-  # set_billing_id("scenic-notch-360215")
-  # 
-  # # criacao do data frame direto da base de dados
-  # serie_basedosdados <- basedosdados::bdplyr("br_ibge_ipca.mes_brasil") %>% bd_collect()
+  
   
   serie_basedosdados <- base
   
@@ -347,11 +344,12 @@ ano_ini = 2015
 ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
 teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
-base_select_deflator <- data_siop_final_landscape2_metodologiaPadrao_final %>% 
+base_select_deflator <- data_siop_final_landscape3 %>% 
   left_join(teste, by= "year")%>%
-  dplyr::mutate(value_brl_deflated = value_original_currency * deflator)
-base_select_deflator$value_brl_deflated %>% sum
-# Fazendo a dolarizacao
+  dplyr::mutate(value_brl_deflated = value_original_currency * deflator) 
+base_select_deflator$value_brl_deflated %>% sum #27.736.908.972 APOS AJUSTE MIGUEL -> 28.413.359.055   APOS AJUSTES MIGUEL 2.0: 28.427.105.837
+
+#Dolarizacao
 coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(Sys.time(), "%d/%m/%Y")){
   #Argumentos: vetor de séries, datainicial que pode ser manualmente alterada e datafinal que automaticamente usa a data de hoje
   #Cria estrutura de repetição para percorrer vetor com códigos de séries e depois juntar todas em um único dataframe
@@ -388,58 +386,58 @@ base_select_deflator = base_select_deflator %>%
 
 # Finalizando e salvando
 base_select_deflator<- base_select_deflator %>% select(id_original,data_source,year,project_name,project_description,source_original,
-                                source_finance_landscape,origin_domestic_international,origin_private_public,
-                                value_original_currency,original_currency,value_brl_deflated,value_usd,channel_original,
-                                channel_landscape,instrument_original,instrument_landscape,sector_original,sector_landscape,
-                                subsector_original,activity_landscape,subactivity_landscape,climate_component,rio_marker,
-                                beneficiary_original,beneficiary_landscape,beneficiary_public_private,localization_original,region,
-                                uf,municipality)
+                                                       source_finance_landscape,origin_domestic_international,origin_private_public,
+                                                       value_original_currency,original_currency,value_brl_deflated,value_usd,channel_original,
+                                                       channel_landscape,instrument_original,instrument_landscape,sector_original,sector_landscape,
+                                                       subsector_original,activity_landscape,subactivity_landscape,climate_component,rio_marker,
+                                                       beneficiary_original,beneficiary_landscape,beneficiary_public_private,localization_original,region,
+                                                       uf,municipality)
 
-
-
-
-
-
-
+base_select_deflator$value_original_currency %>% sum #26.810.214.393 APOS AJUSTE MIGUEL -> 27.462.237.025  APOS AJUSTES MIGUEL 2.0 27.475.226.983  APOS RETIRADA DO CENSO 26.591.593.789
+base_select_deflator <- base_select_deflator %>% filter(project_description!="censo demografico 2020") 
+base_select_deflator$value_original_currency %>% sum
+write_rds(base_select_deflator,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_Ver3_26052024.rds")
+write.xlsx(base_select_deflator,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_Ver3_26052024.xlsx")
 ######### A partir daqui é aplicação de Dicionario de dados ##################################################################################
 
 # Filtrando os investimentos que nao tiveram match
 
 
-siop_landscape <- siop_landscape %>% anti_join(siop_landscape_climate_use, by = "left_join_key")
+
 
 
 # Aplicando os filtros para sectorlandscape
-siop_landscape <- siop_landscape %>% mutate(Coluna_search = str_c(project_name,project_description,sector_original,subsector_original,channel_original,source_original,sep = ";"))
+df_remainder_SIOP1 <- df_remainder_SIOP1 %>% mutate(Coluna_search = str_c(acao,plano_orc,funcao,subfuncao,programa,modalidade,
+                                                                          und_orc,Fonte,sep = ";"))
 
-bioenergia_siop <- bioenergy_search_pattern_SIOP(data_frame_SIOP = siop_landscape,Coluna_search = Coluna_search)
-bioenergia_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original)%>% view
+bioenergia_siop <- bioenergy_search_pattern_SIOP(data_frame_SIOP = df_remainder_SIOP1,Coluna_search = Coluna_search)
+bioenergia_siop %>% select(acao,und_orc) %>% unique %>% view
 bioenergia_siop_filtrado <- bioenergy_out_SIOP(data_frame_SIOP_bioenergia = bioenergia_siop,Coluna_search = Coluna_search)
 bioenergia_siop_filtrado$sector_landscape = "Bioenergy and fuels"
 
 
-crop_siop <- crop_search_pattern_SIOP(data_frame_SIOP = siop_landscape,Coluna_search = Coluna_search)
-crop_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
+crop_siop <- crop_search_pattern_SIOP(data_frame_SIOP = df_remainder_SIOP1,Coluna_search = Coluna_search)
+crop_siop_filtrado%>% select(acao,und_orc) %>% unique %>% view
 crop_siop_filtrado<- crop_out_SIOP(data_frame_SIOP_crop = crop_siop,Coluna_search = Coluna_search)
 crop_siop_filtrado$sector_landscape = "Crop"
 #crop_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
-multisector_siop <- multisector_search_pattern_SIOP(data_frame_SIOP=siop_landscape ,Coluna_search = Coluna_search) 
-multisector_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
+multisector_siop <- multisector_search_pattern_SIOP(data_frame_SIOP=df_remainder_SIOP1 ,Coluna_search = Coluna_search) 
+multisector_siop%>% select(acao,und_orc) %>% unique %>% view
 multisector_siop_filtrado <- multisector_out_SIOP (data_frame_SIOP_multisector = multisector_siop,Coluna_search = Coluna_search)
 multisector_siop_filtrado$sector_landscape = "Multisector"
 #multisector_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
-forest_siop <- forest_search_pattern_SIOP(data_frame_SIOP = siop_landscape,Coluna_search =Coluna_search )
-forest_siop%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
+forest_siop <- forest_search_pattern_SIOP(data_frame_SIOP = df_remainder_SIOP1,Coluna_search =Coluna_search )
+forest_siop%>% select(acao,und_orc) %>% unique %>% view
 forest_siop_filtrado <- forest_out_SIOP(data_frame_SIOP_forest = forest_siop,Coluna_search = Coluna_search)
-forest_siop_filtrado%>%select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,Coluna_search)%>% unique %>% view
+
 forest_siop_filtrado$sector_landscape = "Forest"
 forest_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
 siop_sectorlandscape <- rbind(bioenergia_siop_filtrado,crop_siop_filtrado,multisector_siop_filtrado,forest_siop_filtrado)
 
-siop_resto_noSector <- siop_landscape %>% filter(!Coluna_search %in% siop_sectorlandscape$Coluna_search)
+siop_resto_noSector <- df_remainder_SIOP1 %>% filter(!Coluna_search %in% siop_sectorlandscape$Coluna_search)
 
 # Fazendo a classificacao climática:
 # Vamos começar pelo Forest_siop
@@ -587,17 +585,17 @@ siop_GerenciamentoMonitoramentosoAguaSaneamento <- siop_sectorlandscape %>% filt
   grepl("\\bapoio a implementacao de acoes de desenvolvimento do setor aguas\\b", x = Coluna_search , ignore.case = TRUE) |
   grepl("\\bimplantacao, ampliacao, melhoria ou adequacao de sistemas de esgotamento sanitario na area de atuacao da codevasf\\b", x = Coluna_search , ignore.case = TRUE))
 ) %>% mutate(activity_landscape = "Gerenciamento e monitoramento para uso de água e saneamento") %>% mutate(
-  subactivity_landscape = if_else((grepl("\\baducao de agua bruta\\b", x = project_description , ignore.case = TRUE) | grepl("\\bintervencoes emergenciais para efetivacao dos processos de alocacao de agua\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bfiscalizacao da seguranca de barragens\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bprevencao de eventos hidrologicos criticos\\b", x = Coluna_search , ignore.case = TRUE)),true = "Construção ou recuperação de barragens, tanques e sistemas de captação de água. Implementação de sistemas de armazenamento de água para proteção contra efeitos da seca sazonal.",
+  subactivity_landscape = if_else((grepl("\\baducao de agua bruta\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bintervencoes emergenciais para efetivacao dos processos de alocacao de agua\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bfiscalizacao da seguranca de barragens\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bprevencao de eventos hidrologicos criticos\\b", x = Coluna_search , ignore.case = TRUE)),true = "Construção ou recuperação de barragens, tanques e sistemas de captação de água. Implementação de sistemas de armazenamento de água para proteção contra efeitos da seca sazonal.",
                                   false = if_else((grepl("\\bpisf\\b", x = Coluna_search , ignore.case = TRUE)), true = "Abastecimento público de água em comunidades ribeirinhas dos Rios São Francisco, do Parnaíba, do Itapecuru e do Mearim (Programa Água para Todos). Construção e adequação de sistemas públicos de esgotamento sanitário em comunidades ribeirinhas.",
-                                  false = if_else((grepl("\\birrigacao\\b", x = project_description , ignore.case = TRUE) |grepl("\\bapoio aos polos de agricultura irrigada\\b", x = project_description , ignore.case = TRUE)), true = "Irrigação por gotejamento, outros tipos de irrigação, reservatórios e exploração de águas subterrâneas para a agricultura.",
-                                  false = if_else((grepl("\\bsaneamento\\b", x = project_description , ignore.case = TRUE) | grepl("\\brnqa\\b", x = project_description , ignore.case = TRUE) | grepl("\\bapoio a implementacao de planos de recursos hidricos\\b", x = project_description , ignore.case = TRUE) | grepl("\\bsnirh", x = project_description , ignore.case = TRUE) | grepl("\\baguas subterraneas e superficiais\\b", x = project_description , ignore.case = TRUE) | grepl("\\belaboracao de planos e estudos de recursos hidricos\\b", x = project_description , ignore.case = TRUE) | grepl("\\bcapacitacao para a gestao de recursos hidricos\\b", x = project_description , ignore.case = TRUE) | grepl("\\bpromocao da conservacao e do uso sustentavel da agua\\b", x = project_description , ignore.case = TRUE) | grepl("\\bcadastro nacional de usuarios de recursos hidricos\\b", x = project_description , ignore.case = TRUE) | grepl("\\bapoio aos comites, agencias de bacia hidrografica e orgaos gestores estaduais e do distrito federal\\b", x = project_description , ignore.case = TRUE) |
+                                  false = if_else((grepl("\\birrigacao\\b", x = plano_orc , ignore.case = TRUE) |grepl("\\bapoio aos polos de agricultura irrigada\\b", x = plano_orc , ignore.case = TRUE)), true = "Irrigação por gotejamento, outros tipos de irrigação, reservatórios e exploração de águas subterrâneas para a agricultura.",
+                                  false = if_else((grepl("\\bsaneamento\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\brnqa\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bapoio a implementacao de planos de recursos hidricos\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bsnirh", x = plano_orc , ignore.case = TRUE) | grepl("\\baguas subterraneas e superficiais\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\belaboracao de planos e estudos de recursos hidricos\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bcapacitacao para a gestao de recursos hidricos\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bpromocao da conservacao e do uso sustentavel da agua\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bcadastro nacional de usuarios de recursos hidricos\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bapoio aos comites, agencias de bacia hidrografica e orgaos gestores estaduais e do distrito federal\\b", x = plano_orc , ignore.case = TRUE) |
                                   grepl("\\bapoio a sistemas de drenagem urbana sustentavel e de manejo de aguas pluviais em municipios criticos sujeitos a eventos recorrentes de inundacoes, enxurradas e alagamentos\\b", x = Coluna_search , ignore.case = TRUE) |
                                   grepl("\\bapoio a implantacao, ampliacao ou melhorias de sistemas de esgotamento sanitario em municipios com populacao superior a 50 mil habitantes ou municipios integrantes de regioes metropolitanas ou de regioes integradas de desenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) |
                                   grepl("\\bapoio a empreendimentos de saneamento integrado em municipios com populacao superior a 50 mil habitantes ou municipios integrantes de regioes metropolitanas ou de regioes integradas de desenvolvimento\\b", x = Coluna_search , ignore.case = TRUE) |
                                   grepl("\\bapoio a implementacao de acoes de desenvolvimento do setor aguas\\b", x = Coluna_search , ignore.case = TRUE)|
                                   grepl("\\bimplantacao, ampliacao, melhoria ou adequacao de sistemas de esgotamento sanitario na area de atuacao da codevasf\\b", x = Coluna_search , ignore.case = TRUE)),
                                   true = "Programas de abastecimento de água, saneamento e higiene",
-                                  false = if_else((grepl("\\bremocao de cargas poluidoras de bacias hidrograficas - prodes\\b", x = project_description , ignore.case = TRUE) | grepl("\\bcooperacao nacional e internacional em recursos hidricos\\b", x = project_description , ignore.case = TRUE)),true = "Projetos de infraestrutura e atividades institucionais para o manejo integrado de bacias hidrográficas.", false = "Sem Classificacao")))))
+                                  false = if_else((grepl("\\bremocao de cargas poluidoras de bacias hidrograficas - prodes\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bcooperacao nacional e internacional em recursos hidricos\\b", x = plano_orc , ignore.case = TRUE)),true = "Projetos de infraestrutura e atividades institucionais para o manejo integrado de bacias hidrográficas.", false = "Sem Classificacao")))))
   ) %>% mutate(climate_component = "Mitigação e Adaptação")
 
 # Fazendo o sexto filtro
@@ -607,7 +605,7 @@ siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_6 , by="Coluna
 #Extensão rural para melhorar as práticas agronômicas e o acesso à tecnologia e infraestrutura
 siop_ExtensaoRural <- siop_sectorlandscape %>% filter((grepl("\\bextensao rural\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bpromocao da educacao do campo\\b", x = Coluna_search , ignore.case = TRUE))) %>% mutate(
       activity_landscape = "Extensão rural para melhorar as práticas agronômicas e o acesso à tecnologia e infraestrutura",
-      subactivity_landscape  = if_else((grepl("\\bfomento a producao de tecnologias e de conhecimentos\\b", x = project_description , ignore.case = TRUE) | grepl("\\bformacao e capacitacao tecnica e profissional \\b", x = project_description , ignore.case = TRUE) | grepl("\\bassistencia tecnica e extensao rural para o produtor rural\\b", x = project_description , ignore.case = TRUE) | grepl("\\bassistencia tecnica e extensao rural - despesas diversas\\b", x = project_description , ignore.case = TRUE)), true = "Assistência técnica e extensão rural, capacitação de técnicos e produtores, estruturação das entidades estaduais de assistência técnica.", 
+      subactivity_landscape  = if_else((grepl("\\bfomento a producao de tecnologias e de conhecimentos\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bformacao e capacitacao tecnica e profissional \\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bassistencia tecnica e extensao rural para o produtor rural\\b", x = plano_orc , ignore.case = TRUE) | grepl("\\bassistencia tecnica e extensao rural - despesas diversas\\b", x = plano_orc , ignore.case = TRUE)), true = "Assistência técnica e extensão rural, capacitação de técnicos e produtores, estruturação das entidades estaduais de assistência técnica.", 
       false = if_else((grepl("\\bpromocao da educacao do campo\\b", x = Coluna_search , ignore.case = TRUE)),true = "Treinamento agrícola não formal.", false = "Sem Classificacao"))
 ) %>% mutate(climate_component = "Mitigação e Adaptação")
 
@@ -619,38 +617,40 @@ siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_7 , by="Coluna
 
 pd_SistemasGestaoConhecimento <- siop_sectorlandscape %>% filter(
   ((grepl("\\bbiocombustiveis\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bjardim\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bjardim\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bgestao das colecoes vivas\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\brecursos geneticos\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bsaude\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpromocao da saude de animais aquaticos\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bcenso\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bembrapa\\b", x = Coluna_search , ignore.case = TRUE) ) |
-    (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbaixa emissao\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconservacao de solo e da agua\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bdesenvolvimento da agricultura irrigada\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos agropecuarios\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bmudancas climaticas\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\blevantamento e interpretacao de informacoes de solos\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bcacau\\b", x = Coluna_search , ignore.case = TRUE))|
-    (grepl("\\bcoordenacao e gestao do abastecimento agroalimentar\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bproducao aquicola sustentavel apoio ao funcionamento de unidades de producao, a pesquisa, ao desenvolvimento tecnologico e a inovacao para a producao aquicola sustentavel\\b", x = Coluna_search , ignore.case = TRUE))|
-    (grepl("\\bsuasa\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bpromocao e fortalecimento da estruturacao produtiva da agricultura familiar, pequenos e medios produtores rurais\\b", x = Coluna_search , ignore.case = TRUE)) | 
-    (grepl("\\bestruturacao e inclusao produtiva dos agricultores familiares e dos pequenos e medios produtores rurais\\b", x = Coluna_search , ignore.case = TRUE)) |
-    (grepl("\\bdesenvolvimento da cafeicultura\\b", x = Coluna_search , ignore.case = TRUE)))
+     (grepl("\\bjardim\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bgestao das colecoes vivas\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\brecursos geneticos\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bsaude\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpromocao da saude de animais aquaticos\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bcenso\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bembrapa\\b", x = Coluna_search , ignore.case = TRUE) ) |
+     (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bbaixa emissao\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bconservacao de solo e da agua\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bdesenvolvimento da agricultura irrigada\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bproducao agropecuaria\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos agropecuarios\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bmudancas climaticas\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\blevantamento e interpretacao de informacoes de solos\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bcacau\\b", x = Coluna_search , ignore.case = TRUE))|
+     (grepl("\\bcoordenacao e gestao do abastecimento agroalimentar\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bproducao aquicola sustentavel apoio ao funcionamento de unidades de producao, a pesquisa, ao desenvolvimento tecnologico e a inovacao para a producao aquicola sustentavel\\b", x = Coluna_search , ignore.case = TRUE))|
+     (grepl("\\bsuasa\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bpromocao e fortalecimento da estruturacao produtiva da agricultura familiar, pequenos e medios produtores rurais\\b", x = Coluna_search , ignore.case = TRUE)) | 
+     (grepl("\\bestruturacao e inclusao produtiva dos agricultores familiares e dos pequenos e medios produtores rurais\\b", x = Coluna_search , ignore.case = TRUE)) |
+     (grepl("\\bdesenvolvimento da cafeicultura\\b", x = Coluna_search , ignore.case = TRUE)))
 ) %>% mutate(activity_landscape = "P&D, sistemas de gestão do conhecimento",
-            subactivity_landscape = if_else((grepl("\\bbiocombustiveis\\b", x = Coluna_search , ignore.case = TRUE)), true = "P&D, inovação e estudos da indústria de biocombustíveis.",
-            false = if_else((grepl("\\bjardim\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE)),true = "Bancos de dados, inventários, perfis ambientais, estudos de impacto",
-            false = if_else((grepl("\\bjardim\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bgestao das colecoes vivas\\b", x = Coluna_search , ignore.case = TRUE)),true = "Bancos de dados, inventários, perfis ambientais, estudos de impacto",
-            false = if_else((grepl("\\brecursos geneticos\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bdesenvolvimento sustentavel da economia de patrimonio genetico e conhecimentos tradicionais e reparticao de beneficios\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bsuasa\\b", x = Coluna_search , ignore.case = TRUE)),true = "Pesquisas relacionadas ao melhoramento de plantas, recursos genéticos, saúde animal e biotecnologia agrícola.",
-            false = if_else((grepl("\\bsaude\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpromocao da saude de animais aquaticos\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bdesenvolvimento da cafeicultura\\b", x = Coluna_search , ignore.case = TRUE)),true = "Pesquisas relacionadas ao melhoramento de plantas, recursos genéticos, saúde animal e biotecnologia agrícola.",
-            false = if_else((grepl("\\bcenso\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bcoordenacao e gestao do abastecimento agroalimentar\\b", x = Coluna_search , ignore.case = TRUE)), true = "Geração e difusão de informações da agropecuária e do abastecimento agroalimentar. Desenvolvimento de plataforma de gestão de indicadores de sustentabilidade agroambiental e de indicadores para políticas agroambientais. Censos Demográfico, Agropecuário e Geográfico.",
-            false = if_else((grepl("\\bembrapa\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bproducao aquicola sustentavel apoio ao funcionamento de unidades de producao, a pesquisa, ao desenvolvimento tecnologico e a inovacao para a producao aquicola sustentavel\\b", x = Coluna_search, ignore.case = TRUE) | grepl("\\bpromocao e fortalecimento da estruturacao produtiva da agricultura familiar, pequenos e medios produtores rurais\\b", x = Coluna_search, ignore.case = TRUE) | grepl("\\bestruturacao e inclusao produtiva dos agricultores familiares e dos pequenos e medios produtores rurais\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
-            false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
-            false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bbaixa emissao\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
-            false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bconservacao de solo e da agua\\b", x = Coluna_search, ignore.case = TRUE)),true= "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
-            false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bdesenvolvimento da agricultura irrigada\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
-            false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bprodutos agropecuarios\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
-            false = if_else((grepl("\\bmudancas climaticas\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
-            false = if_else((grepl("\\bcacau\\b", x = Coluna_search, ignore.case = TRUE)),true = "Difusão e transferência de tecnologia para o desenvolvimento sustentável da agricultura e de SAFs nas regiõesprodutoras de cacau.",false = "Sem Classificacao"))))))))))))))) %>% mutate(subactivity_landscape = if_else((grepl("\\blevantamento e interpretacao de informacoes de solos\\b",x = project_description,ignore.case = TRUE)),true = "Unidades de Referência Tecnológica (URTs) do Plano Brasil Sem Miséria (BSM) e do Sistema Nacional de Pesquisas Agropecuárias (SNPA). Pesquisa, acompanhamento e avaliação de safras e perdas na pós-colheita. Levantamento e interpretação de informações de solos.",false = subactivity_landscape)) %>%
-            mutate(climate_component = "Mitigação e Adaptação")  
+             subactivity_landscape = if_else((grepl("\\bbiocombustiveis\\b", x = Coluna_search , ignore.case = TRUE)), true = "P&D, inovação e estudos da indústria de biocombustíveis.",
+                                             false = if_else((grepl("\\bjardim\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpesquisa\\b", x = Coluna_search , ignore.case = TRUE)),true = "Bancos de dados, inventários, perfis ambientais, estudos de impacto",
+                                                             false = if_else((grepl("\\bjardim\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bgestao das colecoes vivas\\b", x = Coluna_search , ignore.case = TRUE)),true = "Bancos de dados, inventários, perfis ambientais, estudos de impacto",
+                                                                             false = if_else((grepl("\\brecursos geneticos\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bdesenvolvimento sustentavel da economia de patrimonio genetico e conhecimentos tradicionais e reparticao de beneficios\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bsuasa\\b", x = Coluna_search , ignore.case = TRUE)),true = "Pesquisas relacionadas ao melhoramento de plantas, recursos genéticos, saúde animal e biotecnologia agrícola.",
+                                                                                             false = if_else((grepl("\\bsaude\\b", x = Coluna_search , ignore.case = TRUE) & grepl("\\bpromocao da saude de animais aquaticos\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bdesenvolvimento da cafeicultura\\b", x = Coluna_search , ignore.case = TRUE)),true = "Pesquisas relacionadas ao melhoramento de plantas, recursos genéticos, saúde animal e biotecnologia agrícola.",
+                                                                                                             false = if_else((grepl("\\bcenso\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bcoordenacao e gestao do abastecimento agroalimentar\\b", x = Coluna_search , ignore.case = TRUE)), true = "Geração e difusão de informações da agropecuária e do abastecimento agroalimentar. Desenvolvimento de plataforma de gestão de indicadores de sustentabilidade agroambiental e de indicadores para políticas agroambientais. Censos Demográfico, Agropecuário e Geográfico.",
+                                                                                                                             false = if_else((grepl("\\bembrapa\\b", x = Coluna_search , ignore.case = TRUE) | grepl("\\bproducao aquicola sustentavel apoio ao funcionamento de unidades de producao, a pesquisa, ao desenvolvimento tecnologico e a inovacao para a producao aquicola sustentavel\\b", x = Coluna_search, ignore.case = TRUE) | grepl("\\bpromocao e fortalecimento da estruturacao produtiva da agricultura familiar, pequenos e medios produtores rurais\\b", x = Coluna_search, ignore.case = TRUE) | grepl("\\bestruturacao e inclusao produtiva dos agricultores familiares e dos pequenos e medios produtores rurais\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
+                                                                                                                                             false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bsustentavel\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
+                                                                                                                                                             false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bbaixa emissao\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
+                                                                                                                                                                             false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bconservacao de solo e da agua\\b", x = Coluna_search, ignore.case = TRUE)),true= "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
+                                                                                                                                                                                             false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bdesenvolvimento da agricultura irrigada\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
+                                                                                                                                                                                                             false = if_else((grepl("\\bproducao agropecuaria\\b", x = Coluna_search, ignore.case = TRUE) & grepl("\\bprodutos agropecuarios\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
+                                                                                                                                                                                                                             false = if_else((grepl("\\bmudancas climaticas\\b", x = Coluna_search, ignore.case = TRUE)),true = "Adequação, ampliação, revitalização e modernização da infraestrutura das unidades da Embrapa. P&D para produção agropecuária sustentável e de baixo carbono, adaptação às mudanças ambientais globais, aumento da competitividade da produção de base familiar e das comunidades tradicionais.",
+                                                                                                                                                                                                                                             false = if_else((grepl("\\bcacau\\b", x = Coluna_search, ignore.case = TRUE)),true = "Difusão e transferência de tecnologia para o desenvolvimento sustentável da agricultura e de SAFs nas regiõesprodutoras de cacau.",false = "Sem Classificacao"))))))))))))))) %>% mutate(subactivity_landscape = if_else((grepl("\\blevantamento e interpretacao de informacoes de solos\\b",x = plano_orc,ignore.case = TRUE)),true = "Unidades de Referência Tecnológica (URTs) do Plano Brasil Sem Miséria (BSM) e do Sistema Nacional de Pesquisas Agropecuárias (SNPA). Pesquisa, acompanhamento e avaliação de safras e perdas na pós-colheita. Levantamento e interpretação de informações de solos.",false = subactivity_landscape)) %>%
+  mutate(climate_component = "Mitigação e Adaptação")  
+
+ 
 
 # Fazendo o oitavo filtro
 filtro_8 <- rbind(pd_SistemasGestaoConhecimento,filtro_7)
@@ -729,47 +729,10 @@ manejo_nutrientes_controle_pragas_servicos_pecuarios_vet <- siop_sectorlandscape
 filtro_11 <- rbind(manejo_nutrientes_controle_pragas_servicos_pecuarios_vet,filtro_10)
 siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_11 , by="Coluna_search")
 
-# Dando bind nas linhas que tiveram info de sector e climate use
-siop_landscape_climate_use_bind <- bind_rows(filtro_11,siop_landscape_climate_use)
-siop_landscape_climate_use_bind %>% filter(subactivity_landscape == "NA")%>%unique%>%view
-siop_landscape_climate_use_bind %>% filter(subactivity_landscape == "NA")%>%select(activity_landscape)%>%unique%>%view
-# Dando continuidade ao landscape
-siop_landscape_climate_use_bind <- siop_landscape_climate_use_bind %>% mutate(localization_original = localizador,region = regiao,uf = uf,municipality = municipio)
-siop_landscape_climate_use_bind %>% select(
-  all_of(c("id_original","data_source","year","project_name","project_description","source_original","source_of_finance_landscape",
-  "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
-  "instrument_landscape","sector_original","sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_component","localization_original","region",
-  "uf","municipality", "Coluna_search","Pago")) 
-)  %>% write.xlsx("A:/projects/landuse_br2024/SIOP/Siop_Landscape_ClimateUse_18_03_2024.xlsx")
-
-siop_landscape_climate_use_bind %>% select(
-  all_of(c("id_original","data_source","year","project_name","project_description","source_original","source_of_finance_landscape",
-  "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
-  "instrument_landscape","sector_original","sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_component","localization_original","region",
-  "uf","municipality", "Coluna_search","Pago")) )%>% select(project_name ,project_description,channel_original,activity_landscape,subactivity_landscape) %>% unique %>% view
-  
-%>% write.xlsx("PesquisaDesenvolvimentoDifusaoConhecimentoMCTI.xlsx")
 
 
-#siop_landscape_climate_use_bind %>% select(beneficiary_original,beneficiary_landscape) %>% unique %>% write.xlsx("Beneficiario.xlsx")
 
-# Unindo os que nao tiveram
-siop_rest <- bind_rows(siop_resto_noSector %>% mutate(sector_landscape = "Sem Classificacao de Setor"),siop_sectorlandscape)
-siop_rest %>% select(project_name,project_description,sector_original,subsector_original,channel_original,source_original,sector_landscape,Coluna_search) %>% unique  %>% write.xlsx("Siop_Resto.xlsx")
-siop_rest %>% group_by(sector_landscape) %>% count()
-
-siop_rest%>% select(
-  all_of(c("id_original","data_source","year","project_name","project_description","source_original","source_of_finance_landscape",
-  "domestic_internacional","source_private_public","original_currency","channel_original","channel_landscape","instrument_original",
-  "instrument_landscape","sector_original","sector_landscape","subsector_original",
-   "Coluna_search","Pago")) 
-)%>% write.xlsx("A:/projects/landuse_br2024/SIOP/Siop_Resto_18_03_2024.xlsx")
-#Criando o resumo de dados para o SIOP
-create_dict(siop_tratado, write_excel = TRUE, file_name = "Descricao_Dados_SIOP_18_03_24_v2")
-yaImpute
-siop_tratado%>%names
-
-
+########################################################################################
 
 
 
@@ -892,4 +855,6 @@ siop_antigo_climate%>% view
 
 channel_landscape %>% filter(is.na(und_orc))
 
+ 
 
+                                                             
