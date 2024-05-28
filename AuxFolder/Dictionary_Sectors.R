@@ -663,7 +663,9 @@ forest_search_pattern_SIOP <- function(data_frame_SIOP,Coluna_search){
 }
 bioenergy_out_SIOP <- function(data_frame_SIOP_bioenergia,Coluna_search){
     data_frame_bioenergy_filter <- data_frame_SIOP_bioenergia %>% filter(
-        (!grepl("\\bestudos da industria de petroleo e gas natural\\b", x = Coluna_search , ignore.case = TRUE)))
+        (!grepl("\\bestudos da industria de petroleo e gas natural\\b", x = Coluna_search , ignore.case = TRUE)) &
+          (!grepl("\\badministracao da unidade\\b", x = Coluna_search , ignore.case = TRUE)) &
+          (!grepl("\\bativos civis da uniao\\b", x = Coluna_search , ignore.case = TRUE)))
     return(data_frame_bioenergy_filter)
 }
 
