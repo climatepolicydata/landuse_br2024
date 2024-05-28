@@ -45,6 +45,7 @@ df_bndes_filter_landscape <- df_bndes_filter_landscape %>% mutate(
     municipality = municipio)
 
 
+
 # Filtrando as observações do BNDES 2020-2023 em que os projetos sao similares aos projetos do Landscape antigo. Assim a gente já consegue classificar o sector landscape e a atividade climatica
 # Primeiro, vamos ler a base do landscape antigo
 last_landscape <- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_14032024.rds")
@@ -179,8 +180,9 @@ landscape_bndesNAUT <- filtro_4 %>% select(
   "sector_landscape","subsector_original","activity_landscape","subactivity_landscape","climate_use",
   "beneficiary_original","beneficiary_landscape","beneficiary_public_private","localization_original","region","uf","municipality","valor_contratado_reais")) 
 )
-landscape_bndesNAUT %>% write.xlsx("Landscape_climateUse_bndes_naut.xlsx")
-
+getwd()
+landscape_bndesNAUT %>% write.xlsx("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_23052024.xlsx")
+landscape_bndesNAUT%>% write_rds("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_23052024.rds")
 
 
 bndes_NAUT_fora <- df_bndes_filter_landscape_v2%>% select(
@@ -192,4 +194,38 @@ bndes_NAUT_fora <- df_bndes_filter_landscape_v2%>% select(
 )
 bndes_NAUT_fora %>% write.xlsx("bndes_naut_Fora5.xlsx")
 
+base_select_deflator <- landscape_bndesNAUT %>% mutate(value_original_currency = as.numeric(str_replace(value_original_currency,pattern = ",",".")))  %>% 
+  left_join(teste, by= "year")%>%
+  dplyr::mutate(value_brl_deflated = value_original_currency * deflator)
+base_select_deflator$value_brl_deflated %>% sum
+
+base_select_deflator = base_select_deflator %>% 
+  left_join(tabela_cambio,by='year') %>% 
+  dplyr::mutate(value_usd = value_brl_deflated/cambio)
+
+base_select_deflator %>% select(-valor_contratado_reais,-deflator,-cambio) %>% mutate(rio_marker="-") %>% write_rds("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_23052024.rds")
+base_select_deflator %>% select(-valor_contratado_reais,-deflator,-cambio) %>% mutate(rio_marker="-") %>% write.xlsx("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_23052024.xlsx")
+
+
+
+f_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_23052024.rds") %>% 
+  dplyr::rename(climate_component = climate_use,
+                source_finance_landscape = source_of_finance_landscape,
+                origin_domestic_international = national_internacional,
+                origin_private_public = source_private_public)
+dados2<- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_20052024_reviewed.rds")
+dados2 <- dados2 %>% select(-value_brl_deflated_mean,-value_usd_mean)
+dados2<-dados2 %>% filter(data_source  == "bndes_naut")
+f_bndes_naut_calculus$data_source = "bndes_naut"
+a <- rbind(f_bndes_naut_calculus,dados2)
+
+base_select_deflator <- a %>% 
+  left_join(teste, by= "year")%>%
+  dplyr::mutate(value_brl_deflated = value_original_currency * deflator)
+base_select_deflator %>% view
+
+base_select_deflator = base_select_deflator %>% 
+  left_join(tabela_cambio,by='year') %>% 
+  dplyr::mutate(value_usd = value_brl_deflated/cambio)
+base_select_deflator %>% select(-cambio,-deflator) %>% write_rds("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_20152023_23052024.rds")
 
