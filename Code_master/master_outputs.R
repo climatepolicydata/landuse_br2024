@@ -19,7 +19,7 @@ dir_nint_output <- ("A:\\projects\\landuse_br2024\\nint\\output")
 
 dir_oecd_output <- ("A:/projects/landuse_br2024/oecd_cf/output")
 
-dir_idb_output <- ("A:\\projects\\landuse_br2024\\idb")
+dir_idb_output <- ("A:\\projects\\landuse_br2024\\idb\\output")
 
 fnmc_output <- ("A:/projects/landuse_br2024/gov_fnmc")
 
@@ -32,6 +32,8 @@ dir_fund_amaz <- ("A:\\projects\\landuse_br2024\\FundoAmazonia_BNDES\\data\\")
 dir_siop_landscape <- ("A:\\projects\\landuse_br2024\\siop\\output_landscape\\")
 
 dir_bndes_aut <- ("A:/projects/landuse_br2024/BNDES_Aut/output")
+
+dir_giz_output <- ("A:\\projects\\landuse_br2024\\internacionais\\giz\\output\\")
 
 ########## import datasets ###########
 
@@ -65,9 +67,9 @@ df_ocde_calculus_join <- rbind(df_ocde_calculus,df_ocde_calculus_published)
 
 df_nint_calculus <- read.xlsx("A:\\projects\\landuse_br2024\\NINT\\NINT_Landscape_2015_2023.xlsx") %>% select(-deflator,-cambio, -X1)
 
-# setwd(dir_idb_output)
+setwd(dir_idb_output)
 # 
-# df_idb_calculus <- readRDS("idb_landscape_final.RDS")
+df_idb_calculus <- readRDS("data_idb_final_landscape.rds")
 
 # setwd(fnmc_output)
 
@@ -83,6 +85,9 @@ setwd(sicor_output)
 
 df_sicor_calculus <- readRDS("df_sicor_format_landscape_final_att.rds")
 
+setwd(dir_giz_output)
+
+df_giz_calculus <- readRDS("df_giz_transform_landscape.rds")
 
 # setwd(dir_fund_amaz)
 
@@ -103,10 +108,11 @@ data_landscape_final <- do.call("rbind",
                                      df_b3_cbios_calculus,
                                      df_ocde_calculus_join,
                                      df_nint_calculus,
-                                     # df_idb_calculus,
+                                     df_idb_calculus,
                                      df_sicor_calculus,
                                      df_fund_amaz,
-                                     df_bndes_aut))
+                                     df_bndes_aut,
+                                     df_giz_calculus))
 
 
 data_landscape_final <- data_landscape_final %>% 
@@ -129,9 +135,9 @@ sum(data_aggregated$value_original_currency)
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion_23052024.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_28052024v2.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion_23052024.csv")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_28052024v2.csv")
 
-write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_23052024.csv")
+write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_28052024v2.csv")

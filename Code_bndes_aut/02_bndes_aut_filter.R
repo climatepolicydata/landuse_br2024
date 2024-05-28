@@ -69,7 +69,9 @@ rm(df_bndes_aut_filter, remove)
 lista_instrument <- instrument_bndes_aut$instrument_original
 
 
-df_filter <- df_filter %>% filter(instrumento_financeiro %in% lista_instrument)
+lista_sector <- sector_bndes_aut$subsetor_cnae_nome
+
+df_filter <- df_filter %>% filter(instrumento_financeiro %in% lista_instrument & subsetor_cnae_nome %in% lista_sector)
 
 ########### save data #####
 
@@ -79,4 +81,4 @@ saveRDS(df_filter,"df_bndes_aut_filter_pre_transf.rds")
 
 write.xlsx(df_filter, "df_bndes_aut_filter_pre_transf.xlsx")
 
-rm(df_filter, sector_bndes_n_aut)
+

@@ -52,7 +52,8 @@ source_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "so
 
 channel_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "channel_landscape")
 
-instrument_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "instrument_landscape") %>% distinct()
+instrument_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "instrument_landscape") %>% 
+  dplyr::mutate(instrument_original = tolower(instrument_original))
 
 sector_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "sector_landscape")
 
@@ -62,7 +63,8 @@ sector_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "se
 ###### create variables to transform #####
 
 df_bndes_filter <- df_bndes_filter %>% mutate(beneficiary_original = paste(natureza_do_cliente,porte_do_cliente,cliente, sep = "_"),
-                                              channel_original = paste(forma_de_apoio, instituicao_financeira_credenciada, sep = "_"))
+                                              channel_original = paste(forma_de_apoio, instituicao_financeira_credenciada, sep = "_")) %>% 
+  dplyr::rename(instrument_original = instrumento_financeiro)
 
 
 
@@ -71,7 +73,7 @@ df_bndes_transform <- left_join(df_bndes_filter,source_bndes_aut, by = "fonte_de
 rm(df_bndes_filter)
 df_bndes_transform <-  left_join(df_bndes_transform, channel_bndes_aut, by ="channel_original")
 # df_bndes_transform <- df_bndes_transform[,-c(29,30)]
-df_bndes_transform <- left_join(df_bndes_transform,instrument_bndes_aut, by = "instrumento_financeiro")
+df_bndes_transform <- left_join(df_bndes_transform,instrument_bndes_aut, by = "instrument_original")
 df_bndes_transform <- left_join(df_bndes_transform,sector_bndes_aut, by = "subsetor_cnae_nome")
 df_bndes_transform <- df_bndes_transform %>% dplyr::mutate(beneficiary_landscape = "Corporations",
                                                     beneficiary_public_private = "Public")
@@ -97,7 +99,7 @@ df_bndes_transform_landscape <- df_bndes_transform %>%
          project_description = "-",
          id_original = "-",
          activity_landscape = "-",
-         climate_component = "-",
+         climate_component = "Mitigation",
          subactivity_landscape = "-",
          rio_marker = "-")
 

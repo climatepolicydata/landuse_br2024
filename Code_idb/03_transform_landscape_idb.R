@@ -34,7 +34,8 @@ dir_idb_doc <- ("A:\\projects\\landuse_br2024\\idb")
 
 setwd(dir_idb_output)
 
-df_idb_filter <- readRDS("df_idb_filter.rds")
+df_idb_filter <- readRDS("df_idb_filter.rds") %>% dplyr::mutate(project_type = str_trim(project_type),
+                                                                project_type = as.character(project_type))
 
 
 "relational table"
@@ -44,7 +45,9 @@ setwd(dir_idb_doc)
 df_idb_relational_source <- read.xlsx("13_idb_relational_tables.xlsx", sheet = "source_landscape") %>% 
   select(-funding_source)
 
-df_idb_relational_instrument <- read.xlsx("13_idb_relational_tables.xlsx", sheet = "instrument_landscape") %>% select(-project_type)
+df_idb_relational_instrument <- read.xlsx("13_idb_relational_tables.xlsx", sheet = "instrument_landscape") %>% select(-project_type) %>% 
+  dplyr::mutate(instrument_original = str_trim(instrument_original),
+                instrument_original = as.character(instrument_original))
 
 df_idb_relational_channel <- read.xlsx("13_idb_relational_tables.xlsx", sheet = "channel_landscape") %>% select(-executing_agency)
 
@@ -53,7 +56,7 @@ df_idb_relational_channel <- read.xlsx("13_idb_relational_tables.xlsx", sheet = 
 df_idb_filter_transform <- df_idb_filter %>% 
   dplyr::rename(id_original = operation_number,
                 year = ano,
-                source_finance_original = funding_source,
+                source_original = funding_source,
                 channel_original = executing_agency,
                 value_original_currency = total_cost,
                 original_currency = currency,
@@ -73,7 +76,7 @@ df_idb_filter_transform <- df_idb_filter %>%
 
 ######### join with categories in relational table ######
 
-df_idb_filter_transform <- left_join(df_idb_filter_transform,df_idb_relational_source, by = "source_finance_original") 
+df_idb_filter_transform <- left_join(df_idb_filter_transform,df_idb_relational_source, by = "source_original") 
 
 df_idb_filter_transform <- left_join(df_idb_filter_transform, df_idb_relational_instrument, by = "instrument_original")
 
@@ -83,12 +86,13 @@ df_idb_filter_transform <- left_join(df_idb_filter_transform, df_idb_relational_
 ########### change climate ###########
 
 
+
 df_idb_filter_transform <- df_idb_filter_transform %>% 
-  dplyr::mutate(climate_component = ifelse(id_original %in% c("atn/az-19413-br","5836/oc-br",	"atn/lc-18953-br",	"atn/oc-18644-br",	"atn/oc-19412-br",	"atn/oc-20570-br",	"equ/ms-20143-br",	"equ/tc-20142-br", "atn/az-20411-br",
-                                                              "atn/oc-20410-br",	"sp/oc-23-51-br"),"Mitigation", "-")) %>% 
-  dplyr::mutate(climate_component = ifelse(id_original %in% c("atn/gn-20510-br"), "Adaptation", climate_component)) %>% 
-  dplyr::mutate(climate_component = ifelse(id_original %in% c("5440/oc-br",	"5611/oc-br",	"5612/oc-br",	"atn/az-20334-br",	"atn/jf-20520-br",
-                                                                            "atn/mc-20445-br",	"atn/oc-18781-br",	"atn/oc-19258-br",	"atn/oc-19745-br",	"atn/sx-19186-br"),"Adaptation and Mitigation",
+  dplyr::mutate(climate_component = ifelse(id_original %in% c("atn/az-19413-br",	"atn/lc-18953-br",	"atn/oc-19412-br"),"Mitigation", "-")) %>%  
+  dplyr::mutate(climate_component = ifelse(id_original %in% c("5440/oc-br",	"5611/oc-br",	"5612/oc-br",	"atn/az-20334-br",	"atn/jf-20520-br","atn/mc-20445-br",
+                                                              "atn/oc-18781-br",	"atn/oc-19258-br",	"atn/oc-19745-br",	"atn/sx-19186-br", "atn/oc-20570-br" ,
+                                                              "5836/oc-br", "atn/gn-20510-br", "atn/oc-20410-br" , "atn/az-20411-br",
+                                                              "equ/tc-20142-br", "equ/ms-20143-br", "sp/oc-23-51-br",	"atn/oc-18644-br"),"Adaptation and Mitigation",
                                            climate_component))
 
 rm(df_idb_filter, df_idb_relational_channel, df_idb_relational_instrument, df_idb_relational_source)
@@ -139,7 +143,7 @@ df_idb_calculus <- deflate_and_exchange(tabela_deflator, df_idb_clear, tabela_ca
 rm(cambio_sgs,df_idb_clear, ibge_ipca, tabela_cambio, tabela_deflator, teste,df_idb_filter_transform)
 
 df_idb_calculus <- df_idb_calculus %>% 
-  select(id_original, data_source, year, project_name, project_description, source_finance_original,
+  select(id_original, data_source, year, project_name, project_description, source_original,
          source_finance_landscape, origin_domestic_international, origin_private_public,
          value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
