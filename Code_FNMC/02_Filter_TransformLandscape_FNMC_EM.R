@@ -1,6 +1,6 @@
 library(tidyverse)
 library(readxl)
-fnmc <- read_rds("A:\\projects\\landuse_br2024\\fnmc\\Clean_Data\\fnmc_dados_abertos_Abril_02_04_2024_clear.rds")
+fnmc <- read_rds("A:\\projects\\landuse_br2024\\fnmc\\Clean_data\\fnmc_dados_abertos_Abril_02_04_2024_clear.rds")
 
 
 source_landscape_contrapartida <- read_excel("A:\\projects\\landuse_br2024\\fnmc\\09_fnmc_relational_tables.xlsx",sheet = "source_landscape_contrapartida") 
@@ -31,7 +31,7 @@ original_currency = "BRL", channel_original = str_c(tipo_de_instituicao,institui
   instrument_original = "Contrapartida Fundo Clima não reembolsáveis",instrument_landscape = "Grants")  %>% inner_join(
     sector_landscape_climate_use, by = "id_original"
   ) %>%dplyr::mutate(rio_marker="-",beneficiary_original = "-",beneficiary_public_private="-",localization_original = uf,region="-",
-  uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% dplyr::mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-")
+  uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% dplyr::mutate(sector_original = "-",subsector_original = "-")
 
 fnmc_contrapartida_landscape %>% view
 #Realizando landscape para concedido
@@ -46,12 +46,12 @@ origin_domestic_international = "National",
 origin_private_public = "Public",
 value_original_currency = valor_fnmc,
 original_currency = "BRL",
-channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% inner_join(channel_landscape,by = "channel_original") %>% dplyr::mutate(instrument_original = "Fundo Clima não reembolsáveis",instrument_landscape = "Grants") %>% inner_join(sector_landscape_climate_use,by = "id_original")%>%dplyr::mutate(sector_original = "-",subactivity_landscape="-",subsector_original = "-",
+channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% inner_join(channel_landscape,by = "channel_original") %>% dplyr::mutate(instrument_original = "Fundo Clima não reembolsáveis",instrument_landscape = "Grants") %>% inner_join(sector_landscape_climate_use,by = "id_original")%>%dplyr::mutate(sector_original = "-",subsector_original = "-",
 rio_marker = "-", beneficiary_original="-",beneficiary_public_private = "-",localization_original = uf,region = "-",uf = uf,municipality="-") %>%
     select(-valor_repassado,-no_processo,-valor_fnmc,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_nao_repassado,-valor_total)
 # Dando rowbind
 FNMC_Landscape <- rbind(fnmc_concedido_landscape,fnmc_contrapartida_landscape)
-
+FNMC_Landscape$value_original_currency %>% sum
 #Fazendo Deflacao
 ibge_ipca <- read_excel("A:\\macro\\IPCA\\cleanData/ipca_ibge_cl.xlsx")
 ibge_ipca <- ibge_ipca %>% 
@@ -102,7 +102,7 @@ deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
   return(tabela_final)
 }
 
-ano_ini = 2021
+ano_ini = 2015
 ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
 teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
@@ -139,7 +139,7 @@ coleta_dados_sgs = function(series,datainicial="01/01/2012", datafinal = format(
 }
 cambio_sgs = coleta_dados_sgs(3694) 
 tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2021 & year <= 2023)
+  dplyr::filter(year >= 2015 & year <= 2023)
 
 base_select_deflator = base_select_deflator %>% 
   left_join(tabela_cambio,by='year') %>% 
@@ -148,39 +148,40 @@ FNMC_Landscape_Final <- base_select_deflator %>% select(-deflator,-cambio)
 FNMC_Landscape_Final%>%view
 FNMC_Landscape_Final$value_original_currency %>% sum
 
+
+
+
+
 FNMC_Landscape_Final %>% write.csv2("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.csv")
 FNMC_Landscape_Final %>% write_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds")
 
+
+
 # Criando gráficos de evolução
 fnmc_2023 <- read_csv2("A:\\projects\\brlanduse_landscape102023\\gov_fnmc\\FNMC_Landscape_02_04_2024.csv")
-fnmc_2024 <- read_rds("A:\\projects\\landuse_br2024\\fnmc\\Preview Data\\FNMC_Landscape2024.rds")
+fnmc_2024 <- read_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds")
+
+dado = bind_rows(fnmc_2023 %>% select(-"...1",-"Subactivity Landscape"),fnmc_2024)
+
+
+
 
 ano_ini = 2015
 ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
 teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
-base_select_deflator_2023 <- fnmc_2023 %>% 
+
+base_select_deflator <- dado %>% 
   left_join(teste, by= "year")%>%
-<<<<<<< HEAD
-  mutate(value_brl_deflated_23 = value_original_currency * deflator)
-=======
   dplyr::mutate(value_brl_deflated = value_original_currency * deflator)
->>>>>>> 8aa2f48a3d3cb2c8f50143e98d273906a952709f
+base_select_deflator %>% view
 
-base_select_deflator_2024 <- fnmc_2024 %>% 
-  left_join(teste, by= "year")%>%
-<<<<<<< HEAD
-  mutate(value_brl_deflated_23 = value_original_currency * deflator)
+base_select_deflator = base_select_deflator %>% 
+  left_join(tabela_cambio,by='year') %>% 
+  dplyr::mutate(value_usd = value_brl_deflated/cambio)
+base_select_deflator %>% select(-deflator,-cambio)
+
+base_select_deflator %>% select(-deflator,-cambio) %>%write_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape.rds")
+base_select_deflator %>% select(-deflator,-cambio) %>%write.xlsx("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape.xlsx")
 
 
-asd <- base_select_deflator_2024 %>% group_by(year) %>% summarize(SomaNominal = sum(value_original_currency),
-                                                           SomaDeflacao = sum(value_brl_deflated_23))
-asd %>% write.xlsx("asd.xlsx")
-getwd()
-=======
-  dplyr::mutate(value_brl_deflated = value_original_currency * deflator)
-base_select_deflator_2023
-a <- rbind(base_select_deflator_2023,base_select_deflator_2024)
-a%>%view
-a %>% group_by(climate_component,year) %>% summarize(sum(value_brl_deflated) )%>% view
->>>>>>> 8aa2f48a3d3cb2c8f50143e98d273906a952709f
