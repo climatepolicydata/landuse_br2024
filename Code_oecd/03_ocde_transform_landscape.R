@@ -184,7 +184,7 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/Funcao_taxa_cambio_v2.r"))
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
 
 ano_ini = 2015
 ano_fim = 2023
@@ -218,7 +218,6 @@ df_ocde_calculus <- deflate_and_exchange(tabela_deflator, df_ocde_transform, tab
 
 #### validate data sector
 
-rm(cambio_sgs,df_ocde_transform, ibge_ipca, tabela_cambio, tabela_deflator, teste)
 
 df_ocde_calculus <- df_ocde_calculus %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
@@ -264,7 +263,7 @@ oecd_publicado_deflated_2023 <- oecd_publicado_deflated_2023 %>%
 
 saveRDS(oecd_publicado_deflated_2023,"oecd_15_20_deflated_23.rds")
 
-
+rm(cambio_sgs,df_ocde_transform, ibge_ipca, tabela_cambio, tabela_deflator, teste)
 
 ############## save data########
 setwd(dir_oecd_output)

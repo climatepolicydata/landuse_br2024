@@ -19,7 +19,7 @@ dir_nint_output <- ("A:\\projects\\landuse_br2024\\nint\\output")
 
 dir_oecd_output <- ("A:/projects/landuse_br2024/oecd_cf/output")
 
-dir_idb_output <- ("A:\\projects\\landuse_br2024\\idb")
+dir_idb_output <- ("A:\\projects\\landuse_br2024\\idb\\output")
 
 fnmc_output <- ("A:/projects/landuse_br2024/gov_fnmc")
 
@@ -32,6 +32,8 @@ dir_fund_amaz <- ("A:\\projects\\landuse_br2024\\FundoAmazonia_BNDES\\data\\")
 dir_siop_landscape <- ("A:\\projects\\landuse_br2024\\siop\\output_landscape\\")
 
 dir_bndes_aut <- ("A:/projects/landuse_br2024/BNDES_Aut/output")
+
+dir_giz_output <- ("A:\\projects\\landuse_br2024\\internacionais\\giz\\output\\")
 
 ########## import datasets ###########
 
@@ -47,7 +49,11 @@ output_proagro <- readRDS('A:/projects/landuse_br2024/bcb_proagro/output/05_outp
 
 # setwd(dir_bndes_output)
 
-df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\output\\df_bndes_naut_bind_2015_2023.rds")
+df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_20152023_23052024.rds")
+  # dplyr::rename(climate_component = climate_use,
+  #               source_finance_landscape = source_of_finance_landscape,
+  #               origin_domestic_international = national_internacional,
+  #               origin_private_public = source_private_public)
 
 setwd(dir_oecd_output)
 
@@ -61,14 +67,14 @@ df_ocde_calculus_join <- rbind(df_ocde_calculus,df_ocde_calculus_published)
 
 df_nint_calculus <- read.xlsx("A:\\projects\\landuse_br2024\\NINT\\NINT_Landscape_2015_2023.xlsx") %>% select(-deflator,-cambio, -X1)
 
-# setwd(dir_idb_output)
+setwd(dir_idb_output)
 # 
-# df_idb_calculus <- readRDS("idb_landscape_final.RDS")
+df_idb_calculus <- readRDS("data_idb_final_landscape.rds")
 
 # setwd(fnmc_output)
 
 
-fnmc_landscape <- readRDS("A:\\projects\\landuse_br2024\\fnmc\\FNMC_Landscape2024.rds")
+fnmc_landscape <- readRDS("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape.rds")
 
 
 setwd(dir_susep_output)
@@ -79,6 +85,9 @@ setwd(sicor_output)
 
 df_sicor_calculus <- readRDS("df_sicor_format_landscape_final_att.rds")
 
+setwd(dir_giz_output)
+
+df_giz_calculus <- readRDS("df_giz_transform_landscape.rds")
 
 # setwd(dir_fund_amaz)
 
@@ -99,10 +108,11 @@ data_landscape_final <- do.call("rbind",
                                      df_b3_cbios_calculus,
                                      df_ocde_calculus_join,
                                      df_nint_calculus,
-                                     # df_idb_calculus,
+                                     df_idb_calculus,
                                      df_sicor_calculus,
                                      df_fund_amaz,
-                                     df_bndes_aut))
+                                     df_bndes_aut,
+                                     df_giz_calculus))
 
 
 data_landscape_final <- data_landscape_final %>% 
@@ -110,12 +120,24 @@ data_landscape_final <- data_landscape_final %>%
                 value_usd_mean = value_usd / 9) %>% 
   dplyr::mutate(climate_component = ifelse(climate_component == "Dual", "Mitigation and Adaptation", climate_component)) 
 
+############## AGGREGATION DATA #############
 
+data_aggregated <- aggregate(cbind(value_original_currency, value_brl_deflated, value_usd) ~ data_source + original_currency + source_finance_landscape + origin_domestic_international
++ origin_private_public + channel_landscape + instrument_landscape + sector_landscape + climate_component + year , data = data_landscape_final, FUN = sum)
 
+nas_por_coluna <- colSums(is.na(data_landscape_final))
+
+print(nas_por_coluna)
+
+sum(data_landscape_final$value_original_currency)
+
+sum(data_aggregated$value_original_currency)
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion_16052024.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_28052024v2.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion_16052024.csv")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_28052024v2.csv")
+
+write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_28052024v2.csv")

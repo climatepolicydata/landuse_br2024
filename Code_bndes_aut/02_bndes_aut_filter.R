@@ -45,7 +45,9 @@ df_bndes_aut <- readRDS("operacoes_financiamento_operacoes_indiretas_automatica_
 setwd(dir_bndes_aut_doc)
 
 #bndes automatico e bndes nao automatico utilizam o mesmo filtro para o subsetor cnae nome
-sector_bndes_n_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "sector_landscape")
+sector_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "sector_landscape")
+instrument_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet = "instrument_landscape") %>% 
+  dplyr::mutate(instrument_original = tolower(instrument_original))
 
 
 ###### filter year #####
@@ -64,12 +66,12 @@ df_filter <- df_bndes_aut_filter %>%
 rm(df_bndes_aut_filter, remove)
 
 ########### filter ######
-lista_instrument <- c("bndes florestal", 
-                      "distribuicao de gas e biocombustiveis - incentivada b", 
-                      "producao de alimentos e biocombustiveis - incentivada b")
+lista_instrument <- instrument_bndes_aut$instrument_original
 
 
-df_filter <- df_filter %>% filter(subsetor_cnae_nome %in% sector_bndes_n_aut$subsetor_cnae_nome | instrumento_financeiro %in% lista_instrument)
+lista_sector <- sector_bndes_aut$subsetor_cnae_nome
+
+df_filter <- df_filter %>% filter(instrumento_financeiro %in% lista_instrument & subsetor_cnae_nome %in% lista_sector)
 
 ########### save data #####
 
@@ -77,6 +79,6 @@ setwd(dir_project_bndes_output)
 
 saveRDS(df_filter,"df_bndes_aut_filter_pre_transf.rds")
 
-write.xlsx()
+write.xlsx(df_filter, "df_bndes_aut_filter_pre_transf.xlsx")
 
-rm(df_filter, sector_bndes_n_aut)
+

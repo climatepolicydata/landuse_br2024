@@ -1,7 +1,7 @@
 ##################
 
 # Author : Renan Morais
-# Date: 28-08-2023
+# Date: 16-05-2024
 # Email: renanflorias@hotmail.com
 # Goal: filter giz
 # resource: 
@@ -56,14 +56,30 @@ data_both2 <- giz_clear[data_filter,]
 
 
 data_anti_join_giz <- anti_join(giz_clear, data_both) %>% 
-  dplyr::filter(year > 2022) %>% 
-  dplyr::filter(sector %in% c("agriculture", "fisheries", "environmental protection in general", "state and civil society in general"))
+  dplyr::filter(year >= 2022) %>% 
+  dplyr::filter(sector %in% c("agriculture", "fisheries", "environmental protection in general", "state and civil society in general","water and sewage/waste disposal"))
 
 
+data_anti_join_giz <- data_anti_join_giz %>% 
+  dplyr::mutate(sector_landscape = ifelse(iati_identifier %in%  c("de-1-202330264-0", "de-1-202330272-0", "de-1-202330280-0", "de-1-202330595-0", 
+                                                                  "de-1-202330645-0", "de-1-202330652-0", "de-1-202330892-0", "de-1-202331536-0", 
+                                                                  "de-1-202331544-0", "de-1-202332005-0", "de-1-202332013-0", "de-1-202332047-0", 
+                                                                  "de-1-202332245-0", "de-1-202332252-0", "de-1-202332666-0", 
+                                                                  "de-1-202332674-0", "de-1-202332682-0", "de-1-202333383-0", "de-1-202333623-0", 
+                                                                  "de-1-202333821-0", "de-1-202333839-0", "de-1-202376218-0"), "Crop", "-")) %>% 
+  dplyr::mutate(sector_landscape = ifelse(iati_identifier %in% c("de-1-202306009-6822", "de-1-202306009-7352", "de-1-202321453", "de-1-202330546-0", 
+                                                                 "de-1-202330553-0", "de-1-202330884-0", "de-1-202331502-0", 
+                                                                 "de-1-202331528-0", "de-1-202331965-0", "de-1-202331999-0", "de-1-202332526-0", 
+                                                                 "de-1-202333631-0", "de-1-202339042-0"),"Forest", sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(iati_identifier %in% c("de-1-202306009-7336", "de-1-202330256-0", "de-1-202330579-0", "de-1-202330918-0"),
+                                          "Multi-sector", sector_landscape)) %>% 
+  dplyr::filter(!sector_landscape == "-")
 
 ######## save database #########
 
 "manual check"
 setwd(dir_giz_output)
 
-write.xlsx(data_anti_join_giz,"giz_manual_check_sector.xlsx")
+saveRDS(data_anti_join_giz, "giz_manual_filter.rds")
+
+write.xlsx(data_anti_join_giz,"giz_manual_check_sector_23052024.xlsx")
