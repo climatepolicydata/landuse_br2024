@@ -76,7 +76,7 @@ df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_con
 bioenergy_contracts$sector_landscape = "Bioenergy and fuels"
 cattle_contracts$sector_landscape = "Cattle"
 forest_contracts$sector_landscape = "Forest"
-multiSector_contracts$sector_landscape = "Multisector"
+multiSector_contracts$sector_landscape = "Multi-sector"
 crop_contracts$sector_landscape = "Crop"
 
 cattle_contracts <- cattle_contracts %>% mutate(sector_landscape = case_when(
@@ -91,7 +91,7 @@ df_bndes_filter_landscape_v2%>%view
 producaoCanaAcucarGeracaoEnergia <- df_bndes_filter_landscape_v2 %>% filter((grepl("\\bacucar\\b", x = Coluna_search , ignore.case = TRUE)) | (grepl("\\bacucar\\b",x = Coluna_search , ignore.case = TRUE) & grepl("\\bprodutos alimenticios\\b",x = Coluna_search , ignore.case = TRUE))) %>% mutate(
   activity_landscape = "Produção de cana-de-açúcar, inclusive para geração de energia",
   subactivity_landscape = "Expansão e renovação de canaviais, otimização da colheita e ampliação da capacidade de moagem de cana. Inclui aquisição de máquinas, equipamentos e construção de unidades de armazenamento para etanol e açúcar."
-) %>% mutate(climate_use = "Mitigação")
+) %>% mutate(climate_use = "Mitigation")
 
 producaoCanaAcucarGeracaoEnergia%>% select(sector_original,subsector_original,project_description,sector_landscape,Coluna_search) %>% unique() %>% view
 
@@ -110,7 +110,7 @@ geracaoEnergiaRenovavelMedidasEficiencia <- df_bndes_filter_landscape_v2 %>% fil
             true = "Usinas de energia movidas a biocombustíveis que utilizam biomassa e biogases para geração direta de energia.",
             false = if_else((grepl("\\bconstrucao\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bplanta de purificacao de biogas\\b",x = Coluna_search,ignore.case = TRUE)),true = "Usinas de energia movidas a biocombustíveis que utilizam biomassa e biogases para geração direta de energia.",
             false = if_else((grepl("\\bconstrucao\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bcentral de recebimento e processamento da biomassa\\b",x = Coluna_search,ignore.case = TRUE)),true = "Usinas de energia movidas a biocombustíveis que utilizam biomassa e biogases para geração direta de energia",
-            false = "Sem Classificacao")))))))))) %>% mutate(climate_use = "Mitigação")%>%  filter(
+            false = "Sem Classificacao")))))))))) %>% mutate(climate_use = "Mitigation")%>%  filter(
               (!grepl("\\bplantio de ate 1.780 hectares de variedades protegidas\\b", x = Coluna_search , ignore.case = TRUE))&
               (!grepl("\\bapoio as atividades de producao agropecuaria de produtores rurais\\b", x = Coluna_search , ignore.case = TRUE)) &
               (!grepl("\\bimplantacao de fabrica de biofertilizantes\\b", x = Coluna_search , ignore.case = TRUE))
@@ -131,7 +131,7 @@ AtividadesReducaoEmissoes <- df_bndes_filter_landscape_v2 %>% filter(
             false = if_else((grepl("\\bapoiar o fortalecimento do manejo florestal comunitario\\b",x = Coluna_search,ignore.case = TRUE)) ,true="Produção extrativista, manejo florestal comunitário e a projetos socioambientais de organizações agroextrativistas, com ações de desenvolvimento de competências, suporte técnico e associativismo. Cadeias de valor de óleos vegetais, cacau silvestre e borracha e fortalecimento das cadeias produtivas florestais não madeireiras.",
             false =if_else((grepl("\\bgestao\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bterritorial\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bambiental\\b",x = Coluna_search,ignore.case = TRUE)),
             true = "Gestão de áreas protegidas (unidades de conservação e terras indígenas), incluindo planos de gestão territorial e ambiental.",
-            false = "Sem Classificacao") ))))%>% mutate(climate_use = "Mitigação e Adaptação")
+            false = "Sem Classificacao") ))))%>% mutate(climate_use = "Mitigation and Adaptation")
 
 filtro_1 %>%inner_join(AtividadesReducaoEmissoes,by="Coluna_search")%>%view
 # Fazendo o 2o filtro:
@@ -150,7 +150,7 @@ AtividadesIndustriaFlorestas <- df_bndes_filter_landscape_v2 %>% filter(
             false = if_else((grepl("\\blimite de credito para financiamento\\b",x = Coluna_search,ignore.case = TRUE) & grepl("\\bfabricacao de chapas e de embalagens\\b",x = Coluna_search,ignore.case = TRUE)),true = "Investimentos em modernização industrial e manutenção da capacidade produtiva da indústria de celulose e papel alinhados ao meio ambiente.",
             false = if_else(21544004 %in% id_original, true = "Investimentos em modernização industrial e manutenção da capacidade produtiva da indústria de celulose e papel alinhados ao meio ambiente.",
             false = "Sem Classificacao"))))))) %>% 
-            mutate(climate_use = "Mitigação e Adaptação") 
+            mutate(climate_use = "Mitigation and Adaptation") 
 filtro_2 %>%inner_join(AtividadesIndustriaFlorestas,by="Coluna_search")%>%view
 
 
@@ -165,7 +165,7 @@ Producao_DefensivosAgricolas <- df_bndes_filter_landscape_v2 %>% filter(
 ) %>% mutate(activity_landscape = "Produção de defensivos agrícolas biológicos e orgânicos",
             subactivity_landscape = if_else((grepl("\\bbiofertilizantes\\b",x = Coluna_search,ignore.case = TRUE)),true = "Fabricação de fertilizantes orgânicos, produtos para o controle biológico de pragas e desenvolvimento de novas tecnologias.",
             false = "Sem Classificacao"),
-            climate_use = "Adaptação")
+            climate_use = "Adaptation")
 filtro_3 %>%inner_join(Producao_DefensivosAgricolas,by="Coluna_search")%>%view
 
 #Fazendo 4o filtro

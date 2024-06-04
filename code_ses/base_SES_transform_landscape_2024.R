@@ -96,7 +96,7 @@ df_ses_agregado_transform <- df_ses_agregado %>%
          beneficiary_original = "-", beneficiary_landscape = "Rural Producers", beneficiary_public_private = "-", region = "-",
          uf= "-", municipality = "-",
          subactivity_landscape= "Rural insurance for farming and forestry", ecossystem_layer = "Gestão de Riscos Agropecuários",
-         climate_component = "Adaptation", final_beneficiaries_final = "-", climate_component = "-", rio_marker = "-",
+         climate_component = "Adaptation", final_beneficiaries_final = "-", rio_marker = "-",
          CPI_riomarker_mitigation = "-",rio_marker = "-", Subfunção = "-", data_source = "ses_seguros", project_name = "Seguro Rural", project_description = "Prêmio Pago para Contratação de Seguro do Ramo Rural",
          source_original = "-", source_finance_landscape = "Rural Producers", origin_domestic_international = "National", origin_private_public = "Private", channel_landscape = "Financial Institution",
          instrument_landscape = "Risk management",localization_original = "-",

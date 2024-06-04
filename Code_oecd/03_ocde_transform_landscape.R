@@ -101,7 +101,7 @@ df_ocde_filter <- df_ocde_filter %>% dplyr::rename(channel_original = channel_of
          instrument_original = paste(concessionality, financial_instrument, sep = "_")) %>% 
   dplyr::mutate(description = if_else(is.na(description), "not available", description)) %>% 
   dplyr::mutate(id_join = paste0(year, project_title, description, provider_detailed, climate_related_development_finance_commitment_current_usd_thousand)) %>% 
-  dplyr::filter(!sector_landscape %in% c("Education","?"))
+  dplyr::filter(!sector_landscape %in% c("Education","?", "eliminate"))
 
 
 
