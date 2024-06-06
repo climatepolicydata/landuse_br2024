@@ -21,12 +21,13 @@ pacman::p_load(tidyverse,
                pivottabler)
 
 
-df <- readRDS("A:\\finance\\bndes_N_aut\\cleanData\\operacoes_financiamento_operacoes_nao_automaticas_clear_03_24.rds")
+df <- readRDS("A:\\finance\\bndes_naut\\cleanData\\operacoes_financiamento_operacoes_nao_automaticas_clear_03_24.rds")
 sector_bndes_n_aut <- read.xlsx("A:\\projects\\landuse_br2024\\bndes_n_aut\\06_bndes_naut_relational_tables.xlsx", sheet = "sector_landscape")
 df %>% select(ano) %>%unique
 sector_bndes_n_aut%>%unique%>%view
 df_filter <- df %>% filter(ano >= 2021 & ano <= 2023)%>% 
-                    filter(fonte_de_recurso_desembolsos != "recursos vinculados - fundo amazonia")
+                    filter(fonte_de_recurso_desembolsos != "recursos vinculados - fundo amazonia" &
+                             instrumento_financeiro != "fundo amazonia")
 
 rm(df)
 df_filter <- df_filter %>% select(-c(valor_desembolsado_reais,custo_financeiro,juros,

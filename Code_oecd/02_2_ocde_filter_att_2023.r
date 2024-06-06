@@ -34,10 +34,10 @@ dir_oecd_output <- ("A:/projects/landuse_br2024/oecd_cf/output")
 
 setwd(dir_oecd_Cf_clear)
 
-df_oecd_clear <- readRDS("OECD_DAC_clear_2021.rds") 
+df_oecd_clear <- readRDS("OECD_DAC_clear_2022.RDS") 
 
 df_oecd_clear <- df_oecd_clear %>%
-  dplyr::filter(year >= 2021 & year <= 2023, recipient == "brazil")
+  dplyr::filter(year >= 2020, recipient == "brazil")
 
 setwd(dir_oecd_project)
 
@@ -45,18 +45,7 @@ sector_reference_table <- read.xlsx("10_oecd_relational_tables_review.xlsx", she
 
 sector_reference_table <- sector_reference_table[-c(1,2),]
 
-# 
-# sector_classify <- read.xlsx("10_oecd_relational_tables.xlsx", sheet = "sector_classification") %>%
-#   select(sector_key, sector) %>%
-#   unique() %>% filter(sector == "Agriculture, Forestry, Other land uses and Fisheries")
-# 
-# sector_landscape <- read.csv("ref_sector.csv") %>% 
-#   dplyr::filter(sector_key %in% sector_classify$sector_key) %>% filter(reference_data == "OECD")
 
-
-
-# df_oecd_clear <- df_oecd_clear %>% 
-#   mutate(text_language = detect_language(description))
 
 
 ######### filter ####################
@@ -96,12 +85,12 @@ df_oecd_sector_reference_table_manual <- df_oecd_sector_reference_table %>% dply
 
 df_oecd_sector_reference_table_automatic <- df_oecd_sector_reference_table %>% dplyr::filter(sector_landscape != "Manual Check")
 
+# write.xlsx(df_oecd_sector_reference_table_manual,"oecd_table_manual_check_2022.xlsx")
+# 
+# write.xlsx(df_oecd_sector_reference_table_automatic,"oecd_table_automatic_check_2022.xlsx")
+# "Etapa de análise manual para cada df (manual e automatico)"
 
-
-
-"Etapa de análise manual para cada df (manual e automatico)"
-
-#change obs to automatic classify
+#change obs to automatic classify 2021
 
 df_oecd_sector_reference_table_automatic <- df_oecd_sector_reference_table_automatic %>% 
   dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2021003024","2021000024","2021000028","2021000040","2021000118c","2021353911","2021009702",
@@ -111,7 +100,7 @@ df_oecd_sector_reference_table_automatic <- df_oecd_sector_reference_table_autom
                                                                       "2021960470",
                                                                       "2021951841",
                                                                       "2021951842"), "eliminate", sector_landscape)) %>%
-  dplyr::mutate(sector_landscape = ifelse(crs_identification_n == "2021002909", "Cattle", sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2021002909", "2022953771"), "Cattle", sector_landscape)) %>% 
   dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2021178018","2021005112","2021012958","2021004071",
                                                                       "2021005298",
                                                                       "2021001975"), "Forest", sector_landscape)) %>%
@@ -120,9 +109,39 @@ df_oecd_sector_reference_table_automatic <- df_oecd_sector_reference_table_autom
                                                                       "2021100252","2021100491","2021000013","2021004343-1",
                                                                       "2021004403"),"Multi-sector", sector_landscape))
 
+#troca para valores de 2022.
+
+df_oecd_sector_reference_table_automatic <- df_oecd_sector_reference_table_automatic %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2021001975", "2022000005", "2022000047", "2022000151", "2022000211",
+                                                                      "2022001463-1", "2022001833", "2022002015", "2022005910", "2022006563",
+                                                                      "2022008217", "2022025338", "2022025339", "2022025340", "2022085087",
+                                                                      "2022110122", "2022160600", "2022312136ct", "2022950268", "2022953768",
+                                                                      "2022954570", "2022cirad0024", "2022meae003988", "2022meae003989",
+                                                                      "2022meae003990", "2022meae004016"), "Crop", sector_landscape)) %>%
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2022000004", "2022000087", "2022000380", "2022000381", 
+                                                                      "20220004290001", "20220004290002", "2022015840", "2022039118", 
+                                                                      "2022039126", "2022039149", "2022039150", "2022133986", 
+                                                                      "2022953770", "2022954793", "2022960240", "2022960241", 
+                                                                      "2022961237", "2022961651"),"Forest", sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2022000259",	"2022149069"),"Multi-sector",sector_landscape)) %>%
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2022000008", "2022000009", "2022000029", "2022000079", "2022000082",
+                                                                      "2022000083", "2022000084", "2022000095", "2022000102", "2022000108",
+                                                                      "2022000129", "2022000145-9", "2022000163", "2022000180", "2022000191",
+                                                                      "2022000209", "2022000921", "2022000974", "2022001095-1", "2022001568",
+                                                                      "2022001603", "2022002022", "2022025706", "2022025783", "2022025784",
+                                                                      "2022025940", "2022025945", "2022027049a", "2022027717", "2022037164",
+                                                                      "2022110120", "2022110155", "2022110157", "2022110160", "2022110161",
+                                                                      "2022605135", "2022951869", "2022951870", "2022952644", "2022953764",
+                                                                      "2022957436", "2022960233", "2022999057", "2022999064", "2022stoa0004"),"eliminate",sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2022000277", "2022006142", "2022007966", "2022009634", 
+                                                                      "2022011143", "2022011688", "2022016338", "2022605139", 
+                                                                      "2022605140", "2022648115"),"?", sector_landscape))
+  
+  
+
 df_oecd_sector_reference_table_automatic <- df_oecd_sector_reference_table_automatic %>% filter(!sector_landscape == "eliminate")
 
-#changes obs reviewed manual classify
+#changes obs reviewed manual classify 2021
 
 df_oecd_sector_reference_table_manual <- df_oecd_sector_reference_table_manual %>% 
   dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2021000123","2021000606","2021000609","2021005653","2021012955"), "eliminate", sector_landscape)) %>% 
@@ -139,7 +158,37 @@ df_oecd_sector_reference_table_manual <- df_oecd_sector_reference_table_manual %
                                                                       "2021003312",	"2021003313",	"2021003314",	"2021003315",	"2021003358",	"2021005081",
                                                                       "2021005580",	"2021012456",	"2021012958",	"2021013599",	"2021024458",	"2021100189"), "Multi-sector", sector_landscape))
 
-#include some observations that not include in automatic and manual check
+#troca para valores de 2022.
+df_oecd_sector_reference_table_manual <- df_oecd_sector_reference_table_manual %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2021000901"),"Cattle",sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2022000922",	"2022006659",	"2022029816"	,"2022638013"), "Crop", sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2020001103", "2021000035", "2021000780", "2022000004", "20220000360001",
+                                                                      "2022000039", "2022000040", "2022000041", "2022000042", "2022000044",
+                                                                      "2022000046", "2022000047", "2022000050", "2022000051", "2022000052",
+                                                                      "2022000064", "2022000154", "20220004290001", "20220004290002", 
+                                                                      "2022000740", "2022000794", "2022001242", "2022001738-1", "2022002178",
+                                                                      "2022002179", "2022003950", "2022004030", "2022006699", "2022006700", 
+                                                                      "2022meae005209", "2022meae005210", "2022meae005212", "2022meae005214"),"Forest",sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2021003308", "2021003312", "2021003313", "2021003314", "2021003315",
+                                                                      "2022000043", "2022000048", "2022000061", "2022000167", "2022000882",
+                                                                      "2022001640", "2022001641", "2022001920", "2022007038", "2022009255",
+                                                                      "2022060222a", "2022060222c", "2022060222h", "2022060222i", "2022648110"),"Multi-sector", sector_landscape)) %>% 
+  dplyr::mutate(sector_landscape = ifelse(crs_identification_n %in% c("2019000053", "2019004242a", "2022000005", "2022000030", "2022000035", 
+                                                                      "2022000044", "2022000049", "2022000060", "2022000064", "2022000162",
+                                                                      "2022000168", "2022000268", "2022000380", "2022000412", "2022001358",
+                                                                      "2022001362", "2022001557", "2022001590", "2022001591", "2022001611",
+                                                                      "2022001639", "2022005880-1", "2022006562", "2022006696", "2022006852",
+                                                                      "2022009252", "2022021454", "2022023643", "2022023851", "2022025205",
+                                                                      "2022025335", "2022025341", "2022025461", "2022025649", "2022026001",
+                                                                      "2022026289", "2022027049b", "2022027304b", "2022085226", "2022110857",
+                                                                      "2022139886", "2022950287", "2022953775", "2022960247", "2022961652",
+                                                                      "2022ird00068", "2022ird00072", "2022ird00074", "2022ird00078", "2022ird00081",
+                                                                      "2022ird00083", "2022meae003985"),"?",sector_landscape))
+
+df_oecd_sector_reference_table_manual <- df_oecd_sector_reference_table_manual %>% filter(!sector_landscape == "eliminate")
+
+
+#include some observations that not include in automatic and manual check (this observations are outside of manual and automatic classify)
 
 df_reviewed_include <- df_oecd_clear %>% dplyr::filter(crs_identification_n %in% c("2021012456","2021000083","2021100200","2021100397","2021605106",
                                                                               "2021960477","2021000049", "2021003062-1","2021001749-1","2021000682-1","2021003899")) %>% 
@@ -152,7 +201,7 @@ df_reviewed_include <- df_oecd_clear %>% dplyr::filter(crs_identification_n %in%
 
 df_oecd_join_checked <- rbind(df_oecd_sector_reference_table_manual, df_oecd_sector_reference_table_automatic)
 
-df_oecd_join_checked_reviewed <- rbind(df_oecd_join_checked, df_reviewed_include)
+df_oecd_join_checked_reviewed <- rbind(df_oecd_join_checked, df_reviewed_include) %>% dplyr::filter(!sector_landscape %in% "Manual Check")
 
 df_no_Selected <- df_oecd_join_checked %>% filter(sector_landscape  == "Manual Check")
 
@@ -160,10 +209,12 @@ df_no_Selected <- df_oecd_join_checked %>% filter(sector_landscape  == "Manual C
 
 setwd(dir_oecd_output)
 
-write.xlsx(df_no_Selected,"df_oecd_filter_no_selected.xlsx")
 
-write.xlsx(df_oecd_join_checked_reviewed,"df_oecd_final_filter.xlsx")
+write.xlsx(df_oecd_join_checked_reviewed,"df_oecd_final_filter_06062024.xlsx")
 
-saveRDS(df_oecd_join_checked_reviewed, "df_oecd_final_filter.rds")
+saveRDS(df_oecd_join_checked_reviewed, "df_oecd_final_filter_06062024.rds")
 
-write.xlsx(df_oecd_sector_no_selected, "df_oecd_resto.xlsx")
+# write.xlsx(df_oecd_sector_no_selected, "df_oecd_resto.xlsx")
+# 
+# write.xlsx(df_no_Selected,"df_oecd_filter_no_selected.xlsx")
+# write.xlsx(df_no_Selected,"df_oecd_filter_no_selected.xlsx")

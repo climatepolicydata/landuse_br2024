@@ -197,7 +197,7 @@ cattle_NINT_filter$sector_landscape = "Cattle"
 #Para MultiSector
 multisector_nint <- multisector_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 multisector_nint_filter <- multisector_NINT_out(multisector_nint)
-multisector_nint_filter$sector_landscape = "MultiSector"
+multisector_nint_filter$sector_landscape = "Multi-sector"
 
 nint_sectorLandscape <- bind_rows(bioenergia_nint_filter,crop_nint_filter,forest_nint_filter,cattle_NINT_filter,multisector_nint_filter)
 nint_clear_SemSector <- nint_clear_landscape %>% anti_join(nint_sectorLandscape,by = "project_description") 
@@ -371,7 +371,7 @@ cbi = if_else(is.na(cbi),true = "SEM VERIFICADOR",false = cbi))
 nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% mutate(project_name2 = str_c(verificador_externo,verificador_externo2,cbi,sep = " /// "))
 nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% mutate(beneficiary_original = "-",beneficiary_landscape = "-",beneficiary_public_private = "-") %>% select(id_original,data_source,year,project_name2,project_description_3,source_original,source_finance_landscape,origin_domestic_international,
 origin_private_public,value_original_currency,original_currency,channel_original,channel_landscape,instrument_original,instrument_landscape,sector_original,sector_landscape,
-subsector_original,activity_landscape,subactivity_landscape,climate_component,beneficiary_original,beneficiary_landscape,beneficiary_public_private,rio_marker,localization_original,region,uf,municipality)
+subsector_original,activity_landscape,subactivity_landscape,climate_use,beneficiary_original,beneficiary_landscape,beneficiary_public_private,rio_marker,localization_original,region,uf,municipality)
 nint_sectorlandscape_climateUse_V2 <- nint_sectorlandscape_climateUse_V2 %>% rename(project_name = project_name2 , project_description = project_description_3)
 nint_sectorlandscape_climateUse_V2 %>% view
 # # Realizando a deflação
@@ -489,9 +489,9 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/Funcao_taxa_cambio_v2.r"))
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
 
-ano_ini = 2021
+ano_ini = 2015
 ano_fim = 2023
 
 #a variavel anos completa os anos no intervalo escolhido acima.
@@ -504,7 +504,7 @@ tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 cambio_sgs = coleta_dados_sgs(3694) 
 
 tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2021 & year <= 2020)
+  dplyr::filter(year >= 2015 & year <= 2023)
 
 
 deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
@@ -524,6 +524,8 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
 
 nint_sectorlandscape_climateUse_V2_deflated_dolar <- deflate_and_exchange(tabela_deflator, nint_sectorlandscape_climateUse_V2, tabela_cambio)
 
+nint_sectorlandscape_climateUse_V2_deflated_dolar <- nint_sectorlandscape_climateUse_V2_deflated_dolar %>%dplyr::rename(climate_component = climate_use)
+
 nint_sectorlandscape_climateUse_V2_deflated_dolar <- nint_sectorlandscape_climateUse_V2_deflated_dolar%>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
          source_finance_landscape, origin_domestic_international, origin_private_public,
@@ -532,9 +534,11 @@ nint_sectorlandscape_climateUse_V2_deflated_dolar <- nint_sectorlandscape_climat
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
          beneficiary_public_private, localization_original, region, uf, municipality)
 
-nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>% write_csv2("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.csv")
+nint_sectorlandscape_climateUse_V2_deflated_dolar <- readRDS("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_06_2024.rds")
 
-nint_sectorlandscape_climateUse_V2_deflated_dolar%>% select(-deflator,-cambio)%>% write_rds("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_04_2024.rds")
+nint_sectorlandscape_climateUse_V2_deflated_dolar%>% write_csv2("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_06_2024.csv")
+
+nint_sectorlandscape_climateUse_V2_deflated_dolar%>% write_rds("A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_04_06_2024.rds")
 
 
 
@@ -542,7 +546,17 @@ passado <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_n
 ano_ini = 2015
 ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
-passado <- passado %>% select(-value_brl_deflated)
+
+passado_agrupado <- deflate_and_exchange(tabela_deflator, passado, tabela_cambio)
+
+passado_agrupado <- passado_agrupado %>% select(-deflator,-cambio)
+
+nint_15_23 <- rbind(passado_agrupado, nint_sectorlandscape_climateUse_V2_deflated_dolar)
+
+saveRDS(nint_15_23,"A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_2015_2023.rds")
+
+write_xlsx(nint_15_23,"A:\\projects\\landuse_br2024\\NINT\\NINT_landscape_2015_2023.xlsx")
+
 teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 passado_deflated <- calculo_deflator(tabela_deflator = teste, base_select_deflator = passado)
 passado_agrupado <- passado_deflated %>% group_by(year) %>% summarise(SomaAno_deflacionado = sum(value_brl_deflated),SomaAno = sum(value_original_currency))

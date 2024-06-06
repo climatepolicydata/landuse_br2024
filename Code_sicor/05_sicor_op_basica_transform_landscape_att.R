@@ -305,7 +305,7 @@ df_final <- mdcr_op_basica_sort %>%
   mutate(project_description = gsub(";"," ", mdcr_op_basica_sort$project_description)) %>%
   mutate(source_finance_landscape = if_else(source_original 
                                                %in% c("LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA FAVORECIDA",
-                                                      "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"Others", 
+                                                      "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"LCA", 
                                                if_else(source_original %in%
                                                          c("FUNCAFE-FUNDO DE DEFESA DA ECONOMIA CAFEEIRA"), 
                                                        "Federal and state governments", source_finance_landscape))) %>% 

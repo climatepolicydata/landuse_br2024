@@ -5,7 +5,8 @@
 # Goal: Masterfile to outputs landscape
 
 ########################### Libraries ######################################
-
+install.packages('xlsx')
+library(xlsx)
 
 ######################### Directories and databases #########################
 
@@ -49,7 +50,7 @@ output_proagro <- readRDS('A:/projects/landuse_br2024/bcb_proagro/output/05_outp
 
 # setwd(dir_bndes_output)
 
-df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_20152023_23052024.rds")
+df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_20152023_04062024.rds")
   # dplyr::rename(climate_component = climate_use,
   #               source_finance_landscape = source_of_finance_landscape,
   #               origin_domestic_international = national_internacional,
@@ -61,7 +62,7 @@ df_ocde_calculus_join <- readRDS("df_ocde_landscape_final_join_year.rds")
 
 # setwd(dir_nint_output)
 
-df_nint_calculus <- read.xlsx("A:\\projects\\landuse_br2024\\NINT\\NINT_Landscape_2015_2023.xlsx") %>% select(-deflator,-cambio, -X1)
+df_nint_calculus <- read_xlsx("A:\\projects\\landuse_br2024\\NINT\\NINT_Landscape_2015_2023.xlsx")
 
 setwd(dir_idb_output)
 # 
@@ -87,7 +88,7 @@ df_giz_calculus <- readRDS("df_giz_transform_landscape.rds")
 
 # setwd(dir_fund_amaz)
 
-df_fund_amaz <- read.xlsx("A:\\projects\\landuse_br2024\\Fundo Amazonia\\FundoAmazonia_Landscape_2015_2023.xlsx") %>% select(-deflator,-cambio)
+df_fund_amaz <- read_xlsx("A:\\projects\\landuse_br2024\\Fundo Amazonia\\FundoAmazonia_Landscape_2015_2023.xlsx") %>% select(-deflator,-cambio)
 
 setwd(dir_bndes_aut) 
 
@@ -134,9 +135,9 @@ sum(data_aggregated$value_original_currency)
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion_29052024.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_05062024.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion_29052024.csv")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_05062024.csv")
 
-write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_29052024.csv")
+write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_05062024.csv")
