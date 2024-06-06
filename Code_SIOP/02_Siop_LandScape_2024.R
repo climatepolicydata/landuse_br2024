@@ -5,7 +5,7 @@ library(xlsx)
 source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
 
 siop_tratado <- read_rds("A:\\projects\\landuse_br2024\\siop\\Clean_Data\\Siop_Tratado_2015_2023_05_24.rds") #258.437
-siop_tratado%>% filter(plano_orc == "censo demografico 2020")   %>% select(Pago) %>% view
+siop_tratado%>% dplyr::filter(plano_orc == "censo demografico 2020")   %>% select(Pago) %>% view
 grupo_despesa <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="grupo_despesa")
 
 channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="channel_landscape")

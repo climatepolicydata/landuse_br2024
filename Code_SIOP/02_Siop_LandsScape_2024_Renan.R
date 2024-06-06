@@ -410,7 +410,7 @@ base_select_deflator$value_original_currency %>% sum #26.810.214.393 APOS AJUSTE
 base_select_deflator <- base_select_deflator %>% filter(project_description!="censo demografico 2020") 
 base_select_deflator$value_original_currency %>% sum
 write_rds(base_select_deflator,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_Ver3_26052024.rds")
-write.xlsx(base_select_deflator,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_Ver3_26052024.xlsx")
+# write.xlsx(base_select_deflator,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_Ver3_26052024.xlsx")
 ######### A partir daqui é aplicação de Dicionario de dados ##################################################################################
 
 # Filtrando os investimentos que nao tiveram match
@@ -451,6 +451,8 @@ forest_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 siop_sectorlandscape <- rbind(bioenergia_siop_filtrado,crop_siop_filtrado,multisector_siop_filtrado,forest_siop_filtrado)
 
 siop_resto_noSector <- df_remainder_SIOP1 %>% filter(!Coluna_search %in% siop_sectorlandscape$Coluna_search)
+
+saveRDS(siop_resto_noSector, "A:\\projects\\landuse_br2024\\siop\\siop_pos_sectors.rds")
 
 # Fazendo a classificacao climática:
 # Vamos começar pelo Forest_siop
@@ -743,7 +745,7 @@ filtro_11 <- rbind(manejo_nutrientes_controle_pragas_servicos_pecuarios_vet,filt
 siop_sectorlandscape <- siop_sectorlandscape %>% anti_join(filtro_11 , by="Coluna_search")
 
 
-
+saveRDS(siop_sectorlandscape, "A:\\projects\\landuse_br2024\\siop\\base_renan_after_climate.rds")
 
 ########################################################################################
 
@@ -768,12 +770,12 @@ siop_antigo_climate <- siop_antigo_climate %>% mutate(climate_component.y = if_e
 ano_siop_antigo_pago <- siop_antigo_climate %>% group_by(climate_component.y,year) %>% summarise(Soma_Dinheiro = sum(value_original_currency)) 
 ano_siop_antigo_pago_wider <- ano_siop_antigo_pago %>% pivot_wider(names_from = year, values_from = Soma_Dinheiro) 
 
-siop_atual <- read_excel("./brlanduse_landscape2024_dados/SIOP/Siop_Landscape_ClimateUse.xlsx")
+siop_atual <- read_excel("A:/brlanduse_landscape2024_dados/SIOP/Siop_Landscape_ClimateUse.xlsx")
 siop_atual <- siop_atual%>% select(climate_component,year,Pago)
 siop_atual %>% group_by(climate_component,year) %>% summarise(SumPago = sum(Pago))
 
 #Fazendo Deflacao
-ibge_ipca <- read_excel("./brlanduse_landscape2024_dados/ipca_ibge_cl.xlsx")
+ibge_ipca <- read_excel("A:\\macro\\IPCA\\cleanData\\ipca_ibge_cl.xlsx")
 ibge_ipca <- ibge_ipca %>% 
   mutate(variacao_doze_meses = suppressWarnings(as.numeric(variacao_doze_meses)))
 deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
@@ -857,7 +859,7 @@ siop_antigo_climate <- siop_antigo_climate %>% mutate(origin_domestic_internatio
                                                         channel_landscape == "Instituições Financeiras" ~ "Corporations",.default = channel_landscape
                                                       ),
                                                       instrument_landscape = case_when(instrument_landscape=="Orçamento Público" ~ "Public Budget",
-                                                                                       .default ="Public Budget" ))
+                                                                                       .default ="Public Budget"))
 
 siop_antigo_climate %>% write_rds("Siop_Revisado_LandScape_15_20.rds")
 siop_antigo_climate%>% view
@@ -886,5 +888,7 @@ base_select_deflator_15 = base_select_deflator_15 %>%
 
 siop_complete_1523 <- rbind(base_select_deflator, base_select_deflator_15)
 
+library(xlsx)
 
+write.xlsx(siop_complete_1523, "A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_04062024.xlsx")
 saveRDS(siop_complete_1523,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_04062024.rds")
