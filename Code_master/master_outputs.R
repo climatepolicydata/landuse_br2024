@@ -5,8 +5,8 @@
 # Goal: Masterfile to outputs landscape
 
 ########################### Libraries ######################################
-install.packages('xlsx')
-library(xlsx)
+
+library(readxl)
 
 ######################### Directories and databases #########################
 
@@ -50,7 +50,7 @@ output_proagro <- readRDS('A:/projects/landuse_br2024/bcb_proagro/output/05_outp
 
 # setwd(dir_bndes_output)
 
-df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\Landscape_climateUse_bndes_naut_20152023_04062024.rds")
+df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_11062024.rds")
   # dplyr::rename(climate_component = climate_use,
   #               source_finance_landscape = source_of_finance_landscape,
   #               origin_domestic_international = national_internacional,
@@ -58,7 +58,7 @@ df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Pr
 
 setwd(dir_oecd_output)
 
-df_ocde_calculus_join <- readRDS("df_ocde_landscape_final_join_year.rds")
+df_ocde_calculus_join <- readRDS("df_ocde_landscape_final_join_year_2022.rds")
 
 # setwd(dir_nint_output)
 
@@ -71,7 +71,7 @@ df_idb_calculus <- readRDS("data_idb_final_landscape.rds")
 # setwd(fnmc_output)
 
 
-fnmc_landscape <- readRDS("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape.rds")
+fnmc_landscape <- readRDS("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape_11062024.rds")
 
 
 setwd(dir_susep_output)
@@ -94,9 +94,7 @@ setwd(dir_bndes_aut)
 
 df_bndes_aut <- readRDS("df_bndes_aut_landscape_final.rds")
 
-df_siop_landscape <- readRDS("A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_Ver3_26052024.rds")
-
-df_siop_1520 <- readRDS("A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_04062024.rds")
+df_siop_landscape <- readRDS("A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_04062024.rds")
 
 data_landscape_final <- do.call("rbind",
                                 list(df_ses_calculus,
@@ -135,9 +133,9 @@ sum(data_aggregated$value_original_currency)
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion_05062024.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_11062024.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion_05062024.csv")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_11062024.csv")
 
-write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_05062024.csv")
+write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_11062024.csv")

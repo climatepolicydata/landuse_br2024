@@ -45,4 +45,4 @@ df_filter_reviewed <- df_filter %>% filter(subsetor_cnae_nome %in% sector_bndes_
 
 
 
-df_filter_reviewed%>%write_rds("A:\\projects\\landuse_br2024\\bndes_n_aut\\output\\df_bndes_n_aut_filter_reviewed_03_24.rds")
+df_filter_reviewed%>%write_rds("A:\\projects\\landuse_br2024\\bndes_n_aut\\output\\df_bndes_n_aut_filter_reviewed_06_24.rds")

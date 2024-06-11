@@ -12,7 +12,8 @@ channel_landscape <- channel_landscape %>% select(channel_original,channel_lands
 sector_landscape_climate_use <- sector_landscape_climate_use %>% select(-id_pdf_fnmc)
 # Separando em Concedido e contrapartida
 
-fnmc <- fnmc %>% dplyr::filter((ano >= 2021) & (ano <= 2023)) 
+fnmc <- fnmc %>% dplyr::filter((ano >= 2021) & (ano <= 2023)) %>% 
+  dplyr::rename(id_original = no_do_instrumento_de_repasse) %>% dplyr::filter(id_original %in% sector_landscape_climate_use$id_original)
 fnmc %>% names
 fnmc_concedido <- fnmc %>% select(-valor_contrapartida) %>% as_tibble()
 fnmc_contrapartida<- fnmc %>% select(-valor_fnmc) %>% as_tibble()
@@ -21,8 +22,8 @@ fnmc_contrapartida<- fnmc %>% select(-valor_fnmc) %>% as_tibble()
  #Primeiro criando a key para dar join com as tabelas relacionais
  fnmc_contrapartida <- fnmc_contrapartida %>% dplyr::mutate(key_join = str_c(tipo_de_instituicao,instituicao_executora,sep = "-"))
 
-fnmc_contrapartida_landscape <- fnmc_contrapartida %>% dplyr::mutate(id_original = no_do_instrumento_de_repasse,
-data_source = "FNMC" , 
+
+fnmc_contrapartida_landscape <- fnmc_contrapartida %>% dplyr::mutate(data_source = "FNMC" , 
 year = ano,
 project_name = nome_do_projeto,
 project_description = "-",
@@ -31,12 +32,16 @@ original_currency = "BRL", channel_original = str_c(tipo_de_instituicao,institui
   instrument_original = "Contrapartida Fundo Clima não reembolsáveis",instrument_landscape = "Grants")  %>% inner_join(
     sector_landscape_climate_use, by = "id_original"
   ) %>%dplyr::mutate(rio_marker="-",beneficiary_original = "-",beneficiary_public_private="-",localization_original = uf,region="-",
-  uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% dplyr::mutate(sector_original = "-",subsector_original = "-")
+  uf = uf,municipality = "-")%>%select(-valor_repassado,-valor_nao_repassado,-ano,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_contrapartida,-key_join,-valor_total,-no_processo) %>% dplyr::mutate(sector_original = "-",subsector_original = "-")
+
+"não há valores para as observações de contrapartida em 2023. É originário dos dados em raw."
+
+contrapartida_zero <- fnmc_contrapartida_landscape %>% dplyr::filter(value_original_currency == 0)
+
 
 fnmc_contrapartida_landscape %>% view
 #Realizando landscape para concedido
-fnmc_concedido_landscape <- fnmc_concedido %>% dplyr::mutate(id_original = no_do_instrumento_de_repasse,
-data_source = "FNMC",
+fnmc_concedido_landscape <- fnmc_concedido %>% dplyr::mutate(data_source = "FNMC",
 year = ano,
 project_name = nome_do_projeto,
 project_description="-",
@@ -48,7 +53,7 @@ value_original_currency = valor_fnmc,
 original_currency = "BRL",
 channel_original = str_c(tipo_de_instituicao,instituicao_executora,sep = "-")) %>% inner_join(channel_landscape,by = "channel_original") %>% dplyr::mutate(instrument_original = "Fundo Clima não reembolsáveis",instrument_landscape = "Grants") %>% inner_join(sector_landscape_climate_use,by = "id_original")%>%dplyr::mutate(sector_original = "-",subsector_original = "-",
 rio_marker = "-", beneficiary_original="-",beneficiary_public_private = "-",localization_original = uf,region = "-",uf = uf,municipality="-") %>%
-    select(-valor_repassado,-no_processo,-valor_fnmc,-ano,-no_do_instrumento_de_repasse,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_nao_repassado,-valor_total)
+    select(-valor_repassado,-no_processo,-valor_fnmc,-ano,-nome_do_projeto,- instituicao_executora,-tipo_de_instituicao, -data_de_inicio_da_da_vigencia,-data_de_fim_da_vigencia,-valor_nao_repassado,-valor_total)
 # Dando rowbind
 FNMC_Landscape <- rbind(fnmc_concedido_landscape,fnmc_contrapartida_landscape)
 FNMC_Landscape$value_original_currency %>% sum
@@ -181,7 +186,7 @@ base_select_deflator = base_select_deflator %>%
   dplyr::mutate(value_usd = value_brl_deflated/cambio)
 base_select_deflator %>% select(-deflator,-cambio)
 
-base_select_deflator %>% select(-deflator,-cambio) %>%write_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape.rds")
-base_select_deflator %>% select(-deflator,-cambio) %>%write.xlsx("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape.xlsx")
+base_select_deflator %>% select(-deflator,-cambio) %>%write_rds("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape_11062024.rds")
+base_select_deflator %>% select(-deflator,-cambio) %>%write.xlsx("A:\\projects\\landuse_br2024\\fnmc\\FNMC_2015_2023Landscape_11062024.xlsx")
 
 

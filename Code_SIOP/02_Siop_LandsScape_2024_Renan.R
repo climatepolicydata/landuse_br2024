@@ -53,6 +53,10 @@ siop_tratado_new_ano<- siop_tratado_new_ano %>% filter(grupo_de_despesa != "juro
 siop_tratado_new_ano$Pago %>% sum #6.558356e+12
 siop_tratado_unidade_orcamentaria_new <- siop_tratado_new_ano %>% inner_join(channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc)%>% unique, by= "und_orc")
 siop_tratado_unidade_orcamentaria_new$Pago %>% sum #289.978.075.877
+
+write.xlsx(anti_join_siop, "A:\\projects\\landuse_br2024\\siop\\siop_anti_join_und_orc.xlsx")
+
+anti_join_siop <- anti_join(siop_tratado_new_ano,siop_tratado_unidade_orcamentaria_new)
 #Criacao do Reminder. É nele que vamos aplicar o dicionario
 df_remainder_SIOP1 <- siop_tratado_new_ano %>% anti_join(siop_tratado_unidade_orcamentaria_new %>% select(und_orc )%>% unique, by= "und_orc")
 # siop_tratado_unidade_orcamentaria_new %>% filter(plano_orc == "censo demografico 2020") %>% select(Pago) %>% sum
@@ -438,7 +442,7 @@ crop_siop_filtrado$sector_landscape = "Crop"
 multisector_siop <- multisector_search_pattern_SIOP(data_frame_SIOP=df_remainder_SIOP1 ,Coluna_search = Coluna_search) 
 # multisector_siop%>% select(acao,und_orc) %>% unique %>% view
 multisector_siop_filtrado <- multisector_out_SIOP (data_frame_SIOP_multisector = multisector_siop,Coluna_search = Coluna_search)
-multisector_siop_filtrado$sector_landscape = "Multisector"
+multisector_siop_filtrado$sector_landscape = "Multi-sector"
 #multisector_siop_filtrado %>% inner_join(bioenergia_siop_filtrado,by="Coluna_search")
 
 forest_siop <- forest_search_pattern_SIOP(data_frame_SIOP = df_remainder_SIOP1,Coluna_search =Coluna_search )
@@ -755,7 +759,7 @@ saveRDS(siop_sectorlandscape, "A:\\projects\\landuse_br2024\\siop\\base_renan_af
 last_landscape <- read_rds("./brlanduse_landscape2024_dados/Dict/base_landscape_final_01022024.rds")
 last_landscape <- last_landscape %>% mutate(sector_landscape= case_when(
   sector_landscape == "crop" ~ "Crop",sector_landscape == "forest" ~ "Forest", sector_landscape=="cattle" ~ "Cattle",
-  sector_landscape == "Bioenergy and fuels" | sector_landscape == "Bioenergy And Fuels" ~ "Bioenergy and Fuels",sector_landscape == "Agriculture" ~ "Crop",.default = sector_landscape
+  sector_landscape == "Bioenergy and fuels" | sector_landscape == "Bioenergy And Fuels" ~ "Bioenergy and fuels",sector_landscape == "Agriculture" ~ "Crop",.default = sector_landscape
 ))
 siop_antigo <- last_landscape %>% filter(data_source=="siop_painel")
 climate_use <- read_excel("./brlanduse_landscape2024_dados/SIOP/12_siop_relational_tables.xlsx",sheet = "climate_use")

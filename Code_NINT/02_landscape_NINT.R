@@ -179,7 +179,7 @@ nint_clear_landscape %>% view
 #Para bioenergia
 bioenergia_nint <- bioenergia_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 bioenergia_nint_filter <- bioenergia_NINT_out(data_frame_NINT = bioenergia_nint)
-bioenergia_nint_filter$sector_landscape = "Bioenergy and Fuels"
+bioenergia_nint_filter$sector_landscape = "Bioenergy and fuels"
 # Para Crop
 crop_nint <- crop_search_pattern_NINT(data_frame_NINT = nint_clear_landscape %>% mutate(Coluna_search = project_description),Coluna_search = Coluna_search)
 crop_nint_filter <- crop_NINT_out(data_frame_NINT = crop_nint)
@@ -214,7 +214,7 @@ nint_sectorLandscape <- nint_sectorLandscape %>% mutate(
 # Fazendo o filtro de atividade e componente climático
 
 #  Produção de cana-de-açúcar, inclusive para geração de energia
-nint_Mitigacao_ProducaoCanaAcucar <- nint_sectorLandscape%>%filter((sector_landscape== "Bioenergy and Fuels") | (sector_landscape== "Crop")) %>% 
+nint_Mitigacao_ProducaoCanaAcucar <- nint_sectorLandscape%>%filter((sector_landscape== "Bioenergy and fuels") | (sector_landscape== "Crop")) %>% 
 filter(
   (grepl("\\bplantio e trato de canavial\\b",x = project_description,ignore.case = TRUE)) |
   (grepl("\\brenovação de canavial\\b",x = project_description,ignore.case = TRUE)) |

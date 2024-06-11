@@ -84,7 +84,7 @@ df_b3_transform_landscape <- tabela_valores_ano %>%
          instrument_original = "CBIOs - Decarbonization Credit",
          instrument_landscape = "CBIOs",
          sector_original = "Petróleo e Biocombustível",
-         sector_landscape = "Bioenergy and Fuels",
+         sector_landscape = "Bioenergy and fuels",
          subsector_original = "-",
          activity_landscape = "Production of biofuels, including biodiesel and bioethanol",
          subactivity_landscape = "Issuance of CBIOs by biofuel producers and importers based on commercialization of their production.",

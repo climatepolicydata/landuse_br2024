@@ -127,13 +127,12 @@ main_sheet(penguins)
 
 teste <- read.dbf('Ferrovias.dbf', as.is= FALSE)
 
-setwd("A:/projects/landuse_br2024/sicor/output")
-
+setwd("A:/projects/landuse_br2024/siop/preview_data")
 
 setwd(dir_bcb)
 setwd(dir_susep_dt_clean)
 
-create_dict(teste, write_excel = TRUE, file_name = "dictionary_sicor_aggregate_2020")
+create_dict(siop_resto_2023, write_excel = TRUE, file_name = "dictionary_siop_landscape_2021_2023")
 
 
 	create_main_sheet(penguins)

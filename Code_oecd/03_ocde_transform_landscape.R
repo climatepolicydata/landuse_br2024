@@ -33,7 +33,7 @@ dir_oecd_output <- ("A:/projects/landuse_br2024/oecd_cf/output")
 
 setwd(dir_oecd_output)
 
-df_ocde_filter <- readRDS("df_oecd_final_filter.rds")
+df_ocde_filter <- readRDS("df_oecd_final_filter_10062024.rds")
 
 # df_ocde_filter <- readRDS("ocde_filter_reviewed.rds")
 
@@ -168,15 +168,6 @@ df_ocde_transform <- df_ocde_transform %>%
          uf = "-",
          municipality = "-")
 
-df_ocde_transform <- df_ocde_transform %>% 
-  dplyr::mutate(sector_landscape = ifelse(sector_landscape %in% "agricultura", "Crop",
-                                   ifelse(sector_landscape %in% "pecuaria", "Cattle",
-                                          ifelse(sector_landscape %in% "conservacao, restauracao e reflorestamento", "Forest",
-                                          ifelse(sector_landscape %in% "bioenergia e combustiveis", "Bioenergy and fuels",
-                                                 ifelse(sector_landscape %in% "multisetorial", "Multi-sector", sector_landscape))))))
-  
-  
-  
 
 ################## apply deflate and exchange ####################
 
@@ -270,11 +261,11 @@ setwd(dir_oecd_output)
 
 df_ocde_calculus_join <- rbind(oecd_publicado_deflated_2023, df_ocde_calculus)
 
-write.xlsx(df_ocde_calculus,"df_ocde_landscape_final_att.xlsx")
+write.xlsx(df_ocde_calculus,"df_ocde_landscape_final_2022.xlsx")
 
-saveRDS(df_ocde_calculus,"df_ocde_landscape_final_att.rds")
+saveRDS(df_ocde_calculus,"df_ocde_landscape_final_2022.rds")
 
-write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_year.xlsx")
+write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_year_2022.xlsx")
 
-saveRDS(df_ocde_calculus_join, "df_ocde_landscape_final_join_year.rds")
+saveRDS(df_ocde_calculus_join, "df_ocde_landscape_final_join_year_2022.rds")
 

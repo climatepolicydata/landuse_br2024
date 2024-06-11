@@ -79,9 +79,9 @@ relational_proagro <- clean_proagro %>%
            TRUE ~ 'agrícola'
          ),
          sector_landscape = case_when(
-           Produto %in% c('eucalipto', 'madeira', 'seringueira', 'florestamento - tratos culturais') ~ 'forest',
-           Produto %in% c('bovinos', 'pastagem') ~ 'cattle',
-           TRUE ~ 'crop'
+           Produto %in% c('eucalipto', 'madeira', 'seringueira', 'florestamento - tratos culturais') ~ 'Forest',
+           Produto %in% c('bovinos', 'pastagem') ~ 'Cattle',
+           TRUE ~ 'Crop'
          ),
          Programa = gsub('"', '', Programa),
          beneficiary_original = case_when(
