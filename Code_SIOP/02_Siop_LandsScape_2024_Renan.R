@@ -8,7 +8,7 @@ source(paste0(root,github,"/GitHub/landuse_br2024/AuxFolder/Dictionary_Sectors.R
 
 
 siop_tratado <- read_rds("A:\\projects\\landuse_br2024\\siop\\Clean_Data\\Siop_Tratado_2015_2023_05_24.rds") #258.437
-# siop_tratado%>% filter(plano_orc == "censo demografico 2020")   %>% select(Pago) %>% view
+siop_tratado%>% filter(plano_orc == "censo demografico 2020")   %>% select(Pago)
 grupo_despesa <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="grupo_despesa")
 
 channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="channel_landscape")
@@ -21,7 +21,7 @@ sector_landscape <- sector_landscape %>% distinct(acao_des_limpa,.keep_all = TRU
 
 beneficiary_landscape <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx", sheet="beneficiary_landscape")
 beneficiary_landscape <- beneficiary_landscape%>% mutate(acao_des_limpa = str_trim(str_to_lower(stri_trans_general(acao_des,"Latin-ASCII"))))
-# beneficiary_landscape[duplicated(beneficiary_landscape$acao_des_limpa),] %>% view
+ beneficiary_landscape[duplicated(beneficiary_landscape$acao_des_limpa),] 
 beneficiary_landscape <- beneficiary_landscape %>% distinct(acao_des_limpa,.keep_all = TRUE)
 beneficiary_landscape <- beneficiary_landscape %>% select(acao_des_limpa,beneficiary_landscape,Fonte)
 
@@ -40,7 +40,7 @@ climate_use<-climate_use %>% distinct(acao_des_limpa,.keep_all = TRUE)
 
 acao_plan_orc_count <- read_excel("A:\\projects\\landuse_br2024\\siop\\12_siop_relational_tables - ATUALIZACAO.xlsx",sheet = "acao_plan_orc_filter")
 acao_plan_orc_count_unique <- acao_plan_orc_count %>% mutate(plano_orc_clean = str_trim(str_to_lower(stri_trans_general(plano_orc_clean,"Latin-ASCII")),side="both")) 
-# acao_plan_orc_count_unique[duplicated(acao_plan_orc_count_unique$plano_orc_clean),] %>% view
+acao_plan_orc_count_unique[duplicated(acao_plan_orc_count_unique$plano_orc_clean),] 
 acao_plan_orc_count_unique<- acao_plan_orc_count_unique %>% distinct(plano_orc_clean,.keep_all = TRUE)
 # Iniciando as analises
 
@@ -54,12 +54,12 @@ siop_tratado_new_ano$Pago %>% sum #6.558356e+12
 siop_tratado_unidade_orcamentaria_new <- siop_tratado_new_ano %>% inner_join(channel_landscape %>% filter(!is.na(und_orc)) %>% select(und_orc)%>% unique, by= "und_orc")
 siop_tratado_unidade_orcamentaria_new$Pago %>% sum #289.978.075.877
 
-write.xlsx(anti_join_siop, "A:\\projects\\landuse_br2024\\siop\\siop_anti_join_und_orc.xlsx")
+# write.xlsx(anti_join_siop, "A:\\projects\\landuse_br2024\\siop\\siop_anti_join_und_orc.xlsx")
 
 anti_join_siop <- anti_join(siop_tratado_new_ano,siop_tratado_unidade_orcamentaria_new)
 #Criacao do Reminder. É nele que vamos aplicar o dicionario
 df_remainder_SIOP1 <- siop_tratado_new_ano %>% anti_join(siop_tratado_unidade_orcamentaria_new %>% select(und_orc )%>% unique, by= "und_orc")
-# siop_tratado_unidade_orcamentaria_new %>% filter(plano_orc == "censo demografico 2020") %>% select(Pago) %>% sum
+siop_tratado_unidade_orcamentaria_new %>% filter(plano_orc == "censo demografico 2020") %>% select(Pago)
 
 
 ######################################################### ANALISE SECTOR (ACAO) ######################################
@@ -894,5 +894,7 @@ siop_complete_1523 <- rbind(base_select_deflator, base_select_deflator_15)
 
 library(xlsx)
 
-write.xlsx(siop_complete_1523, "A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_04062024.xlsx")
-saveRDS(siop_complete_1523,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_04062024.rds")
+
+
+write.csv2(siop_complete_1523, "A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_12062024.csv")
+saveRDS(siop_complete_1523,"A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_12062024.rds")

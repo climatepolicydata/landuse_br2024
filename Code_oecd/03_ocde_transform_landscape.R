@@ -151,8 +151,6 @@ df_ocde_transform <- df_ocde_transform %>%
                 id_original = crs_identification_n,
                 project_name = project_title,
                 project_description = description,
-                origin_domestic_international = source_national_international,
-                origin_private_public = source_private_public,
                 sector_original = sub_sector,
                 subsector_original = clarifications) %>% 
   dplyr::mutate(data_source = "oecd_cf",
@@ -166,7 +164,8 @@ df_ocde_transform <- df_ocde_transform %>%
          localization_original = "-",
          region = "-",
          uf = "-",
-         municipality = "-")
+         municipality = "-") %>% 
+  dplyr::mutate(value_original_currency = ifelse(id_original == "2022026001", (value_original_currency*0.4), value_original_currency))
 
 
 ################## apply deflate and exchange ####################

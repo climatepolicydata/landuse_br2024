@@ -111,7 +111,8 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
 
 dados2<- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_20052024_reviewed.rds")
 dados2 <- dados2 %>% select(-value_brl_deflated_mean,-value_usd_mean)
-dados2<-dados2 %>% filter(data_source  == "bndes_naut")
+dados2<-dados2 %>% filter(data_source  == "bndes_naut") %>% 
+  dplyr::mutate(data_source = "bndes_n_aut")
 
 
 df_bndes_naut_calculus <- deflate_and_exchange(tabela_deflator, df_bndes_filter_landscape, tabela_cambio)

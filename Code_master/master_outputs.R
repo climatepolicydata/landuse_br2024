@@ -8,6 +8,10 @@
 
 library(readxl)
 
+library(dplyr)
+library(psych)
+
+
 ######################### Directories and databases #########################
 
 atlas_output <- ("A:/projects/landuse_br2024/atlas/output")
@@ -94,7 +98,7 @@ setwd(dir_bndes_aut)
 
 df_bndes_aut <- readRDS("df_bndes_aut_landscape_final.rds")
 
-df_siop_landscape <- readRDS("A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_04062024.rds")
+df_siop_landscape <- readRDS("A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_17_-6_2024.rds")
 
 data_landscape_final <- do.call("rbind",
                                 list(df_ses_calculus,
@@ -123,6 +127,8 @@ data_landscape_final <- data_landscape_final %>%
 data_aggregated <- aggregate(cbind(value_original_currency, value_brl_deflated, value_usd) ~ data_source + original_currency + source_finance_landscape + origin_domestic_international
 + origin_private_public + channel_landscape + instrument_landscape + sector_landscape + climate_component + year , data = data_landscape_final, FUN = sum)
 
+describe(data_aggregated)
+
 nas_por_coluna <- colSums(is.na(data_landscape_final))
 
 print(nas_por_coluna)
@@ -133,9 +139,9 @@ sum(data_aggregated$value_original_currency)
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion_11062024.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_18062024.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion_11062024.csv")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_18062024.csv")
 
-write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_11062024.csv")
+write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_18062024.csv")

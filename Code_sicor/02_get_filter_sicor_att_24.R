@@ -14,7 +14,7 @@ pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, r
 ##### directory #########
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-dir_bcb <- ("A:/finance/sicor/cleanData")
+dir_bcb <- ("A:\\projects\\landuse_br2024\\sicor\\backup_data")
 
 dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021")
 
@@ -50,8 +50,7 @@ df_sicor <- df_sicor %>% select(-cesta,
                                 -vl_perc_risco_stn,
                                 -dt_fim_colheita,
                                 -cd_contrato_stn,
-                                -consorcio, -dt_inic_plantio, -cd_inst_credito,
-                                -ref_bacen,-nu_ordem,-ano_base,-cd_tipo_seguro,
+                                -consorcio, -dt_inic_plantio, -cd_inst_credito,-nu_ordem,-ano_base,-cd_tipo_seguro,
                                 -cd_tipo_encarg_financ,-data_inicio,-cd_ref_bacen_investimento,
                                 -unidade_medida_previsao, -unidade_medida,-cnpj_agente_invest, -cd_cnpj_cadastrante)
 #### ---------------------------------------------------------------------- ####
