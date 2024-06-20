@@ -46,6 +46,10 @@ setwd(atlas_output)
 
 df_atlas_calculus  <- readRDS("database_atlas_landscape_2024.rds")
 
+df_atlas_2023 <- readRDS("database_atlas_att_2023.rds")
+
+df_atlas_calculus <- rbind(df_atlas_calculus,df_atlas_2023)
+
 setwd(dir_b3_output)
 
 df_b3_cbios_calculus <- readRDS("b3_cbios_landscape_final.rds")
