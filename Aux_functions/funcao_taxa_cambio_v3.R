@@ -45,6 +45,7 @@ coleta_dados_sgs <- function(series, datainicial = "01/01/2012", datafinal = for
   
   base <- base %>% select(ano, valor) %>% distinct() # Seleciona e renomeia as colunas de interesse
   base <- base %>% dplyr::rename(year = ano, cambio = valor)
+  base <- base %>% dplyr::mutate(year = as.numeric(year))
   
   return(base)
 }

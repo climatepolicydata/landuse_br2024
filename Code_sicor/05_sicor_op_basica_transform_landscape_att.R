@@ -65,7 +65,8 @@ tb_modalidade <- read.csv("Modalidade.csv", sep = "," ,encoding = "latin1") %>%
 tb_finalidade <- read.csv("Modalidade.csv", sep = "," ,encoding = "latin1") %>% 
   select(X.CODIGO_FINALIDADE, NOME_FINALIDADE)%>% 
   dplyr::rename(FINALIDADE = NOME_FINALIDADE,
-                CODIGO_FINALIDADE =X.CODIGO_FINALIDADE ) %>% distinct()
+                CODIGO_FINALIDADE =X.CODIGO_FINALIDADE ) %>% distinct() %>% 
+  dplyr::mutate(CODIGO_FINALIDADE = as.integer(CODIGO_FINALIDADE))
 
 tb_produto <- read.csv("Produto.csv", sep = "," ,encoding = "latin1") %>% 
   select(X.CODIGO, DESCRICAO)%>% 
@@ -87,7 +88,8 @@ df <- join(df, tb_subprograma, by ="CD_SUBPROGRAMA")
 df <- join(df, tb_cultivo, by="CD_TIPO_CULTIVO")
 
 df <- df %>% 
-  mutate(DESCRICAO_SUBPROGRAMA = ifelse(is.na(DESCRICAO_SUBPROGRAMA),"Nao informado",DESCRICAO_SUBPROGRAMA))
+  dplyr::mutate(DESCRICAO_SUBPROGRAMA = ifelse(is.na(DESCRICAO_SUBPROGRAMA),"Nao informado",DESCRICAO_SUBPROGRAMA),
+         CODIGO_MODALIDADE = as.integer(CODIGO_MODALIDADE))
 #joins ok
 
 rm(tb_irrigacao,tb_agricultura,tb_subprograma,tb_cultivo)
@@ -125,7 +127,8 @@ df <- df %>%
 
 #select interesting variables to classify climate component
 
-tabela_climate_modalidade <- tabela_climate_use %>% select(CODIGO_MODALIDADE,USE_MODALIDADE) %>% unique()
+tabela_climate_modalidade <- tabela_climate_use %>% select(CODIGO_MODALIDADE,USE_MODALIDADE) %>%  
+  dplyr::filter(CODIGO_MODALIDADE != "NULL") %>%  unique() 
 
 tabela_climate_irrigacao <- tabela_climate_use %>% select(CD_TIPO_IRRIGACAO,USE_IRRIGACAO) %>% 
   filter(CD_TIPO_IRRIGACAO != "NULL") %>% 
@@ -305,7 +308,7 @@ df_final <- mdcr_op_basica_sort %>%
   mutate(project_description = gsub(";"," ", mdcr_op_basica_sort$project_description)) %>%
   mutate(source_finance_landscape = if_else(source_original 
                                                %in% c("LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA FAVORECIDA",
-                                                      "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"LCA", 
+                                                      "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"Financial Institution", 
                                                if_else(source_original %in%
                                                          c("FUNCAFE-FUNDO DE DEFESA DA ECONOMIA CAFEEIRA"), 
                                                        "Federal and state governments", source_finance_landscape))) %>% 
@@ -328,7 +331,9 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
 
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
+# source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
+
+cambio_sgs = read.csv("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio.csv") %>% select(-X)
 
 ano_ini = 2015
 ano_fim = 2023
@@ -339,8 +344,6 @@ anos = seq(ano_fim,ano_ini, -1)
 
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 
-
-cambio_sgs = coleta_dados_sgs(serie) 
 
 tabela_cambio <-cambio_sgs %>% 
   filter(year >= 2015 & year <= 2023)
@@ -373,7 +376,7 @@ df_sicor_calculus <- df_sicor_calculus %>%
 
 setwd(dir_sicor_output)
 
-saveRDS(df_sicor_calculus,"df_sicor_format_landscape_final_att.rds")
+saveRDS(df_sicor_calculus,"df_sicor_format_landscape_final_02072024.rds")
 
 
 

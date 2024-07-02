@@ -24,7 +24,7 @@ dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021")
 setwd(dir_bcb)
 
 ### Load full database
-df_sicor <- readRDS("sicor_main_2013_2023_with_empreendimento.Rds")
+df_sicor <- readRDS("sicor_main_2013_2024_empreendimento.rds")
 
 df_sicor <- df_sicor %>% select(-cesta,
                                 -unidade_medida_previsao,
@@ -71,7 +71,7 @@ df_sicor <- df_sicor %>%  mutate(dt_emissao = as.Date(df_sicor$dt_emissao, forma
  
 
 ### Set as numeric the variable vl_parc_credito
-df_sicor$vl_parc_credito <- as.numeric(df_sicor$vl_parc_credito)
+# df_sicor$vl_parc_credito <- as.numeric(df_sicor$vl_parc_credito)
 
 
 
@@ -153,6 +153,7 @@ df_sicor <- df_sicor %>%
   
 df_sicor <- df_sicor %>% 
   mutate(ATIVIDADE = ifelse(is.na(ATIVIDADE),"NÃO INFORMADO",ATIVIDADE),
+         CODIGO_VARIEDADE = ifelse(is.na(CODIGO_VARIEDADE), "0", CODIGO_VARIEDADE),
          CD_SUBPROGRAMA = ifelse(is.na(CD_SUBPROGRAMA),"0", CD_SUBPROGRAMA),
          CD_TIPO_CULTURA = ifelse(is.na(CD_TIPO_CULTURA),"0",CD_TIPO_CULTURA),
          CODIGO_FINALIDADE = ifelse(is.na(CODIGO_FINALIDADE),"0",CODIGO_FINALIDADE))

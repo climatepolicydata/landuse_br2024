@@ -58,7 +58,7 @@ output_proagro <- readRDS('A:/projects/landuse_br2024/bcb_proagro/output/05_outp
 
 # setwd(dir_bndes_output)
 
-df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_11062024.rds")
+df_bndes_naut_calculus <- readRDS("A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_25062024.rds")
   # dplyr::rename(climate_component = climate_use,
   #               source_finance_landscape = source_of_finance_landscape,
   #               origin_domestic_international = national_internacional,
@@ -68,9 +68,9 @@ setwd(dir_oecd_output)
 
 df_ocde_calculus_join <- readRDS("df_ocde_landscape_final_join_year_2022.rds")
 
-# setwd(dir_nint_output)
+setwd("A:\\projects\\landuse_br2024\\NINT\\")
 
-df_nint_calculus <- read_xlsx("A:\\projects\\landuse_br2024\\NINT\\NINT_Landscape_2015_2023.xlsx")
+df_nint_calculus <- readRDS("df_nint_landscape_02072024.rds")
 
 setwd(dir_idb_output)
 # 
@@ -88,7 +88,7 @@ df_ses_calculus <- readRDS("ses_agregado_landscape_completo_2024.rds")
 
 setwd(sicor_output)
 
-df_sicor_calculus <- readRDS("df_sicor_format_landscape_final_att.rds")
+df_sicor_calculus <- readRDS("df_sicor_format_landscape_final_02072024.rds")
 
 setwd(dir_giz_output)
 
@@ -102,7 +102,7 @@ setwd(dir_bndes_aut)
 
 df_bndes_aut <- readRDS("df_bndes_aut_landscape_final.rds")
 
-df_siop_landscape <- readRDS("A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_17_-6_2024.rds")
+df_siop_landscape <- readRDS("A:\\projects\\landuse_br2024\\siop\\preview_data\\Siop_Expansao_Ver6_25_06_2024_V3.rds")
 
 data_landscape_final <- do.call("rbind",
                                 list(df_ses_calculus,
@@ -143,9 +143,9 @@ sum(data_aggregated$value_original_currency)
 
 setwd("A:\\projects\\landuse_br2024\\output_final")
 
-saveRDS(data_landscape_final,"base_landscape_final_expansion_18062024.rds")
+saveRDS(data_landscape_final,"base_landscape_final_expansion_02072024.rds")
 
 
-write.csv2(data_landscape_final, "base_landscape_final_expansion_18062024.csv")
+write.csv2(data_landscape_final, "base_landscape_final_expansion_02072024_reviwed.csv")
 
-write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_18062024.csv")
+write.csv2(data_aggregated, "base_landscape_final_expansion_aggregate_02072024_reviwed.csv")

@@ -48,26 +48,27 @@ bcb_c82 <- bcb_c82 %>% select(-USE_IRRIGACAO,-USE_MODALIDADE, -USE_PRODUTO,
 # names(bcb_c82) <- tolower(names(bcb_c82))
 
 df_sicor_op_basica_empreendimento_all_dummies <- df_sicor %>%
-  mutate(DUMMY_TP_AGRICULTURA = if_else(CD_TIPO_AGRICULTURA  %in% bcb_c82$CD_TP_AGRICULTURA, 1, 0)) %>%
+  mutate(DUMMY_TP_AGRICULTURA = if_else(CD_TIPO_AGRICULTURA  %in% bcb_c82$CD_TIPO_AGRICULTURA, 1, 0)) %>%
   relocate(DUMMY_TP_AGRICULTURA, .after = CD_TIPO_AGRICULTURA) %>%
-  mutate(DUMMY_TP_CULTIVO = if_else(CD_TIPO_CULTIVO %in% bcb_c82$CD_TP_CULTIVO, 1, 0)) %>%
+  mutate(DUMMY_TP_CULTIVO = if_else(CD_TIPO_CULTIVO %in% bcb_c82$CD_TIPO_CULTIVO, 1, 0)) %>%
   relocate(DUMMY_TP_CULTIVO, .after = CD_TIPO_CULTIVO) %>%
-  mutate(DUMMY_TP_INTEGRACAO = if_else(CD_TIPO_INTGR_CONSOR  %in% bcb_c82$CD_TP_INTGR_CONSOR, 1, 0)) %>%
+  mutate(DUMMY_TP_INTEGRACAO = if_else(CD_TIPO_INTGR_CONSOR  %in% bcb_c82$CD_TIPO_INTGR_CONSOR, 1, 0)) %>%
   relocate(DUMMY_TP_INTEGRACAO, .after = CD_TIPO_INTGR_CONSOR) %>%
-  mutate(DUMMY_PROGRAMA = if_else(CD_PROGRAMA  %in% bcb_c82$CD_PROGRAMA, 1, 0)) %>%
-  relocate(DUMMY_PROGRAMA, .after = CD_PROGRAMA) %>%
+  # mutate(DUMMY_PROGRAMA = if_else(CD_PROGRAMA  %in% bcb_c82$CD_PROGRAMA, 1, 0)) %>%
+  # relocate(DUMMY_PROGRAMA, .after = CD_PROGRAMA) %>%
   mutate(DUMMY_SUBPROGRAMA = if_else(CD_SUBPROGRAMA  %in% bcb_c82$CD_SUBPROGRAMA, 1, 0)) %>%
   relocate(DUMMY_SUBPROGRAMA, .after = CD_SUBPROGRAMA) %>%
-  mutate(DUMMY_TP_IRRIGACAO = if_else(CD_TIPO_IRRIGACAO  %in% bcb_c82$CD_IRRIGACAO, 1, 0)) %>%
+  mutate(DUMMY_TP_IRRIGACAO = if_else(CD_TIPO_IRRIGACAO  %in% bcb_c82$CD_TIPO_IRRIGACAO, 1, 0)) %>%
   relocate(DUMMY_TP_IRRIGACAO, .after = CD_TIPO_IRRIGACAO) %>%
-  mutate(DUMMY_MODALIDADE = if_else(CODIGO_MODALIDADE  %in% bcb_c82$CD_MODALIDADE, 1, 0)) %>%
+  mutate(DUMMY_MODALIDADE = if_else(CODIGO_MODALIDADE  %in% bcb_c82$CODIGO_MODALIDADE, 1, 0)) %>%
   relocate(DUMMY_MODALIDADE, .after = CODIGO_MODALIDADE) %>%
   # mutate(DUMMY_PRODUTO = if_else(CODIGO_PRODUTO  %in% bcb_c82$CD_PRODUTO, 1, 0)) %>%
   # relocate(DUMMY_PRODUTO, .after = CODIGO_PRODUTO) %>% 
-  mutate(DUMMY_ABC = if_else(CD_PROGRAMA %in% bcb_c82$CD_PROGRAMA_ABC, 1, 0)) %>% 
+  mutate(DUMMY_ABC = if_else(CD_PROGRAMA %in% bcb_c82$CD_PROGRAMA, 1, 0)) %>% 
   # relocate(DUMMY_ABC, .after = DUMMY_PRODUTO) %>%
   mutate(DUMMY_PRONAF_ABC = if_else(CD_SUBPROGRAMA %in% bcb_c82$CD_SUBPROGRAMA_PRONAF_ABC, 1, 0)) %>% 
-  relocate(DUMMY_ABC, .after = DUMMY_ABC)
+  mutate(DUMMY_VARIEDADE = if_else(CODIGO_VARIEDADE  %in% bcb_c82$CODIGO_VARIEDADE, 1, 0)) %>%
+  relocate(DUMMY_VARIEDADE, .after = CODIGO_VARIEDADE) 
 
 rm(df_sicor)
 
@@ -81,7 +82,7 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 #DUMMY PRODUTO E MODALIDADE
 
-bcb_c82 <- bcb_c82 %>% mutate(modalidade_produto = paste("12", CD_PRODUTO, sep = "_"))
+bcb_c82 <- bcb_c82 %>% mutate(modalidade_produto = paste("12", CODIGO_PRODUTO, sep = "_"))
 #I manually have verified 12_NULL does not exist in sicor, but let's remove it : 
 bcb_c82 <- bcb_c82 %>% mutate(modalidade_produto =ifelse(modalidade_produto=="12_NULL","NULL", modalidade_produto))
 
@@ -97,7 +98,7 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 
 df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
-  mutate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE = if_else((CODIGO_PRODUTO  %in% bcb_c82$CD_PRODUTO_2),1,0))
+  mutate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE = if_else((CODIGO_PRODUTO  %in% bcb_c82$CODIGO_PRODUTO_2),1,0))
 
 df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimento_all_dummies %>%
   mutate(DUMMY_PRODUTO_FINALIDADE_VARIEDADE = if_else((CODIGO_FINALIDADE  %in% bcb_c82$CD_FINALIDADE_EXCEÇÃO),0,DUMMY_PRODUTO_FINALIDADE_VARIEDADE))

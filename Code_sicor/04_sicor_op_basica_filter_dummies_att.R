@@ -22,6 +22,8 @@ pacman::p_load(tidyverse,
                plyr,
                pivottabler)
 
+options(scipen = 999)
+
 ##### directory #########
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
@@ -46,20 +48,22 @@ mdcr_op_basic_modify <- readRDS("df_sicor_op_basica_all_dummies_aggregate_v2.RDS
 mdcr_op_basic_modify <- mdcr_op_basic_modify %>% 
   mutate(sum_dummy = DUMMY_TP_AGRICULTURA + DUMMY_TP_CULTIVO + DUMMY_TP_INTEGRACAO +
            DUMMY_SUBPROGRAMA + DUMMY_TP_IRRIGACAO + DUMMY_MODALIDADE + DUMMY_ABC + DUMMY_PRONAF_ABC+
-           DUMMY_PRODUTO_FINALIDADE_VARIEDADE + DUMMY_PRODUTO_MODALIDADE)
+           DUMMY_PRODUTO_FINALIDADE_VARIEDADE + DUMMY_PRODUTO_MODALIDADE + DUMMY_VARIEDADE)
 
 
 mdcr_op_basic_modify_filter <- mdcr_op_basic_modify %>%
-  filter(sum_dummy >= 1)
+  dplyr::filter(sum_dummy >= 1)
 
 rm(mdcr_op_basic_modify)
 setwd(dir_sicor_output)
 
 saveRDS(mdcr_op_basic_modify_filter, "sicor_op_basica_sum_dummies_aggregate_v2.RDS")
+write.xlsx(mdcr_op_basic_modify_filter,"sicor_op_basica_sum_dummies_aggregate_v2.xlsx")
 
-#write.csv(mdcr_op_basic_modify_filter, "sicor_op_basica_filter_consulta_pub_abc.csv")
+sicor_op_basica_sum_dummies_aggregate_v2 <- sicor_op_basica_sum_dummies_aggregate_v2 %>% dplyr::rename(year = ANO,
+                                                                                                      value_original_currency = VL_PARC_CREDITO)
+sicor_op_basica_sum_dummies_aggregate_v2 <- deflate_and_exchange(tabela_deflator, sicor_op_basica_sum_dummies_aggregate_v2, tabela_cambio)
 
-rm(mdcr_op_basic_modify_filter, produto, modalidade)
-
+write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2,"sicor_op_basica_sum_dummies_aggregate_climate.xlsx")
 
 

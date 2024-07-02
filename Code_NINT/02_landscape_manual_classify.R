@@ -4,6 +4,18 @@ library(readxl)
 # library(xlsx)
 library(pdftools)
 library(lexRankr)
+pacman::p_load(tidyverse,
+               readxl,
+               readr,
+               openxlsx,
+               data.table,
+               writexl,
+               ggplot2,
+               janitor,
+               GetBCBData,
+               rbcb,
+               scales,
+               stringi)
 # source("C:/Users/napcc/Dropbox (CPI)/EduardoMinsky/PARAMIM/landuse_br2024/AuxFolder/Dictionary_Sectors.R")
 
 github <- "Documents"
@@ -13,11 +25,11 @@ source(paste0(root,github,"/GitHub/landuse_br2024/AuxFolder/Dictionary_Sectors.R
 source_finance_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "source_landscape") %>% select(-emissor_trade_name)
 source_finance_landscape <- source_finance_landscape %>% mutate(source_original = str_to_lower(stri_trans_general(source_original,"Latin-ASCII")))
 source_finance_landscape <- source_finance_landscape[,-5]
+source_finance_landscape <- source_finance_landscape %>% unique()
 
-channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "channel_landscape") %>% select(-tipo_de_emissor)
-channel_landscape <- channel_landscape %>% mutate(source_original = str_to_lower(stri_trans_general(source_original,"Latin-ASCII")),
-                                                  channel_original = str_to_lower(stri_trans_general(channel_original,"Latin-ASCII")))
-channel_landscape <- channel_landscape %>% mutate(left_link = str_c(source_original,channel_original,sep = ";")) %>% select(left_link,channel_landscape)
+
+channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "channel_landscape") %>% select(channel_original, channel_landscape) %>% 
+  dplyr::mutate(channel_original = str_to_lower(stri_trans_general(channel_original,"Latin-ASCII"))) %>% unique()
 
 instrument_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "instrument_landscape") %>% select(-tipo,-categoria,-instrumento_financeiro)
 instrument_landscape <- instrument_landscape %>% mutate(instrument_original = str_to_lower(stri_trans_general(instrument_original,"Latin-ASCII")))
@@ -35,17 +47,16 @@ data_filter <- read_xlsx("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_
 
 
 df_nint_filter <- nint_clear %>% dplyr::filter(number %in% data_filter$id_original) %>% 
-  dplyr::mutate(value_original_currency = valor *1000000,
-                channel_landscape = "Financial Institution",
+  dplyr::mutate(value_original_currency = valor * 1000000,
                 instrument_original = paste(instrumento_financeiro, categoria, sep = "_"),
+                channel_original = paste(tipo_de_emissor, emissor_trade_name, sep = "_"),
                 localization_original = "-", municipality = "-", region = "-", uf= "-",
                 data_source = "nint",
                 project_name = paste(mercado, tipo, verificador_externo,cbi, sep = "_"),
                 subsector_original = "-",
                 rio_marker = "-", beneficiary_original = "-",
                 beneficiary_landscape = "-",
-                beneficiary_public_private = "-") %>% dplyr::rename(id_original = number,
-                                                                               channel_original = tipo_de_emissor, year=data,
+                beneficiary_public_private = "-") %>% dplyr::rename(id_original = number,year=data,
                                                                                original_currency = moeda, source_original = emissor_trade_name)
   
 
@@ -55,15 +66,19 @@ df_nint_filter <- left_join(df_nint_filter, instrument_landscape, by = "instrume
 
 df_nint_filter <- left_join(df_nint_filter, source_finance_landscape, by = "source_original")
 
+df_nint_filter <- left_join(df_nint_filter, channel_landscape, by = "channel_original")
+
 
 
 #### apply deflate and exchange ###
 
 source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
 
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
+cambio_sgs = read.csv("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio.csv") %>% select(-X)
 
-ano_ini = 2021
+
+
+ano_ini = 2015
 ano_fim = 2023
 
 #a variavel anos completa os anos no intervalo escolhido acima.
@@ -72,11 +87,8 @@ anos = seq(ano_fim,ano_ini, -1)
 
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 
-
-cambio_sgs = coleta_dados_sgs(3694) 
-
 tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2021 & year <= 2023)
+  dplyr::filter(year >= 2015 & year <= 2023)
 
 
 deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
@@ -104,10 +116,18 @@ df_nint_calculus <- df_nint_calculus %>% select(id_original, data_source, year, 
        subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
        beneficiary_public_private, localization_original, region, uf, municipality)
 
+passado <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_nint_landscape_final_replication.rds")
+ano_ini = 2015
+ano_fim = 2023
+anos = seq(ano_fim,ano_ini, -1)
+
+
+
+df_nint_calculus <- rbind(df_nint_calculus, passado)
 
 setwd("A:\\projects\\landuse_br2024\\NINT\\")
 
-write_rds(df_nint_calculus,"df_nint_landscape_19062024.rds")
+write_rds(df_nint_calculus,"df_nint_landscape_02072024.rds")
 
-write_xlsx(df_nint_calculus, "df_nint_landscape_19062024.xlsx")
+write_xlsx(df_nint_calculus, "df_nint_landscape_02072024.xlsx")
 

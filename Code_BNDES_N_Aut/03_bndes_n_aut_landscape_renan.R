@@ -37,7 +37,7 @@ df_bndes_filter_landscape <- df_bndes_filter %>% dplyr::rename(id_original = num
                                                                sector_original = subsetor_cnae_nome,
                                                                value_original_currency = valor_contratado_reais,
                                                                instrument_original = instrumento_financeiro) %>% 
-  dplyr::mutate(data_source = "bndes_n_aut",
+  dplyr::mutate(data_source = "bndes_naut",
                 year = ano,
                 project_name = cliente,
                 project_description = descricao_do_projeto,
@@ -111,8 +111,7 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
 
 dados2<- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_20052024_reviewed.rds")
 dados2 <- dados2 %>% select(-value_brl_deflated_mean,-value_usd_mean)
-dados2<-dados2 %>% filter(data_source  == "bndes_naut") %>% 
-  dplyr::mutate(data_source = "bndes_n_aut")
+dados2<-dados2 %>% filter(data_source  == "bndes_naut")
 
 
 df_bndes_naut_calculus <- deflate_and_exchange(tabela_deflator, df_bndes_filter_landscape, tabela_cambio)
@@ -139,6 +138,6 @@ df_bndes_naut_calculus <- df_bndes_naut_calculus %>%
          beneficiary_public_private, localization_original, region, uf, municipality)
 
 
-saveRDS(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_11062024.rds")
+saveRDS(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_25062024.rds")
 
-write.xlsx(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_11062024.xlsx")
+write.xlsx(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_25062024.xlsx")

@@ -218,3 +218,5 @@ df_atlas_calculus <- df_atlas_calculus %>%
 setwd("A:/projects/landuse_br2024/atlas/output")
 
 saveRDS(df_atlas_calculus,"database_atlas_att_2023.rds")
+
+write.xlsx(df_atlas_calculus, "database_atlas_att_2023.xlsx")
