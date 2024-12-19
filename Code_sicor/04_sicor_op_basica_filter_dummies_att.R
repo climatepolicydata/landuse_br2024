@@ -54,16 +54,23 @@ mdcr_op_basic_modify <- mdcr_op_basic_modify %>%
 mdcr_op_basic_modify_filter <- mdcr_op_basic_modify %>%
   dplyr::filter(sum_dummy >= 1)
 
+mdcr_op_basic_modify_filter <- mdcr_op_basic_modify_filter %>% filter(!CODIGO_FINALIDADE == 1)
+
 rm(mdcr_op_basic_modify)
 setwd(dir_sicor_output)
 
 saveRDS(mdcr_op_basic_modify_filter, "sicor_op_basica_sum_dummies_aggregate_v2.RDS")
 write.xlsx(mdcr_op_basic_modify_filter,"sicor_op_basica_sum_dummies_aggregate_v2.xlsx")
 
-sicor_op_basica_sum_dummies_aggregate_v2 <- sicor_op_basica_sum_dummies_aggregate_v2 %>% dplyr::rename(year = ANO,
+sicor_op_basica_sum_dummies_aggregate_v2 <- mdcr_op_basic_modify_filter %>% dplyr::rename(year = ANO,
                                                                                                       value_original_currency = VL_PARC_CREDITO)
 sicor_op_basica_sum_dummies_aggregate_v2 <- deflate_and_exchange(tabela_deflator, sicor_op_basica_sum_dummies_aggregate_v2, tabela_cambio)
 
 write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2,"sicor_op_basica_sum_dummies_aggregate_climate.xlsx")
 
 
+mdcr_op_basic_modify <- mdcr_op_basic_modify %>% dplyr::rename(year = ANO,
+                                                                                          value_original_currency = VL_PARC_CREDITO)
+mdcr_op_basic_modify <- deflate_and_exchange(tabela_deflator, mdcr_op_basic_modify, tabela_cambio)
+
+write.xlsx(mdcr_op_basic_modify,"sicor_op_basica_sum_dummies_no_filter.xlsx")

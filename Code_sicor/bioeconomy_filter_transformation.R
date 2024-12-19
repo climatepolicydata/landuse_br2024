@@ -1,43 +1,57 @@
 ##################
 
 # Author : Renan Morais
-# Date: 29-05-2023
+# Date: 26-05-2023
 # Email: renanflorias@hotmail.com
-# Goal: transform database for landscape
+# Goal: join base: sicor_operacao_basica_estado with table "empreendimento"
 # resource: 
 
 
 ########################### Libraries ######################################
+
 pacman::p_load(tidyverse, 
                stringi, 
                janitor, 
                writexl,
                openxlsx, 
                httr,
+               magrittr, 
                readr,
                data.table,
                dplyr,
                plyr,
                pivottabler)
 
+options(scipen = 999)
+
 ##### directory #########
+
+root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+dir_bcb<- paste0(root,"Dropbox (CPI)/Climate Finance Brazil/01_DATA/BCB/0_Database/3_Dataset cleaned")
+
+dir_bcb_raw <- paste0(root, "Dropbox (CPI)/Climate Finance Brazil/01_DATA/BCB/0_Database/2_Raw/")
+
+dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
+
+dir_bioeconomy <- ("A:\\projects\\bioeconomy_landscape2024\\output")
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 dir_sicor_doc <- ("A:/finance/sicor/rawData/auxiliary")
 
-dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
 
 dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
 
+### import dataset ############
 
-################ import databases #############
 setwd(dir_sicor_output)
+# mdcr_op_basic_modify <- readRDS("df_sicor_op_basica_all_dummies_aggregate_v2.RDS") %>% filter(CODIGO_PRODUTO %in% c(160,1420,3380,4920,5660,6640,40,1770,5860,660,2080,1780,3780,5640,4760,680,2980), ANO >= 2021 & ANO <=2023)
 
+github <- "documents"
 
-# Read main dataset
-df <-readRDS("sicor_op_basica_sum_dummies_aggregate_v2.RDS")
+df <-  readRDS("df_sicor_op_basica_all_dummies_aggregate_v2.RDS") %>% dplyr::filter(CODIGO_PRODUTO %in% c(3630,2020,6260,7240,5930,3880,3900,4810,2085,4040,2090,5680,6900,1170,7160,7210,5890,4755), ANO >= 2021 & ANO <=2023)
 
+###########  transform landscape ##################
 # Read description tables
 setwd("A:\\projects\\landuse_br2024\\sicor\\auxiliary")
 tb_irrigacao <- read.csv("TipoIrrigacao.csv", sep = "," ,encoding = "latin1") %>% 
@@ -49,7 +63,7 @@ tb_agricultura <- read.csv("TipoAgropecuaria.csv", sep = "," ,encoding = "latin1
 tb_subprograma <- read.csv("Subprogramas.csv", sep = ";", encoding = "latin1") %>% 
   dplyr::rename(CD_SUBPROGRAMA = X.CODIGO_SUBPROGRAMA) %>% 
   select(CD_SUBPROGRAMA, DESCRICAO_SUBPROGRAMA)
-  
+
 tb_cat_emitente <- read.csv("CategoriaEmitente.csv", sep = ",", encoding = "latin1") %>% 
   dplyr::rename(CD_CATEG_EMITENTE = X.CODIGO) %>% 
   select()
@@ -89,7 +103,7 @@ df <- join(df, tb_cultivo, by="CD_TIPO_CULTIVO")
 
 df <- df %>% 
   dplyr::mutate(DESCRICAO_SUBPROGRAMA = ifelse(is.na(DESCRICAO_SUBPROGRAMA),"Nao informado",DESCRICAO_SUBPROGRAMA),
-         CODIGO_MODALIDADE = as.integer(CODIGO_MODALIDADE))
+                CODIGO_MODALIDADE = as.integer(CODIGO_MODALIDADE))
 #joins ok
 
 rm(tb_irrigacao,tb_agricultura,tb_subprograma,tb_cultivo)
@@ -122,7 +136,7 @@ df <- join(df, tb_produto, by = "CODIGO_PRODUTO")
 
 df <- df %>% 
   mutate(project_name = paste(FINALIDADE, DESCRICAO_SUBPROGRAMA, sep = "_"),
-    project_description = paste(MODALIDADE, PRODUTO, DESC_AGRICULTURA, DESC_IRRIGACAO, DESCRICAO_TP_CULTIVO, sep = "_"))
+         project_description = paste(MODALIDADE, PRODUTO, DESC_AGRICULTURA, DESC_IRRIGACAO, DESCRICAO_TP_CULTIVO, sep = "_"))
 
 
 #select interesting variables to classify climate component
@@ -139,14 +153,14 @@ tabela_climate_produto <- tabela_climate_use %>% select(CODIGO_PRODUTO,USE_PRODU
   mutate(CODIGO_PRODUTO = as.numeric(CODIGO_PRODUTO))
 
 tabela_climate_produto2 <- tabela_climate_use %>% select(CODIGO_PRODUTO_2
-,USE_PRODUTO_2) %>% 
+                                                         ,USE_PRODUTO_2) %>% 
   filter(CODIGO_PRODUTO_2
- != "NULL") %>% 
+         != "NULL") %>% 
   mutate(CODIGO_PRODUTO_2
- = as.numeric(CODIGO_PRODUTO_2
-)) %>% 
+         = as.numeric(CODIGO_PRODUTO_2
+         )) %>% 
   dplyr::rename(CODIGO_PRODUTO = CODIGO_PRODUTO_2
-)
+  )
 
 tabela_climate_programa <- tabela_climate_use %>% select(CD_PROGRAMA,USE_PROGRAMA_ABC) %>% 
   filter(CD_PROGRAMA != "NULL") %>% 
@@ -157,7 +171,7 @@ tabela_climate_subprograma<- tabela_climate_use %>% select(CD_SUBPROGRAMA,USE_SU
   mutate(CD_SUBPROGRAMA = as.numeric(CD_SUBPROGRAMA))
 
 tabela_climate_subprograma_abc<- tabela_climate_use %>% select(CD_SUBPROGRAMA_PRONAF_ABC,USE_SUBPROGRAMA_PRONAF) %>% 
-dplyr::rename(CD_SUBPROGRAMA = CD_SUBPROGRAMA_PRONAF_ABC) %>% 
+  dplyr::rename(CD_SUBPROGRAMA = CD_SUBPROGRAMA_PRONAF_ABC) %>% 
   filter(CD_SUBPROGRAMA != "NULL") %>% 
   mutate(CD_SUBPROGRAMA = as.numeric(CD_SUBPROGRAMA))
 
@@ -201,29 +215,29 @@ sum(df$VL_PARC_CREDITO)
 
 
 df <- df %>% 
-         mutate(DUMMY_ADAPTATION = case_when(USE_IRRIGACAO == "Adaptation" | USE_MODALIDADE == "Adaptation"  |USE_PRODUTO == "Adaptation"  
-                                             | USE_PROGRAMA_ABC == "Adaptation"  | USE_SUBPROGRAMA == "Adaptation"  | USE_CULTIVO == "Adaptation"
-                                             | USE_INTEGR== "Adaptation"  | USE_AGRICULTURA== "Adaptation" | 
-                                               USE_PRODUTO_2 == "Adaptation" | USE_SUBPROGRAMA_PRONAF == "Adaptation" | USE_VARIEDADE == "Adaptation" ~ 1, .default = 0),
-                DUMMY_MITIGATION = case_when(USE_IRRIGACAO == "Mitigation" | USE_MODALIDADE == "Mitigation" | USE_PRODUTO == "Mitigation" 
-                                             | USE_PROGRAMA_ABC == "Mitigation" | USE_SUBPROGRAMA == "Mitigation" | USE_CULTIVO == "Mitigation" 
-                                             | USE_INTEGR== "Mitigation" | USE_AGRICULTURA== "Mitigation" | 
-                                               USE_PRODUTO_2 == "Mitigation" | USE_SUBPROGRAMA_PRONAF == "Mitigation" | USE_VARIEDADE == "Mitigation"  ~ 1, .default = 0),
-                DUMMY_DUAL = case_when(USE_IRRIGACAO == "Dual"| USE_MODALIDADE == "Dual" |USE_PRODUTO == "Dual" 
-                                             | USE_PROGRAMA_ABC == "Dual" | USE_SUBPROGRAMA == "Dual" | USE_CULTIVO == "Dual" 
-                                             | USE_INTEGR== "Dual" | USE_AGRICULTURA== "Dual" | 
-                                              USE_PRODUTO_2 == "Dual" | USE_SUBPROGRAMA_PRONAF == "Dual" | USE_VARIEDADE =="Dual"  ~ 1, .default = 0))
+  mutate(DUMMY_ADAPTATION = case_when(USE_IRRIGACAO == "Adaptation" | USE_MODALIDADE == "Adaptation"  |USE_PRODUTO == "Adaptation"  
+                                      | USE_PROGRAMA_ABC == "Adaptation"  | USE_SUBPROGRAMA == "Adaptation"  | USE_CULTIVO == "Adaptation"
+                                      | USE_INTEGR== "Adaptation"  | USE_AGRICULTURA== "Adaptation" | 
+                                        USE_PRODUTO_2 == "Adaptation" | USE_SUBPROGRAMA_PRONAF == "Adaptation" | USE_VARIEDADE == "Adaptation" ~ 1, .default = 0),
+         DUMMY_MITIGATION = case_when(USE_IRRIGACAO == "Mitigation" | USE_MODALIDADE == "Mitigation" | USE_PRODUTO == "Mitigation" 
+                                      | USE_PROGRAMA_ABC == "Mitigation" | USE_SUBPROGRAMA == "Mitigation" | USE_CULTIVO == "Mitigation" 
+                                      | USE_INTEGR== "Mitigation" | USE_AGRICULTURA== "Mitigation" | 
+                                        USE_PRODUTO_2 == "Mitigation" | USE_SUBPROGRAMA_PRONAF == "Mitigation" | USE_VARIEDADE == "Mitigation"  ~ 1, .default = 0),
+         DUMMY_DUAL = case_when(USE_IRRIGACAO == "Dual"| USE_MODALIDADE == "Dual" |USE_PRODUTO == "Dual" 
+                                | USE_PROGRAMA_ABC == "Dual" | USE_SUBPROGRAMA == "Dual" | USE_CULTIVO == "Dual" 
+                                | USE_INTEGR== "Dual" | USE_AGRICULTURA== "Dual" | 
+                                  USE_PRODUTO_2 == "Dual" | USE_SUBPROGRAMA_PRONAF == "Dual" | USE_VARIEDADE =="Dual"  ~ 1, .default = 0))
 
 
 
 df <- df %>% 
   mutate(climate_use = ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 0 & DUMMY_DUAL == 0, "Adaptation",
-                          ifelse(DUMMY_ADAPTATION == 0 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 0 , "Mitigation",
-                              ifelse(DUMMY_ADAPTATION == 0 & DUMMY_MITIGATION == 0 & DUMMY_DUAL == 1 , "Dual",
-                                     ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 0, "Dual",
-                                            ifelse(DUMMY_ADAPTATION == 0 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 1, "Dual", 
-                                                   ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 0 & DUMMY_DUAL == 1,"Dual",
-                                                   ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 1, "Dual","none"))))))))
+                              ifelse(DUMMY_ADAPTATION == 0 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 0 , "Mitigation",
+                                     ifelse(DUMMY_ADAPTATION == 0 & DUMMY_MITIGATION == 0 & DUMMY_DUAL == 1 , "Dual",
+                                            ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 0, "Dual",
+                                                   ifelse(DUMMY_ADAPTATION == 0 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 1, "Dual", 
+                                                          ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 0 & DUMMY_DUAL == 1,"Dual",
+                                                                 ifelse(DUMMY_ADAPTATION == 1 & DUMMY_MITIGATION == 1 & DUMMY_DUAL == 1, "Dual","none"))))))))
 
 
 
@@ -252,12 +266,12 @@ df_ajust <- join(df, df_if , by ="CNPJ_IF")
 
 mdcr_op_basica_if <- df_ajust %>% 
   mutate(NOME_IF = if_else(NOME_IF %in% c("BCO DO BRASIL S.A.", "BCO DO NORDESTE DO BRASIL S.A.","BCO BRADESCO S.A.","BCO SANTANDER (BRASIL) S.A.",
-                        "CC CREDICITRUS","ITAÚ UNIBANCO S.A.","SICOOB COCRED CC,BCO DA AMAZONIA S.A.",
-                        "CAIXA ECONOMICA FEDERAL","BNDES,BCO COOPERATIVO SICREDI S.A.","BCO DO ESTADO DO RS S.A.",
-                        "COOPECREDI GUARIBA - CC","BCO BOCOM BBM S.A.","BCO RABOBANK INTL BRASIL S.A.",
-                        "BCO ABC BRASIL S.A.","BCO SAFRA S.A.","CC SICOOB CREDICOONAI","COOP SICREDI UNIÃO RS",
-                        "BANCO BTG PACTUAL S.A.", "CC COCRE", "BD REGIONAL DO EXTREMO SUL", "BANCO SICOOB S.A.",
-                        "COOP SICREDI CAMPOS GERAIS", "COOP SICREDI PLANALTO RS/MG"), NOME_IF, "Others"))
+                                          "CC CREDICITRUS","ITAÚ UNIBANCO S.A.","SICOOB COCRED CC,BCO DA AMAZONIA S.A.",
+                                          "CAIXA ECONOMICA FEDERAL","BNDES,BCO COOPERATIVO SICREDI S.A.","BCO DO ESTADO DO RS S.A.",
+                                          "COOPECREDI GUARIBA - CC","BCO BOCOM BBM S.A.","BCO RABOBANK INTL BRASIL S.A.",
+                                          "BCO ABC BRASIL S.A.","BCO SAFRA S.A.","CC SICOOB CREDICOONAI","COOP SICREDI UNIÃO RS",
+                                          "BANCO BTG PACTUAL S.A.", "CC COCRE", "BD REGIONAL DO EXTREMO SUL", "BANCO SICOOB S.A.",
+                                          "COOP SICREDI CAMPOS GERAIS", "COOP SICREDI PLANALTO RS/MG"), NOME_IF, "Others"))
 
 mdcr_op_basica_if <- mdcr_op_basica_if %>% 
   mutate(channel_original = paste(SEGMENTO_IF,NOME_IF, sep = "_")) %>% 
@@ -289,8 +303,8 @@ mdcr_op_basica_if_sort <- mdcr_op_basica_if%>%
   mutate(sector_landscape = if_else(str_detect(project_description, "extrativismo|florestamento|eucalipto|pinus|madeira|seringueira"),
                                     "Forest",
                                     sector_landscape))
-  
-  
+
+
 mdcr_op_basica_sort <- mdcr_op_basica_if_sort  %>%  
   select(id_original, data_source, year, project_name,
          project_description, source_original, source_finance_landscape,
@@ -307,14 +321,14 @@ mdcr_op_basica_sort <- mdcr_op_basica_if_sort  %>%
 df_final <- mdcr_op_basica_sort %>% 
   mutate(project_description = gsub(";"," ", mdcr_op_basica_sort$project_description)) %>%
   mutate(source_finance_landscape = if_else(source_original 
-                                               %in% c("LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA FAVORECIDA",
-                                                      "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"Financial Institution", 
-                                               if_else(source_original %in%
-                                                         c("FUNCAFE-FUNDO DE DEFESA DA ECONOMIA CAFEEIRA"), 
-                                                       "Federal and state governments", source_finance_landscape))) %>% 
+                                            %in% c("LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA FAVORECIDA",
+                                                   "LETRA DE CRÉDITO DO AGRONEGÓCIO (LCA) - TAXA LIVRE"),"Financial Institution", 
+                                            if_else(source_original %in%
+                                                      c("FUNCAFE-FUNDO DE DEFESA DA ECONOMIA CAFEEIRA"), 
+                                                    "Federal and state governments", source_finance_landscape))) %>% 
   mutate(origin_private_public = if_else(source_original %in%
-                                          c("FUNCAFE-FUNDO DE DEFESA DA ECONOMIA CAFEEIRA"), 
-                                        "Public", origin_private_public))
+                                           c("FUNCAFE-FUNDO DE DEFESA DA ECONOMIA CAFEEIRA"), 
+                                         "Public", origin_private_public))
 
 rm(mdcr_op_basica_sort)
 
@@ -372,11 +386,17 @@ df_sicor_calculus <- df_sicor_calculus %>%
          value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf, municipality,CODIGO_PRODUTO)
+         beneficiary_public_private, localization_original, region, uf, municipality,CODIGO_PRODUTO) %>% 
+  dplyr::mutate(climate_component = ifelse(CODIGO_PRODUTO %in% c(40,660,1770,1780,3780,4760,4920,5640,5660,5860), "Mitigation", climate_component),
+                region = ifelse(uf %in% c("AC", "AP", "AM", "PA", "RO", "RR", "TO"), "Norte",
+                                    ifelse(uf %in% c("AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE"), "Nordeste",
+                                           ifelse(uf %in% c("DF", "GO", "MT", "MS"), "Centro-Oeste",
+                                                  ifelse(uf %in% c("ES", "MG", "RJ", "SP"), "Sudeste",
+                                                         ifelse(uf %in% c("PR", "RS", "SC"), "Sul", "Região Não Identificada"))))))
 
-setwd(dir_sicor_output)
 
-saveRDS(df_sicor_calculus,"df_sicor_format_landscape_final_09072024.rds")
+rm(mdcr_op_basic_modify)
+setwd(dir_bioeconomy)
 
-
-write.xlsx(df_sicor_calculus,"df_sicor_format_landscape_final_09072024.xlsx")
+saveRDS(df_sicor_calculus, "df_sociobioeconomia_landscape_new_codes_020924.RDS")
+write.xlsx(df_sicor_calculus,"df_sociobioeconomia_landscape__new_codes_020924.xlsx")

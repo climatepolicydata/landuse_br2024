@@ -58,49 +58,49 @@ df_bndes_filter_landscape <- left_join(df_bndes_filter_landscape,instrument_bnde
 
 
 
-# %>%left_join(source_bndes_n_aut,by = "source_original") %>% mutate(
-#             value_original_currency = valor_contratado_reais,
-#             original_currency = "BRL",
-#             channel_original = str_c(forma_de_apoio,instituicao_financeira_credenciada,sep = "_")
-#         ) %>% left_join(channel_bndes_n_aut, by="channel_original") %>% mutate(
-#             instrument_original = instrumento_financeiro) %>% left_join(instrument_bndes_n_aut,by="instrument_original") %>%
-#             mutate(sector_original = subsetor_cnae_nome,
-#             subsector_original=subsetor_cnae_agrupado,
-#             Coluna_search = str_c(sector_original,subsector_original,project_description,sep=";"))
-#            
-# df_bndes_filter_landscape <- df_bndes_filter_landscape %>% mutate(
-#     beneficiary_original = str_c(natureza_do_cliente,porte_do_cliente,cliente,sep = "_")) %>% left_join(beneficiary_bndes_n_aut, by="beneficiary_original")%>% 
-#     mutate(localization_original = uf,
-#     region = "-",
-#     municipality = municipio)
+%>%left_join(source_bndes_n_aut,by = "source_original") %>% mutate(
+            value_original_currency = valor_contratado_reais,
+            original_currency = "BRL",
+            channel_original = str_c(forma_de_apoio,instituicao_financeira_credenciada,sep = "_")
+        ) %>% left_join(channel_bndes_n_aut, by="channel_original") %>% mutate(
+            instrument_original = instrumento_financeiro) %>% left_join(instrument_bndes_n_aut,by="instrument_original") %>%
+            mutate(sector_original = subsetor_cnae_nome,
+            subsector_original=subsetor_cnae_agrupado,
+            Coluna_search = str_c(sector_original,subsector_original,project_description,sep=";"))
+
+df_bndes_filter_landscape <- df_bndes_filter_landscape %>% mutate(
+    beneficiary_original = str_c(natureza_do_cliente,porte_do_cliente,cliente,sep = "_")) %>% left_join(beneficiary_bndes_n_aut, by="beneficiary_original")%>%
+    mutate(localization_original = uf,
+    region = "-",
+    municipality = municipio)
 
 
 
 # Filtrando as observações do BNDES 2020-2023 em que os projetos sao similares aos projetos do Landscape antigo. Assim a gente já consegue classificar o sector landscape e a atividade climatica
 # Primeiro, vamos ler a base do landscape antigo
-# last_landscape <- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_14032024.rds")
-# last_landscape <- last_landscape %>% mutate(sector_landscape= case_when(
-#   sector_landscape == "crop" ~ "Crop",sector_landscape == "forest" ~ "Forest", sector_landscape=="cattle" ~ "Cattle",
-#   sector_landscape == "Bioenergy and fuels" | sector_landscape == "Bioenergy And Fuels" ~ "Bioenergy and Fuels",sector_landscape == "Agriculture" ~ "Crop",.default = sector_landscape
-# ))
-# 
-# # Criando os dataframes com cada atividade landscape baseado no dicionario:
-# bioenergy_contracts <- bioenergy_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
-# bioenergy_contracts%>%view
-# df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% bioenergy_contracts$numero_do_contrato)
-# 
-# cattle_contracts <- cattle_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
-# df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% cattle_contracts$numero_do_contrato)
-# 
-# forest_contracts <- forest_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
-# df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% forest_contracts$numero_do_contrato)
-# 
-# multiSector_contracts <- multiSector_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
-# df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% multiSector_contracts$numero_do_contrato)
-# 
-# crop_contracts <- crop_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
-# df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% crop_contracts$numero_do_contrato)
-# 
+last_landscape <- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_14032024.rds")
+last_landscape <- last_landscape %>% mutate(sector_landscape= case_when(
+  sector_landscape == "crop" ~ "Crop",sector_landscape == "forest" ~ "Forest", sector_landscape=="cattle" ~ "Cattle",
+  sector_landscape == "Bioenergy and fuels" | sector_landscape == "Bioenergy And Fuels" ~ "Bioenergy and Fuels",sector_landscape == "Agriculture" ~ "Crop",.default = sector_landscape
+))
+
+# Criando os dataframes com cada atividade landscape baseado no dicionario:
+bioenergy_contracts <- bioenergy_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
+bioenergy_contracts%>%view
+df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% bioenergy_contracts$numero_do_contrato)
+
+cattle_contracts <- cattle_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
+df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% cattle_contracts$numero_do_contrato)
+
+forest_contracts <- forest_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
+df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% forest_contracts$numero_do_contrato)
+
+multiSector_contracts <- multiSector_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
+df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% multiSector_contracts$numero_do_contrato)
+
+crop_contracts <- crop_search_pattern_BNDES(data_frame_BNDES = df_bndes_filter_landscape, Coluna_search = Coluna_search)
+df_bndes_filter_landscape <- df_bndes_filter_landscape %>% filter(!numero_do_contrato %in% crop_contracts$numero_do_contrato)
+
 # 
 # # Unindo essas bases mas antes criando a coluna de sector_landscape
 # bioenergy_contracts$sector_landscape = "Bioenergy and fuels"

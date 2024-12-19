@@ -100,7 +100,8 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
                                               ifelse(original_currency == "usd", 
                                                      value_original_currency * cambio * deflator, 
                                                      value_original_currency * 3.69995 * deflator))) %>% 
-    dplyr::mutate(value_usd = value_brl_deflated/cambio)
+    dplyr::mutate(value_usd = ifelse(original_currency == "EUR", value_brl_deflated/3.69995,
+                                     value_brl_deflated/cambio))
   
   
   return(base_select_deflator)
@@ -116,18 +117,20 @@ df_nint_calculus <- df_nint_calculus %>% select(id_original, data_source, year, 
        subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
        beneficiary_public_private, localization_original, region, uf, municipality)
 
-passado <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_nint_landscape_final_replication.rds")
+passado <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_nint_landscape_final_reviewed.rds")
 ano_ini = 2015
 ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
 
+passado <- deflate_and_exchange(tabela_deflator, passado, tabela_cambio)
 
+passado <- passado %>% select(-deflator,-cambio)
 
 df_nint_calculus <- rbind(df_nint_calculus, passado)
 
 setwd("A:\\projects\\landuse_br2024\\NINT\\")
 
-write_rds(df_nint_calculus,"df_nint_landscape_02072024.rds")
+write_rds(df_nint_calculus,"df_nint_landscape_04102024.rds")
 
-write_xlsx(df_nint_calculus, "df_nint_landscape_02072024.xlsx")
+write_xlsx(df_nint_calculus, "df_nint_landscape_04102024.xlsx")
 

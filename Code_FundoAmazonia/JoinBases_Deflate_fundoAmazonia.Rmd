@@ -101,8 +101,10 @@ tabela_cambio <-cambio_sgs %>%
   dplyr::filter(year >= 2015 & year <= 2023)
 
 base_select_deflator = base_select_deflator %>% 
-  left_join(tabela_cambio,by='year') %>% 
-  dplyr::mutate(value_usd = value_brl_deflated/cambio)
+  left_join(tabela_deflator, by= "year") %>% 
+  left_join(tabela_cambio,by='year') %>%
+  mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
+           value_usd = value_brl_deflated/cambio)
 base_select_deflator %>% write.xlsx("A:\\projects\\landuse_br2024\\Fundo Amazonia\\FundoAmazonia_Landscape_2015_2023.xlsx")
 ```
 

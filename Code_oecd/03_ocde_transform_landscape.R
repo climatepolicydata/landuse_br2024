@@ -235,7 +235,7 @@ write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_year.xlsx")
 #################### calculus oecd 2015 to 2020 ###############
 setwd("A:\\projects\\brlanduse_landscape102023\\oecd\\output")
 
-oecd_publicado_deflated_2023 <- readRDS("df_ocde_landscape_final_reviewed.rds") %>% 
+oecd_publicado_deflated_2023 <- readRDS("df_ocde_landscape_final_reviewed_01102024.rds") %>% 
   select(-value_brl_deflated,-value_usd)
 
 
@@ -264,7 +264,7 @@ write.xlsx(df_ocde_calculus,"df_ocde_landscape_final_2022.xlsx")
 
 saveRDS(df_ocde_calculus,"df_ocde_landscape_final_2022.rds")
 
-write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_year_2022.xlsx")
+write.xlsx(df_ocde_calculus_join,"df_ocde_landscape_final_join_01102024.xlsx")
 
-saveRDS(df_ocde_calculus_join, "df_ocde_landscape_final_join_year_2022.rds")
+saveRDS(df_ocde_calculus_join, "df_ocde_landscape_final_join_01102024.rds")
 

@@ -34,8 +34,25 @@ dir_idb_doc <- ("A:\\projects\\landuse_br2024\\idb")
 
 setwd(dir_idb_output)
 
-df_idb_filter <- readRDS("df_idb_filter.rds") %>% dplyr::mutate(project_type = str_trim(project_type),
+df_idb_filter <- readRDS("df_idb_filter_30092024.rds") %>% dplyr::mutate(project_type = str_trim(project_type),
                                                                 project_type = as.character(project_type))
+
+# ###### out oecd ########
+# df_idb_filter <- read.xlsx("idb_brasil_21_23.xlsx")
+
+########## transform base ##########
+
+codes_crop <- c("5440/oc-br",	"5611/oc-br",	"5612/oc-br",	"atn/oc-18644-br",	"atn/oc-18781-br",	"equ/ms-20143-br",	"equ/tc-20142-br",	"sp/oc-23-51-br")
+
+codes_forest <- c("atn/az-19413-br",	"atn/az-20334-br",	"atn/gn-20510-br",	"atn/jf-20520-br",	"atn/oc-19412-br",	"atn/sx-19186-br")
+
+codes_multi <- c("atn/az-20411-br",	"5836/oc-br","atn/lc-18953-br",	"atn/mc-20445-br",	"atn/oc-19258-br",	"atn/oc-19745-br",	"atn/oc-20410-br",	"atn/oc-20570-br")
+
+
+df_idb_filter <- df_idb_filter %>% dplyr::mutate(sector_landscape = ifelse(operation_number %in% codes_crop, "Crop",
+                                                                               ifelse(operation_number %in% codes_forest, "Forest",
+                                                                                      ifelse(operation_number %in% codes_multi, "Multi-sector", "Null")))) %>% 
+  dplyr::filter(sector_landscape %in% c("Crop","Forest","Multi-sector"))
 
 
 "relational table"
@@ -92,7 +109,7 @@ df_idb_filter_transform <- df_idb_filter_transform %>%
   dplyr::mutate(climate_component = ifelse(id_original %in% c("5440/oc-br",	"5611/oc-br",	"5612/oc-br",	"atn/az-20334-br",	"atn/jf-20520-br","atn/mc-20445-br",
                                                               "atn/oc-18781-br",	"atn/oc-19258-br",	"atn/oc-19745-br",	"atn/sx-19186-br", "atn/oc-20570-br" ,
                                                               "5836/oc-br", "atn/gn-20510-br", "atn/oc-20410-br" , "atn/az-20411-br",
-                                                              "equ/tc-20142-br", "equ/ms-20143-br", "sp/oc-23-51-br",	"atn/oc-18644-br"),"Adaptation and Mitigation",
+                                                              "equ/tc-20142-br", "equ/ms-20143-br", "sp/oc-23-51-br",	"atn/oc-18644-br"),"Mitigation and Adaptation",
                                            climate_component))
 
 rm(df_idb_filter, df_idb_relational_channel, df_idb_relational_instrument, df_idb_relational_source)
@@ -108,7 +125,7 @@ source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/autom
 
 # source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/Funcao_taxa_cambio_v2.r"))
+cambio_sgs = read.csv("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio.csv") %>% select(-X)
 
 ano_ini = 2015
 ano_fim = 2023
@@ -120,7 +137,7 @@ anos = seq(ano_fim,ano_ini, -1)
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 
 
-cambio_sgs = coleta_dados_sgs(serie) 
+# cambio_sgs = coleta_dados_sgs(serie) 
 
 tabela_cambio <-cambio_sgs %>% 
   dplyr::filter(year >= 2015 & year <= 2023)
@@ -140,7 +157,7 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
 
 df_idb_calculus <- deflate_and_exchange(tabela_deflator, df_idb_clear, tabela_cambio) 
 
-rm(cambio_sgs,df_idb_clear, ibge_ipca, tabela_cambio, tabela_deflator, teste,df_idb_filter_transform)
+
 
 df_idb_calculus <- df_idb_calculus %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
@@ -152,12 +169,22 @@ df_idb_calculus <- df_idb_calculus %>%
 
 
 ############## save rds and csv ######
+dir_idb_clear <- ("A:\\projects\\brlanduse_landscape102023\\idb")
+setwd(dir_idb_clear)
+
+published <- readRDS("idb_landscape_final.RDS")
+
+published_2023 <- deflate_and_exchange(tabela_deflator, published, tabela_cambio) 
+
+published_2023 <- published_2023 %>% select(-deflator,-cambio)
 
 setwd(dir_idb_output)
 
-saveRDS(df_idb_calculus, "data_idb_final_landscape.rds")
+df_idb_calculus <- rbind(df_idb_calculus, published_2023)
 
-write.xlsx(df_idb_calculus,"data_idb_final_landscape.xlsx")
+saveRDS(df_idb_calculus, "data_idb_final_landscape_30092024.rds")
+
+write.xlsx(df_idb_calculus,"data_idb_final_landscape_30092024.xlsx")
 
 
 

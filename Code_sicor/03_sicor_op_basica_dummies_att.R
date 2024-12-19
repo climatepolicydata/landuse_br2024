@@ -62,8 +62,8 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor %>%
   relocate(DUMMY_TP_IRRIGACAO, .after = CD_TIPO_IRRIGACAO) %>%
   mutate(DUMMY_MODALIDADE = if_else(CODIGO_MODALIDADE  %in% bcb_c82$CODIGO_MODALIDADE, 1, 0)) %>%
   relocate(DUMMY_MODALIDADE, .after = CODIGO_MODALIDADE) %>%
-  # mutate(DUMMY_PRODUTO = if_else(CODIGO_PRODUTO  %in% bcb_c82$CD_PRODUTO, 1, 0)) %>%
-  # relocate(DUMMY_PRODUTO, .after = CODIGO_PRODUTO) %>% 
+  mutate(DUMMY_PRODUTO = if_else(CODIGO_PRODUTO  %in% bcb_c82$CODIGO_PRODUTO, 1, 0)) %>%
+  relocate(DUMMY_PRODUTO, .after = CODIGO_PRODUTO) %>%
   mutate(DUMMY_ABC = if_else(CD_PROGRAMA %in% bcb_c82$CD_PROGRAMA, 1, 0)) %>% 
   # relocate(DUMMY_ABC, .after = DUMMY_PRODUTO) %>%
   mutate(DUMMY_PRONAF_ABC = if_else(CD_SUBPROGRAMA %in% bcb_c82$CD_SUBPROGRAMA_PRONAF_ABC, 1, 0)) %>% 
@@ -131,4 +131,52 @@ setwd(dir_sicor_output)
 
 saveRDS(df_sicor_op_basica_empreendimento_all_dummies, "df_sicor_op_basica_all_dummies_aggregate_v2.RDS")
 write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,"df_sicor_op_basica_all_dummies_aggregate.xlsx")
+
+
+########deflated##############
+
+
+######## apply deflate and create usd value ##########
+
+root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+
+# github <- readline("digite a pasta do seu repositório clone: ")
+
+source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
+
+# source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
+
+cambio_sgs = read.csv("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio.csv") %>% select(-X)
+
+ano_ini = 2015
+ano_fim = 2023
+
+#a variavel anos completa os anos no intervalo de anos escolhidos acima.
+anos = seq(ano_fim,ano_ini, -1)
+
+
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+
+
+tabela_cambio <-cambio_sgs %>% 
+  filter(year >= 2015 & year <= 2023)
+
+
+deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
+  
+  base_select_deflator <- base_select_deflator %>% 
+    left_join(tabela_deflator, by= "year")%>%
+    left_join(tabela_cambio, by= "year") %>%  
+    mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
+           value_usd = value_brl_deflated/cambio)
+  
+  
+  return(base_select_deflator)
+}
+
+df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>% dplyr::rename(year = ANO,
+                                                                                          value_original_currency = VL_PARC_CREDITO)
+df_deflated <- deflate_and_exchange(tabela_deflator, df_deflated, tabela_cambio)
+
+write.xlsx(df_deflated,"df_sicor_deflated_analise.xlsx")
 

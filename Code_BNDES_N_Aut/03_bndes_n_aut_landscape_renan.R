@@ -19,13 +19,16 @@ channel_bndes_n_aut <- read_excel("A:\\projects\\landuse_br2024\\bndes_n_aut\\06
 
 sector_bndes_n_aut <- read_excel("A:\\projects\\landuse_br2024\\bndes_n_aut\\06_bndes_naut_relational_tables.xlsx", sheet = "sector_landscape")%>%select(sector_original,subsector_original)
 
-instrument_bndes_n_aut <- read_excel("A:\\projects\\landuse_br2024\\bndes_n_aut\\06_bndes_naut_relational_tables.xlsx", sheet = "instrument_landscape") %>% distinct()%>% select(instrument_original,instrument_landscape)
+instrument_bndes_n_aut <- read_excel("A:\\projects\\landuse_br2024\\bndes_n_aut\\06_bndes_naut_relational_tables.xlsx", sheet = "instrument_landscape") %>% distinct()%>% select(instrument_original,instrument_landscape, modalidade_de_apoio)
 beneficiary_bndes_n_aut <- read_excel("A:\\projects\\landuse_br2024\\bndes_n_aut\\06_bndes_naut_relational_tables.xlsx", sheet = "beneficiary_landscape") %>% select(beneficiary_original,beneficiary_landscape,beneficiary_public_private)
 
 climate_bndes_n_aut <- read_excel("A:\\projects\\landuse_br2024\\bndes_n_aut\\06_bndes_naut_relational_tables.xlsx", sheet = "climate_select") %>% 
   dplyr::mutate_if(is.character, ~ stri_trans_general(., "Latin-ASCII")) %>%
   dplyr::mutate(climate_original = paste0(id_original,year,
                                           project_name, sector_original))
+
+
+df_bndes_filter <- df_bndes_filter %>% dplyr::mutate(uf = toupper(uf))
 #   mutate_if(is.character, tolower) %>% filter(!id_original == "15208221")
 
 # df_bndes_filter_landscape <- df_bndes_filter %>% dplyr::mutate(
@@ -48,10 +51,17 @@ df_bndes_filter_landscape <- df_bndes_filter %>% dplyr::rename(id_original = num
                 channel_original = str_c(forma_de_apoio,instituicao_financeira_credenciada,sep = "_"),
                 rio_marker = "-",
                 beneficiary_original = str_c(natureza_do_cliente,porte_do_cliente,cliente,sep = "_"),
-                localization_original = uf,
-                region = "-",
+                localization_original = uf,subsector_landscape = "-",
                 uf = uf,
-                municipality = municipio)
+                municipality = municipio,
+                region = dplyr::case_when(
+                  uf %in% c("AC", "AP", "AM", "PA", "RO", "RR", "TO") ~ "Norte",
+                  uf %in% c("AL", "BA", "CE", "MA", "PB", "PE", "PI", "RN", "SE") ~ "Nordeste",
+                  uf %in% c("DF", "GO", "MT", "MS") ~ "Centro-Oeste",
+                  uf %in% c("ES", "MG", "RJ", "SP") ~ "Sudeste",
+                  uf %in% c("PR", "RS", "SC") ~ "Sul",
+                  TRUE ~ "Região Não Identificada"
+                ))
 
 df_bndes_filter_landscape$value_original_currency <- gsub(",", ".", df_bndes_filter_landscape$value_original_currency)
 
@@ -80,7 +90,7 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
 
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
+cambio_sgs = read.csv("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio.csv") %>% select(-X)
 
 ano_ini = 2015
 ano_fim = 2023
@@ -90,9 +100,6 @@ anos = seq(ano_fim,ano_ini, -1)
 
 
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
-
-
-cambio_sgs = coleta_dados_sgs(serie) 
 
 tabela_cambio <-cambio_sgs %>% 
   dplyr::filter(year >= 2015 & year <= 2023)
@@ -109,7 +116,7 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
   return(base_select_deflator)
 }
 
-dados2<- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_20052024_reviewed.rds")
+dados2<- read_rds("A:\\projects\\brlanduse_landscape102023\\output_final\\base_landscape_final_20052024_reviewed.rds") %>% dplyr::mutate(subsector_landscape = "-")
 dados2 <- dados2 %>% select(-value_brl_deflated_mean,-value_usd_mean)
 dados2<-dados2 %>% filter(data_source  == "bndes_naut")
 
@@ -123,7 +130,7 @@ df_bndes_naut_calculus <- df_bndes_naut_calculus %>%
          value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf, municipality)
+         beneficiary_public_private, localization_original, region, uf, municipality, subsector_landscape)
 
 a <- rbind(df_bndes_naut_calculus,dados2) %>% select(-value_usd,-value_brl_deflated)
 
@@ -135,9 +142,14 @@ df_bndes_naut_calculus <- df_bndes_naut_calculus %>%
          value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf, municipality)
+         beneficiary_public_private, localization_original, region, uf, municipality,subsector_landscape)
 
 
-saveRDS(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_25062024.rds")
+# saveRDS(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_18072024.rds")
+# 
+# write.xlsx(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_18072024.xlsx")
 
-write.xlsx(df_bndes_naut_calculus,"A:\\projects\\landuse_br2024\\bndes_n_aut\\Preview Data\\data_bndes_landscape_25062024.xlsx")
+saveRDS(df_bndes_naut_calculus,"C:\\Users\\rflorias\\CPI\\SP-Program - Brazil Landscape\\2024\\3. Data Scoping\\global_landscape_2024\\BNDES_naut\\output\\data_bndes_naut_afolu_landscape_26112024.rds")
+
+write.xlsx(df_bndes_naut_calculus,"C:\\Users\\rflorias\\CPI\\SP-Program - Brazil Landscape\\2024\\3. Data Scoping\\global_landscape_2024\\BNDES_naut\\output\\data_bndes_naut_afolu_landscape_26112024.xlsx")
+

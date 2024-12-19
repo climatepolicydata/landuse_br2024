@@ -9,7 +9,7 @@
 ####    Environment                                                         #### 
 #### ---------------------------------------------------------------------- ####
 
-pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr)
+pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow)
 
 ##### directory #########
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
@@ -61,6 +61,8 @@ df_sicor <- df_sicor %>% select(-cesta,
 df_sicor <- df_sicor %>% mutate(ano = as.numeric(format(mdy(df_sicor$dt_emissao),'%Y')),
                                 mes = as.numeric(format(mdy(df_sicor$dt_emissao),'%m'))) %>% 
   filter(ano >= 2015 & ano < 2024)
+
+write_parquet(df_sicor, "sicor_data.parquet")
 
 
 ### Create SAFRA Year variable
