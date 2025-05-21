@@ -5,6 +5,9 @@
 # Email: renanflorias@hotmail.com
 # Goal: get database from server cpi"
 
+##Modified by Julia Niemeyer
+#Date: 05/25/2025
+
 #### ---------------------------------------------------------------------- ####
 ####    Environment                                                         #### 
 #### ---------------------------------------------------------------------- ####
@@ -14,7 +17,7 @@ pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, r
 ##### directory #########
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-dir_bcb <- ("A:\\projects\\landuse_br2024\\sicor\\backup_data")
+dir_bcb <- ("A:\\projects\\landuse_br2024\\sicor\\backup_data\\2015-2025")
 
 dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021")
 
@@ -24,7 +27,7 @@ dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021")
 setwd(dir_bcb)
 
 ### Load full database
-df_sicor <- readRDS("sicor_main_2013_2024_empreendimento.rds")
+df_sicor <- readRDS("sicor_main_2015_2025_empreendimento.rds")
 
 df_sicor <- df_sicor %>% select(-cesta,
                                 -unidade_medida_previsao,
@@ -60,9 +63,9 @@ df_sicor <- df_sicor %>% select(-cesta,
 ### Create Year variable
 df_sicor <- df_sicor %>% mutate(ano = as.numeric(format(mdy(df_sicor$dt_emissao),'%Y')),
                                 mes = as.numeric(format(mdy(df_sicor$dt_emissao),'%m'))) %>% 
-  filter(ano >= 2015 & ano < 2024)
+  filter(ano >= 2015 & ano <= 2025) 
 
-write_parquet(df_sicor, "sicor_data.parquet")
+write_parquet(df_sicor, "sicor_data_2015-2025.parquet")
 
 
 ### Create SAFRA Year variable
@@ -188,7 +191,7 @@ sum(df_sicor_aggregate$VL_PARC_CREDITO)
 
 setwd("A:/projects/landuse_br2024/sicor/output")
 
-saveRDS(df_sicor_aggregate, "df_sicor_op_basica_pre_dummie_aggregate.RDS")
+saveRDS(df_sicor_aggregate, "df_sicor_op_basica_pre_dummie_aggregate_2015-2025.RDS")
 
   
   

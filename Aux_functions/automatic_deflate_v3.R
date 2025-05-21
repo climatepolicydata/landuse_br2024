@@ -26,97 +26,67 @@ pacman::p_load(tidyverse,
                sidrar)
 
 ########################## directories ############################
-##pegando a tabela atualizada do sidra
-sidra <- get_sidra(
-  x = 1737,                          # Tabela com dados de IPCA por grupos
-  #variable = 63,                     # Variação acumulada no ano (%)
-  period = c("last" = 200),          # últimos 120 meses (ou ajuste como quiser)
-  geo = "Brazil",                    # Nível Brasil
-  #classific = "c315",                # Classificação: grupos de produtos
-  category = list("7169"),           # 7169 = Índice geral
-  header = T,
-  format = 3                         # Data.frame limpo
-)
-
-ibge_ipca <- sidra %>%
-  filter(Variável == "IPCA - Variação acumulada em 12 meses") %>%
-  separate(Mês, into = c("mes", "ano"), sep = " ") %>%
-  filter(mes == "dezembro") #%>%
-
-#criando a funcao
-
-deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
+#criando a funcao para atualizar a tabvela de deflator
+deflator_automatico <- function(ano_ini, ano_fim, base) {
+  # Create character vector for the period
+  # Build vector
+  if (ano_ini == ano_fim) {
+    datas <- paste0(ano_ini, "12")
+  } else {
+    # Criar vetor de strings no formato "ano12"
+    datas <- paste0(ano_ini:ano_fim, "12")
+    
+  }
+ 
   
-  # Defina o seu projeto no Google Cloud, é importante criar o projeto e colar o id no "set_billing_id". Fora isso, nao funcionarah
-  # Existe um bug no datalake da Base dos Dados que não permite o download direto.
-  # set_billing_id("scenic-notch-360215")
-  # 
-  # # criacao do data frame direto da base de dados
-  # serie_basedosdados <- basedosdados::bdplyr("br_ibge_ipca.mes_brasil") %>% bd_collect()
+  ##pegando a tabela atualizada do sidra
+  sidra <- get_sidra(
+    x = 1737,                          # Tabela com dados de IPCA por grupos
+    #variable = 63,                     # Variação acumulada no ano (%)
+    period = datas,          # últimos 120 meses (ou ajuste como quiser)
+    geo = "Brazil",                    # Nível Brasil
+    #classific = "c315",                # Classificação: grupos de produtos
+    category = list("7169"),           # 7169 = Índice geral
+    header = T,
+    format = 3                         # Data.frame limpo
+  )
   
-  serie_basedosdados <- base
+  ibge_ipca <- sidra %>%
+    filter(Variável == "IPCA - Variação acumulada em 12 meses")
+    
+  
+  serie_basedosdados <- ibge_ipca
   
   # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
-  serie_filtrada <- serie_basedosdados %>% 
-    select(ano, mes, variacao_doze_meses) %>% 
-    filter(mes == 12,ano >= ano_ini & ano <= ano_fim ) %>% 
-    arrange(desc(ano))
+  tabela_final <- serie_basedosdados %>% 
+    separate(Mês, into = c("mes", "ano"), sep = " ") %>%
+    select(ano, Valor) %>% 
+    dplyr::rename("deflator" = "Valor",
+                  "year" = "ano") %>%
+    mutate(year = as.integer(year)) %>%
+    filter(year >= ano_ini & year <= ano_fim ) %>% 
+    arrange(desc(year))
   
-  indice = 1
-  
-  #criacao do data frame para o deflator
-  for (l in anos) {
-    # chamei novamente a base feita pela funcao do api, pois a base precisa ser percorrida ano a ano e
-    # se nao criarmos essa tabela, a tabela a ser percorrida novamente terá sempre o ano inicial como observacao
-    tabela <- serie_filtrada 
-    
-    tabela <- tabela %>% 
-      filter(ano == l)
-    
-    if (l == ano_fim) {
-      tabela <- tabela %>%  mutate(deflator = indice)
-      tabela_final <- tabela
-      indice_ano_anterior = indice * (1+ (tabela$variacao_doze_meses/100))
-    } else {
-      tabela <- tabela %>% mutate(deflator = indice_ano_anterior)
-      
-      tabela_final <- rbind(tabela_final, tabela)
-      indice_ano_anterior = indice_ano_anterior * (1 + (tabela$variacao_doze_meses/100))
-    }
-  }
-  tabela_final <- tabela_final %>% 
-    select(ano, deflator) %>%
-    dplyr::rename(year = ano) %>% 
-    arrange(year)
   return(tabela_final)
+  cat("deflator automatico atualizado para", ano_fim)
 }
 
-#aplicando a funcao na base 
-#essa funcao eh arbitraria, devido as diferentes variáveis que queremos multiplicar e diferentes bases
-
-calculo_deflator <- function(tabela_deflator, base_select_deflator) {
+#aplica a funcao de deflator sobre os valores e aplica a tabela de cambio
+deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
+    
+    base_select_deflator <- base_select_deflator %>% 
+      left_join(tabela_deflator, by= "year") %>%
+      left_join(tabela_cambio, by= "year") %>%  
+      mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
+             value_usd = value_brl_deflated/bid)
+    
+    
+    return(base_select_deflator)
+    cat("deflator e cambio aplicados sobre a base de dados")
+  }
   
-  base_select_deflator <- base_select_deflator %>% 
-    left_join(tabela_deflator, by= "year")%>%
-    mutate(value_brl_deflated = as.numeric(value_brl * deflator))
-  
-  
-  return(base_select_deflator)
-  
-}
-# eh necessario a escolha dos anos nos quais quer criar os indices. Assim, a funcao toma como base/indice = 1 o ano final
 
-ano_ini = 2015
-ano_fim = 2024
-
-#a variavel anos completa os anos no intervalo de anos escolhidos acima.
-anos = seq(ano_fim,ano_ini, -1)
-
-#Aqui utilizamos as duas funcoes para criar o objeto já com os calculos. Adicionamos os anos escolhidos junto a variavel anos na funcao...
-# que cria e limpa a tabela do deflator e ela interage com a segunda funcao que necessita da base em que se quer aplicar o deflator.
-
-
-teste <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+#teste <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
 # 
 # print("informe como variavel ano_ini, ano_fim (será a base do deflator) e anos =  seq(ano_fim,ano_ini, -1) para a prox etapa")
 # 
