@@ -15,12 +15,16 @@
 
 pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr)
 
-
-## set anos de analise
-
-ano_ini = 2015
-ano_fim = 2024
-
+tic()
+## set anos de analise caso não esteja rodando pelo master
+# 
+# ano_ini = 2023
+# ano_fim = 2023
+# current_year = T  ## Se TRUE, então estamos fazendo atualizando para o último ano, e o deflator será 1. Se False,
+# #################### seguirá a tabela IPCA
+# 
+# ## set the path to your github clone
+# github <- "Documents"
 
 ##### directory #########
 
@@ -33,14 +37,11 @@ dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR")
 
 dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
 
-dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
+dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", ano_fim)
 
 ### import dataset ############
 
-setwd(dir_sicor_output)
-
-
-df_sicor <- readRDS("df_sicor_op_basica_pre_dummie_aggregate_2013-2025.RDS")
+df_sicor <- readRDS(paste0(dir_output, "/df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
 
 
 #### df "bcb_c82" possui todos códigos e descrições das características climáticas da consulta pública 82
@@ -138,7 +139,7 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 
 
-setwd(dir_sicor_output)
+setwd(dir_output)
 
 saveRDS(df_sicor_op_basica_empreendimento_all_dummies, paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
 write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, ".xlsx"))
@@ -151,7 +152,6 @@ write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_bas
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-github <- "Documents"
 
 ############## ATUALIZADO EM 2025 -- automatico -- atualiza com base em ano_ini e ano_fim
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
@@ -160,10 +160,9 @@ source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflat
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
 
 #le a tabela atualizada pela funcao acima
-cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", (ano_fim+1), ".csv")) #%>% select(-X)
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
-
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca, current_year)
 
 
 tabela_cambio <-cambio_sgs %>% 
@@ -177,5 +176,7 @@ df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>%
 
 df_deflated <- deflate_and_exchange(tabela_deflator, df_deflated, tabela_cambio)
 
-write.xlsx(df_deflated,"df_sicor_deflated_analise_2015-2025.xlsx")
+write.xlsx(df_deflated,paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
 
+toc()
+gc()

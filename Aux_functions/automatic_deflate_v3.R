@@ -27,49 +27,67 @@ pacman::p_load(tidyverse,
 
 ########################## directories ############################
 #criando a funcao para atualizar a tabvela de deflator
-deflator_automatico <- function(ano_ini, ano_fim, base) {
+deflator_automatico <- function(ano_ini, ano_fim, base, current_year) {
   # Create character vector for the period
   # Build vector
-  if (ano_ini == ano_fim) {
-    datas <- paste0(ano_ini, "12")
-  } else {
+  if (ano_ini == ano_fim & current_year == T) {
+    #print("criando deflator para o ano corrente...")
+    # Criar a tabela
+    tabela_final <- data.frame(
+      year = ano_ini,
+      deflator = 1
+    )
+    
+    cat("deflator para o ano corrente é igual a 1")
+    return(tabela_final)
+    
+  }
+  else {
+    #print("ano_ini diferente de ano_fim ")
     # Criar vetor de strings no formato "ano12"
     datas <- paste0(ano_ini:ano_fim, "12")
     
-  }
- 
-  
-  ##pegando a tabela atualizada do sidra
-  sidra <- get_sidra(
-    x = 1737,                          # Tabela com dados de IPCA por grupos
-    #variable = 63,                     # Variação acumulada no ano (%)
-    period = datas,          # últimos 120 meses (ou ajuste como quiser)
-    geo = "Brazil",                    # Nível Brasil
-    #classific = "c315",                # Classificação: grupos de produtos
-    category = list("7169"),           # 7169 = Índice geral
-    header = T,
-    format = 3                         # Data.frame limpo
-  )
-  
-  ibge_ipca <- sidra %>%
-    filter(Variável == "IPCA - Variação acumulada em 12 meses")
     
-  
-  serie_basedosdados <- ibge_ipca
-  
-  # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
-  tabela_final <- serie_basedosdados %>% 
-    separate(Mês, into = c("mes", "ano"), sep = " ") %>%
-    select(ano, Valor) %>% 
-    dplyr::rename("deflator" = "Valor",
-                  "year" = "ano") %>%
-    mutate(year = as.integer(year)) %>%
-    filter(year >= ano_ini & year <= ano_fim ) %>% 
-    arrange(desc(year))
-  
-  return(tabela_final)
-  cat("deflator automatico atualizado para", ano_fim)
-}
+    ##pegando a tabela atualizada do sidra
+    sidra <- get_sidra(
+      x = 1737,                          # Tabela com dados de IPCA por grupos
+      #variable = 63,                     # Variação acumulada no ano (%)
+      period = datas,          # últimos 120 meses (ou ajuste como quiser)
+      geo = "Brazil",                    # Nível Brasil
+      #classific = "c315",                # Classificação: grupos de produtos
+      category = list("7169"),           # 7169 = Índice geral
+      header = T,
+      format = 3                         # Data.frame limpo
+    )
+    
+    ibge_ipca <- sidra %>%
+      filter(Variável == "IPCA - Variação acumulada em 12 meses")
+    
+    
+    serie_basedosdados <- ibge_ipca
+    
+    # selecao e filtros de valores de interesse ao calculo, queremos sempre a variacao anual, por isso o mes == 12
+    tabela_final <- serie_basedosdados %>% 
+      separate(Mês, into = c("mes", "ano"), sep = " ") %>%
+      select(ano, Valor) %>% 
+      dplyr::rename("deflator" = "Valor",
+                    "year" = "ano") %>%
+      mutate(year = as.integer(year)) %>%
+      filter(year >= ano_ini & year <= ano_fim ) %>% 
+      arrange(desc(year))
+    
+    if(current_year == T){
+      # Criar a tabela
+      tabela_final <- tabela_final %>%
+        mutate(deflator = if_else(year == ano_fim, 1, deflator))
+      cat("deflator para o ano corrente é igual a 1\n")
+    }
+    
+    cat("deflator automatico atualizado para", ano_fim, "\n")
+    return(tabela_final)
+    
+  }
+  }
 
 #aplica a funcao de deflator sobre os valores e aplica a tabela de cambio
 deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {

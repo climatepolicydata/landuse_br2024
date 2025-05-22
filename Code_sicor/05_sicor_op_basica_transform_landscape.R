@@ -7,6 +7,20 @@
 # resource: 
 
 
+### Modified by Julia Niemeyer
+# Date 25/05/2025
+tic()
+
+
+## set anos de analise caso não esteja rodando pelo master
+
+# ano_ini = 2024
+# ano_fim = 2024
+# current_year = T  ## Se TRUE ou T, então estamos fazendo atualizando para o último ano, e o deflator será 1. Se FALSE ou F, seguirá a tabela IPCA
+# 
+# ## set the path to your github clone
+# github <- "Documents"
+
 ########################### Libraries ######################################
 pacman::p_load(tidyverse, 
                stringi, 
@@ -28,15 +42,17 @@ dir_sicor_doc <- ("A:/finance/sicor/rawData/auxiliary")
 
 dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
 
-dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
+dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", ano_fim)
 
 
 ################ import databases #############
-setwd(dir_sicor_output)
+setwd(dir_output)
 
 
 # Read main dataset
-df <-readRDS("sicor_op_basica_sum_dummies_aggregate_v2.RDS")
+df <-readRDS(paste0("sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
+
+df_sicor_op_basica_empreendimento_all_dummies <- readRDS(paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))                
 
 # Read description tables
 setwd("A:\\projects\\landuse_br2024\\sicor\\auxiliary")
@@ -175,7 +191,7 @@ tabela_climate_agricultra <- tabela_climate_use %>% select(CD_TIPO_AGRICULTURA,U
 
 tabela_climate_variedade <- tabela_climate_use %>% select(CODIGO_VARIEDADE,USE_VARIEDADE) %>% 
   filter(CODIGO_VARIEDADE != "NULL") %>% 
-  mutate(CODIGO_VARIEDADE = as.numeric(CODIGO_VARIEDADE))
+  mutate(CODIGO_VARIEDADE = as.character(CODIGO_VARIEDADE))
 
 
 
@@ -329,42 +345,28 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 # github <- readline("digite a pasta do seu repositório clone: ")
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 
 # source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
 
-cambio_sgs = read.csv("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio.csv") %>% select(-X)
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv"))
 
-ano_ini = 2015
-ano_fim = 2023
-
-#a variavel anos completa os anos no intervalo de anos escolhidos acima.
-anos = seq(ano_fim,ano_ini, -1)
-
-
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca, current_year)
 
 
 tabela_cambio <-cambio_sgs %>% 
-  filter(year >= 2015 & year <= 2023)
+  filter(year >= ano_ini & year <= ano_fim)
 
 
-deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
-  
-  base_select_deflator <- base_select_deflator %>% 
-    left_join(tabela_deflator, by= "year")%>%
-    left_join(tabela_cambio, by= "year") %>%  
-    mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
-           value_usd = value_brl_deflated/cambio)
-  
-  
-  return(base_select_deflator)
-}
+df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>% 
+  filter(ANO >= ano_ini & ANO <= ano_fim) %>%
+  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) 
+
 
 
 df_sicor_calculus <- deflate_and_exchange(tabela_deflator, df_final, tabela_cambio)
 
-rm(cambio_sgs,df_final, ibge_ipca, tabela_cambio, tabela_deflator, teste)
+rm(cambio_sgs,df_final, ibge_ipca, tabela_cambio, tabela_deflator)
 
 df_sicor_calculus <- df_sicor_calculus %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
@@ -374,9 +376,12 @@ df_sicor_calculus <- df_sicor_calculus %>%
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
          beneficiary_public_private, localization_original, region, uf, municipality,CODIGO_PRODUTO)
 
-setwd(dir_sicor_output)
+setwd(dir_output)
 
-saveRDS(df_sicor_calculus,"df_sicor_format_landscape_final_09072024.rds")
+saveRDS(df_sicor_calculus,paste0("df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
 
 
-write.xlsx(df_sicor_calculus,"df_sicor_format_landscape_final_09072024.xlsx")
+write.xlsx(df_sicor_calculus,paste0("df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
+
+toc()
+gc()

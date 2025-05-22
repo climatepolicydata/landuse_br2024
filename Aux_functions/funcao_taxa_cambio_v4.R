@@ -12,8 +12,12 @@ pacman::p_load(readxl,
 
 
 ## change the initial and final dates according to analysis
-date_init <- "2012-12-31"
-date_final <- "2024-12-31"
+date_init <- paste0(ano_ini,"-12-31")
+if(ano_ini == ano_fim){
+date_final <- paste0(ano_fim+1, "-12-31")
+} else {
+  date_final <- paste0(ano_fim, "-12-31")
+}
 
 d <- get_currency("USD", date_init, date_final) %>%
   separate(date, into = c("ano", "mes", "dia"), sep = "-") %>%
@@ -24,5 +28,5 @@ d <- get_currency("USD", date_init, date_final) %>%
   dplyr::rename("year" = "ano")
 
 ##export as tabela_cambio.csv to be used in script
-write_csv(d, "A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_2025.csv")
-cat("nova tabela de cambio escrita para", date_final)
+write_csv(d, paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv"))
+cat("nova tabela de cambio escrita para ", ano_ini, "a", ano_fim, "\n")

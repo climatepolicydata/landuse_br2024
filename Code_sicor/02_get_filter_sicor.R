@@ -11,13 +11,23 @@
 #### ---------------------------------------------------------------------- ####
 ####    Environment                                                         #### 
 #### ---------------------------------------------------------------------- ####
+tic()
 
-pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow)
+## set anos de analise caso não esteja rodando pelo MASTER
+# ano_ini = 2024
+# ano_fim = 2024
+# current_year = T  ## Se TRUE ou T, então estamos fazendo atualizando para o último ano, e o deflator será 1. Se FALSE ou F, seguirá a tabela IPCA
+# 
+# ## set the path to your github clone
+# github <- "Documents"
+
+
+pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow, tictoc)
 
 ##### directory #########
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-dir_bcb <- ("A:\\projects\\landuse_br2024\\sicor\\backup_data\\2015-2025")
+dir_bcb <- paste0("A:\\projects\\landuse_br2024\\sicor\\backup_data\\") 
 
 dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021")
 
@@ -27,7 +37,7 @@ dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021")
 setwd(dir_bcb)
 
 ### Load full database
-df_sicor <- readRDS("sicor_main_2015_2025_empreendimento.rds")
+df_sicor <- readRDS("sicor_main_2013_2025_empreendimento.rds")
 
 df_sicor <- df_sicor %>% select(-cesta,
                                 -unidade_medida_previsao,
@@ -63,9 +73,9 @@ df_sicor <- df_sicor %>% select(-cesta,
 ### Create Year variable
 df_sicor <- df_sicor %>% mutate(ano = as.numeric(format(mdy(df_sicor$dt_emissao),'%Y')),
                                 mes = as.numeric(format(mdy(df_sicor$dt_emissao),'%m'))) %>% 
-  filter(ano >= 2015 & ano <= 2025) 
+  filter(ano >= ano_ini & ano <= ano_fim) 
 
-write_parquet(df_sicor, "sicor_data_2015-2025.parquet")
+write_parquet(df_sicor, paste0("sicor_data_", ano_ini, "-", ano_fim, ".parquet"))
 
 
 ### Create SAFRA Year variable
@@ -189,14 +199,18 @@ sum(df_sicor_aggregate$VL_PARC_CREDITO)
 ####    Saving the dataframe                                                #### 
 #### ---------------------------------------------------------------------- ####
 
-setwd("A:/projects/landuse_br2024/sicor/output")
+dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", ano_fim)
+if(!dir.exists(dir_output)){
+  dir.create(dir_output)
+}
+setwd(dir_output)
 
-saveRDS(df_sicor_aggregate, "df_sicor_op_basica_pre_dummie_aggregate_2015-2025.RDS")
+saveRDS(df_sicor_aggregate, paste0("df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
 
   
-  
+gc()
 ###### test to verify variables in aggregated
-
+toc()
 
 
 
