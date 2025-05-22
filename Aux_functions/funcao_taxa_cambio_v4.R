@@ -12,11 +12,11 @@ pacman::p_load(readxl,
 
 
 ## change the initial and final dates according to analysis
-date_init <- paste0(ano_ini,"-12-31")
+date_init <- paste0(ano_ini-1,"-12-31")
 if(ano_ini == ano_fim){
 date_final <- paste0(ano_fim+1, "-12-31")
 } else {
-  date_final <- paste0(ano_fim, "-12-31")
+  date_final <- paste0(ano_fim+1, "-12-31")
 }
 
 d <- get_currency("USD", date_init, date_final) %>%
@@ -25,7 +25,9 @@ d <- get_currency("USD", date_init, date_final) %>%
   group_by(ano) %>%
   slice_max(order_by = dia, n = 1, with_ties = FALSE) %>%
   select(ano, bid) %>%
-  dplyr::rename("year" = "ano")
+  dplyr::rename("year" = "ano") %>%
+  filter(year >= ano_ini & year <= ano_fim)
+
 
 ##export as tabela_cambio.csv to be used in script
 write_csv(d, paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv"))

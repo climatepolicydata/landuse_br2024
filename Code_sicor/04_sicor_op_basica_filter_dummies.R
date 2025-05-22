@@ -82,9 +82,6 @@ write.xlsx(mdcr_op_basic_modify_filter,paste0("sicor_op_basica_sum_dummies_aggre
 ############## ATUALIZADO EM 2025 -- automatico -- atualiza com base em ano_ini e ano_fim
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 
-####### rodar essa função para atualizar a tabela de taxa de cambio
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
-
 #le a tabela atualizada pela funcao acima
 cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
