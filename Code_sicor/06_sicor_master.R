@@ -4,6 +4,7 @@
 # Email: renanflorias@hotmail.com
 # Goal: Masterfile that runs all landuse analysis
 
+
 # Modified by Julia Niemeyer
 # Date 22/05/2025
 
@@ -22,22 +23,20 @@ github <- "Documents/"
 
 
 ########################### Libraries ######################################
-#install.packages("pacman")
+install.packages("pacman")
 
 pacman::p_load(tidyverse,here)
-library(tictoc)
-
 ######################### Directories and databases #########################
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-codes_sicor <- paste0(root,github,"GitHub/landuse_br2024/Code_sicor/")
+github <- readline("digite a pasta do seu repositório clone: ")
 
-tic()
+codes_sicor <- paste0(root,github,"/GitHub/brlanduse_landscape102023/Code_sicor/")
+
 # sourcing SICOR codes
 source(paste0(codes_sicor,"02_get_filter_sicor.R"))
 source(paste0(codes_sicor,"03_sicor_op_basica_dummies.R"))
 source(paste0(codes_sicor,"04_sicor_op_basica_filter_dummies.R"))
 source(paste0(codes_sicor,"05_sicor_op_basica_transform_landscape.R"))
 
-cat(paste0("Time to run entire analysis: ", toc(), "\n"))
