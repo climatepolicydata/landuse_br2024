@@ -10,9 +10,10 @@
 ########################### ACTION NEEDED ######################################
 
 # Fill the information to run your analysis
-ano_ini = 2024 #the initial year to star analysis
+ano_ini = 2022 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
-current_year = T  ## Se TRUE ou T, então estamos fazendo atualizando para o último ano, e o deflator será 1. Se FALSE ou F, seguirá a tabela IPCA
+ano_base = 2024 #the year to base inflation
+
 
 ## set the path to your github clone
 github <- "Documents/"

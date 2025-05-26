@@ -12,11 +12,12 @@ tic()
 
 ## set anos de analise caso não esteja rodando pelo master
 # 
-# ano_ini = 2024
-# ano_fim = 2024
-# current_year = T  ## Se TRUE, então estamos fazendo atualizando para o ano último ano, e o deflator será 1. Se False,
-# #################### seguirá a tabela IPCA
+
+# ano_ini = 2022 #the initial year to star analysis
+# ano_fim = 2024 #the final year to end your analysis
+# ano_base = 2024 #the year to base inflation
 # 
+
 # ## set the path to your github clone
 # github <- "Documents"
 
