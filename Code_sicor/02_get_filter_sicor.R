@@ -10,16 +10,15 @@
 
 #### ---------------------------------------------------------------------- ####
 ####    Environment                                                         #### 
-#### ---------------------------------------------------------------------- ####
-tic()
 
-## set anos de analise caso não esteja rodando pelo MASTER
-# ano_ini = 2015 #the initial year to star analysis
-# ano_fim = 2024 #the final year to end your analysis
-# ano_base = 2016 #the year to base inflation
 
-# ## set the path to your github clone
-# github <- "Documents;"
+# ## set anos de analise caso não esteja rodando pelo MASTER
+ano_ini = 2021 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2016 #the year to base inflation
+# 
+# # ## set the path to your github clone
+github <- "Documents/"
 
 
 pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow, tictoc)
@@ -39,9 +38,9 @@ dir_bcb_doc <- "A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021"
 setwd(dir_bcb)
 
 ### Load full database
-
+tic()
 ### ATUALIZAR ####
-df_sicor <- readRDS("sicor_main_2013_2023_empreendimento.rds") 
+df_sicor <- readRDS("sicor_main_2013_2023_with_empreendimento.rds") 
 
 df_sicor <- df_sicor %>% select(-cesta,
                                 -unidade_medida_previsao,
