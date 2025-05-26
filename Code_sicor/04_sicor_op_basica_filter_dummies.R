@@ -42,9 +42,6 @@ options(scipen = 999)
 ##### directory #########
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
-dir_bcb<- paste0(root,"Dropbox (CPI)/Climate Finance Brazil/01_DATA/BCB/0_Database/3_Dataset cleaned")
-
-dir_bcb_raw <- paste0(root, "Dropbox (CPI)/Climate Finance Brazil/01_DATA/BCB/0_Database/2_Raw/")
 
 dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
 

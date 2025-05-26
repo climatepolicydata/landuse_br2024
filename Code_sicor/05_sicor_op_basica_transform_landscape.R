@@ -191,7 +191,7 @@ tabela_climate_agricultra <- tabela_climate_use %>% select(CD_TIPO_AGRICULTURA,U
 
 tabela_climate_variedade <- tabela_climate_use %>% select(CODIGO_VARIEDADE,USE_VARIEDADE) %>% 
   filter(CODIGO_VARIEDADE != "NULL") %>% 
-  mutate(CODIGO_VARIEDADE = as.character(CODIGO_VARIEDADE))
+  mutate(CODIGO_VARIEDADE = as.integer(CODIGO_VARIEDADE))
 
 
 

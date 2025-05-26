@@ -25,14 +25,14 @@ tic()
 # ano_base = 2024 #the year to base inflation
 # 
 # ## set the path to your github clone
-# github <- "Documents"
+# github <- "Documents/"
 
 ##### directory #########
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
-dir_bcb<- ("A:/finance/sicor/cleanData")
+#dir_bcb <- ("A:/finance/sicor/cleanData")
 
-dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR")
+#dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR")
 
 #dir_bcb_clear <- ("A:/finance/sicor/cleanData")
 
@@ -177,7 +177,7 @@ df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>%
 
 df_deflated <- deflate_and_exchange(tabela_deflator, df_deflated, tabela_cambio)
 
-write.xlsx(df_deflated,paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
+write.xlsx(df_deflated, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
 
 toc()
 gc()
