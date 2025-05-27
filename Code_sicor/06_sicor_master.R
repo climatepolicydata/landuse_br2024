@@ -11,32 +11,37 @@
 ########################### ACTION NEEDED ######################################
 
 # Fill the information to run your analysis
-ano_ini = 2022 #the initial year to star analysis
-ano_fim = 2024 #the final year to end your analysis
+ano_ini = 2024 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis (included)
 ano_base = 2024 #the year to base inflation
 
 
 ## set the path to your github clone
-github <- "Documents/"
+github <- "Documents"
+
+############## ATUALIZAR SEMPRE #############################
+## a linha abaixo está no script 02 dessa forma. Caso for mudar, mudar lá (linha 24)
+#arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento.Rds")
+
 
 "all outputs will be written in a folder called A:/projects/landuse_br2024/sicor/output/ano_ini-ano_fim"
 
 
 ########################### Libraries ######################################
-install.packages("pacman")
+#install.packages("pacman")
 
-pacman::p_load(tidyverse,here)
+pacman::p_load(tidyverse,here, tictoc)
 ######################### Directories and databases #########################
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-github <- readline("digite a pasta do seu repositório clone: ")
+codes_sicor <- paste0(root,github,"/GitHub/landuse_br2024/Code_sicor/")
 
-codes_sicor <- paste0(root,github,"/GitHub/brlanduse_landscape102023/Code_sicor/")
-
+tic()
 # sourcing SICOR codes
 source(paste0(codes_sicor,"02_get_filter_sicor.R"))
 source(paste0(codes_sicor,"03_sicor_op_basica_dummies.R"))
 source(paste0(codes_sicor,"04_sicor_op_basica_filter_dummies.R"))
 source(paste0(codes_sicor,"05_sicor_op_basica_transform_landscape.R"))
 
+toc()

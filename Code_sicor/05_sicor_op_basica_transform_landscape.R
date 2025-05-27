@@ -189,11 +189,10 @@ tabela_climate_agricultra <- tabela_climate_use %>% select(CD_TIPO_AGRICULTURA,U
   mutate(CD_TIPO_AGRICULTURA = as.numeric(CD_TIPO_AGRICULTURA))
 
 tabela_climate_variedade <- tabela_climate_use %>% select(CODIGO_VARIEDADE,USE_VARIEDADE) %>% 
-  filter(CODIGO_VARIEDADE != "NULL") %>% 
-  mutate(CODIGO_VARIEDADE = as.character(CODIGO_VARIEDADE))
+  filter(CODIGO_VARIEDADE != "NULL")
 
-
-
+## se certifica que de os tipos de dado serão iguais, permitindo left_join
+class(tabela_climate_variedade$CODIGO_VARIEDADE) <- class(df$CODIGO_VARIEDADE)[1] 
 
 #adjust to join with table climate
 df <- df %>% 
@@ -365,7 +364,7 @@ df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>%
 
 df_sicor_calculus <- deflate_and_exchange(tabela_deflator, df_final, tabela_cambio)
 
-rm(cambio_sgs,df_final, ibge_ipca, tabela_cambio, tabela_deflator)
+rm(cambio_sgs,df_final, tabela_cambio, tabela_deflator)
 
 df_sicor_calculus <- df_sicor_calculus %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,

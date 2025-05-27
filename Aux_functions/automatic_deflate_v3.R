@@ -33,7 +33,7 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
   
   #a variavel anos completa os anos no intervalo de anos escolhidos acima.
-  anos = seq(ano_fim,ano_ini, -1) 
+  anos = seq(ano_fim,ano_ini) 
   deflators <- numeric(length(anos))
   
   #Criar vetor de strings no formato "ano12"
