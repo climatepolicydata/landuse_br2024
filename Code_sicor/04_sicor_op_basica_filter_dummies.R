@@ -83,7 +83,7 @@ source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflat
 #le a tabela atualizada pela funcao acima
 cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca, current_year)
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
 
 
 tabela_cambio <-cambio_sgs %>% 

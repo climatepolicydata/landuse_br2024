@@ -30,7 +30,7 @@ pacman::p_load(tidyverse,
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 #criando a funcao de deflacao
-deflator_automatico <- function(ano_ini, ano_fim, anos, base) {
+deflator_automatico <- function(ano_ini, ano_fim, base) {
   
   #a variavel anos completa os anos no intervalo de anos escolhidos acima.
   anos = seq(ano_fim,ano_ini) 

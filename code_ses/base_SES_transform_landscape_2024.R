@@ -5,7 +5,8 @@
 # Email: renanflorias@hotmail.com
 # Goal: transformação da base SES para landscape
 
-
+##Modified by Julia Niemeyer
+#Date: 27/05/2025
 
 ########################### Libraries ######################################
 
@@ -25,13 +26,28 @@ pacman::p_load(tidyverse,
                readr,
                dplyr)
 
+########################### ACTION NEEDED ######################################
+# ## set anos de analise caso não esteja rodando pelo MASTER
+ano_ini = 2021 #the initial year to star analysis
+ano_fim = 2023 #the final year to end your analysis
+ano_base = 2016 #the year to base inflation
 
+## set the path to your github clone
+github <- "Documents/"
 
 ########################### Directories ########################################
+
 root <- ('A:\\finance\\ses\\')
 dir_susep_dt_clean <- paste0(root,'cleanData\\')
-dir_susep_output <- ("A:/projects/landuse_br2024/ses/output")
+
+dir_susep_output <- paste0("A:/projects/landuse_br2024/ses/output/", ano_ini, "-", ano_fim)
+if(!dir.exists(dir_output)){
+  dir.create(dir_output)
+}
+
 dir_susep_doc <- ("A:/projects/landuse_br2024/ses")
+
+
 ########### import databases #########
 setwd(dir_susep_dt_clean)
 
@@ -49,7 +65,7 @@ codes2 <- read.xlsx("codes_ramo_rural_landscape.xlsx") %>% janitor::clean_names(
 
 ses_seguros2 <- ses_seguros2 %>%
   #dplyr::mutate(ano = as.numeric(substr(damesano, 0, 4))) %>% 
-  dplyr::filter(ano >= 2015 & ano <= 2023) %>% 
+  dplyr::filter(ano >= ano_ini & ano <= ano_fim) %>% 
   dplyr::filter(premio_direto != 0)
 
 
@@ -134,39 +150,30 @@ df_ses_agregado <- df_ses_agregado %>%
 # Inserir o caminho onde foi feito o clone do projeto 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-"The object github could be receive the file that corresponds to the project repository"
-
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
-
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
-
-ano_ini = 2015
-ano_fim = 2023
-
-#a variavel anos completa os anos no intervalo de anos escolhidos acima.
-anos = seq(ano_fim,ano_ini, -1)
 
 
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
+
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
+
+#le a tabela atualizada pela funcao acima
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
 
+
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
+
+###### VERIFICAR ISSO AQUI
 cambio_sgs = coleta_dados_sgs(serie) 
 
 tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2015 & year <= 2023)
+  filter(year >= ano_ini & year <= ano_fim)
 
 
-deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
-  
-  base_select_deflator <- base_select_deflator %>% 
-    left_join(tabela_deflator, by= "year")%>%
-    left_join(tabela_cambio, by= "year") %>%  
-    dplyr::mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
-           value_usd = value_brl_deflated/cambio)
-  
-  
-  return(base_select_deflator)
-}
+df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>% 
+  filter(ANO >= ano_ini & ANO <= ano_fim) %>%
+  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) 
+
 
 df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_agregado, tabela_cambio)
 
@@ -188,12 +195,13 @@ df_ses_calculus <- df_ses_calculus %>%
 
 
 setwd(dir_susep_output)
+paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx")
 
-write.csv(df_ses_calculus, "ses_agregado_landscape_completo_2024.csv")
+write.csv(df_ses_calculus, paste0("ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".csv"))
 
-saveRDS(df_ses_calculus, "ses_agregado_landscape_completo_2024.rds")
+saveRDS(df_ses_calculus, paste0("ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".rds"))
 
-write.csv2(df_ses_calculus, "base_landscape_final_18032024.csv",fileEncoding = "ISO-8859-1")
+write.csv2(df_ses_calculus, paste0("base_landscape_final_", ano_ini, "-", ano_fim, ".csv"), fileEncoding = "ISO-8859-1")
 
 
 
