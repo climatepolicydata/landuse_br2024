@@ -28,9 +28,9 @@ pacman::p_load(tidyverse,
 
 ########################### ACTION NEEDED ######################################
 # ## set anos de analise caso não esteja rodando pelo MASTER
-ano_ini = 2021 #the initial year to star analysis
-ano_fim = 2023 #the final year to end your analysis
-ano_base = 2016 #the year to base inflation
+ano_ini = 2024 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2024 #the year to base inflation
 
 ## set the path to your github clone
 github <- "Documents/"
@@ -40,9 +40,10 @@ github <- "Documents/"
 root <- ('A:\\finance\\ses\\')
 dir_susep_dt_clean <- paste0(root,'cleanData\\')
 
-dir_susep_output <- paste0("A:/projects/landuse_br2024/ses/output/", ano_ini, "-", ano_fim)
-if(!dir.exists(dir_output)){
-  dir.create(dir_output)
+dir_susep_output <- "A:/projects/landuse_br2024/ses/output/"
+
+if(!dir.exists(dir_susep_output)){
+  dir.create(dir_susep_output)
 }
 
 dir_susep_doc <- ("A:/projects/landuse_br2024/ses")
@@ -51,7 +52,7 @@ dir_susep_doc <- ("A:/projects/landuse_br2024/ses")
 ########### import databases #########
 setwd(dir_susep_dt_clean)
 
-ses_seguros2 <- read.csv("ses_clear.csv", fileEncoding = "latin1", sep = ";")
+ses_seguros2 <- read.csv(paste0(dir_susep_dt_clean, "ses_clear_", ano_fim, ".csv"), fileEncoding = "latin1", sep = ";")
 
 ses_seguros2$premio_direto <- gsub(",",".",ses_seguros2$premio_direto) %>% as.numeric()
 
@@ -164,23 +165,18 @@ cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tab
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
 
 ###### VERIFICAR ISSO AQUI
-cambio_sgs = coleta_dados_sgs(serie) 
+#cambio_sgs = coleta_dados_sgs(serie) 
 
-tabela_cambio <-cambio_sgs %>% 
+tabela_cambio <- cambio_sgs %>% 
   filter(year >= ano_ini & year <= ano_fim)
 
 
-df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>% 
-  filter(ANO >= ano_ini & ANO <= ano_fim) %>%
-  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) 
-
-
-df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_agregado, tabela_cambio)
+df_ses_agregado <- deflate_and_exchange(tabela_deflator, df_ses_agregado, tabela_cambio)
 
 
 ##### save dataset #####
 
-rm(cambio_sgs,df_ses_agregado, ibge_ipca, tabela_cambio, tabela_deflator, teste, serie, anos, ano_fim, ano_ini)
+rm(cambio_sgs, df_ses_agregado, ibge_ipca, tabela_cambio, tabela_deflator, teste, serie, anos)
 
 
 
@@ -194,14 +190,11 @@ df_ses_calculus <- df_ses_calculus %>%
 
 
 
-setwd(dir_susep_output)
-paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx")
+write.csv(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".csv"))
 
-write.csv(df_ses_calculus, paste0("ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".csv"))
+saveRDS(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".rds"))
 
-saveRDS(df_ses_calculus, paste0("ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".rds"))
-
-write.csv2(df_ses_calculus, paste0("base_landscape_final_", ano_ini, "-", ano_fim, ".csv"), fileEncoding = "ISO-8859-1")
+write.csv2(df_ses_calculus, paste0(dir_susep_output, "base_landscape_final_", ano_ini, "-", ano_fim, ".csv"), fileEncoding = "ISO-8859-1")
 
 
 
