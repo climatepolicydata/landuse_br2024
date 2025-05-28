@@ -7,6 +7,18 @@
 # resource: 
 
 
+# Modified by Julia Niemeyer
+# Date: 28/05/2025
+
+########################### ACTION NEEDED ######################################
+ano_ini = 2024 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2024 #the year to base inflation
+
+## set the path to your github clone
+ github <- "Documents/"
+
+
 ########################### Libraries ######################################
 
 pacman::p_load(tidyverse, 
@@ -36,19 +48,19 @@ setwd(dir_sisser_mapa_dt_clean)
 
 ############### import database #####################
 
-df_atlas <- readRDS("atlas_2006_2022_clear.rds")
+df_atlas <- readRDS(paste0("atlas_2006_", ano_fim, "_clear.rds"))
 
-df_atlas_2015_2022 <- df_atlas %>% 
-  dplyr::filter(ano_apolice >= 2015 & ano_apolice <= 2022,
+df_atlas_filter <- df_atlas %>% 
+  dplyr::filter(ano_apolice >= ano_ini & ano_apolice <= ano_fim,
          !nm_cultura_global %in% c("Pecuário"))
 
 
-df_atlas_2015_2022 <- df_atlas_2015_2022  %>% 
+df_atlas_filter <- df_atlas_filter  %>% 
   select(nm_razao_social, nm_municipio_propriedade, sg_uf_propriedade, 
          nm_classif_produto, nm_cultura_global, vl_subvencao_federal,
          ano_apolice, evento_preponderante) 
 
-df_atlas <- df_atlas_2015_2022 %>% 
+df_atlas <- df_atlas_filter %>% 
   group_by(nm_razao_social, nm_municipio_propriedade, sg_uf_propriedade, 
            nm_classif_produto, nm_cultura_global,
            ano_apolice, evento_preponderante) %>%
@@ -165,42 +177,24 @@ rm(df_atlas_premio_liq_sub, df_atlas_sub_negative, df_atlas_subvencao)
 # Inserir o caminho onde foi feito o clone do projeto 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
+############## ATUALIZADO EM 2025 -- automatico -- atualiza com base em ano_ini e ano_fim
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
+####### rodar essa função para atualizar a tabela de taxa de cambio
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
 
-
-ano_ini = 2015
-ano_fim = 2023
-
-#a variavel anos completa os anos no intervalo de anos escolhidos acima.
-anos = seq(ano_fim,ano_ini, -1)
+#le a tabela atualizada pela funcao acima
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
 
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
 
-
-cambio_sgs = coleta_dados_sgs(serie) 
 
 tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2015 & year <= 2023)
+  filter(year >= ano_ini & year <= ano_fim)
 
-
-deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
-  
-  base_select_deflator <- base_select_deflator %>% 
-    left_join(tabela_deflator, by= "year") %>%
-    left_join(tabela_cambio, by= "year")  %>%  
-    dplyr::mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
-           value_usd = value_brl_deflated/cambio)
-  
-  
-  return(base_select_deflator)
-}
 
 df_atlas_calculus <- deflate_and_exchange(tabela_deflator, df_atlas_final, tabela_cambio)
-
-rm(cambio_sgs,df_atlas_final, ibge_ipca, tabela_cambio, tabela_deflator, teste)
 
 
 df_atlas_calculus <- df_atlas_calculus %>% 
@@ -213,6 +207,6 @@ df_atlas_calculus <- df_atlas_calculus %>%
 
 setwd("A:/projects/landuse_br2024/atlas/output")
 
-saveRDS(df_atlas_calculus,"database_atlas_landscape_2024.rds")
+saveRDS(df_atlas_calculus,paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".rds"))
 
 
