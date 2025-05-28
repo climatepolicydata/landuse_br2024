@@ -208,5 +208,6 @@ df_atlas_calculus <- df_atlas_calculus %>%
 setwd("A:/projects/landuse_br2024/atlas/output")
 
 saveRDS(df_atlas_calculus,paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".rds"))
+write.csv2(df_atlas_calculus,paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".csv"))
 
 
