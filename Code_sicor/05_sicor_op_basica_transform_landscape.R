@@ -345,8 +345,6 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 
-# source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
-
 cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv"))
 
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca, current_year)
