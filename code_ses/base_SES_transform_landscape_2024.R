@@ -28,7 +28,7 @@ pacman::p_load(tidyverse,
 
 ########################### ACTION NEEDED ######################################
 # ## set anos de analise caso não esteja rodando pelo MASTER
-ano_ini = 2024 #the initial year to star analysis
+ano_ini = 2022 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
 ano_base = 2024 #the year to base inflation
 
@@ -171,7 +171,7 @@ tabela_cambio <- cambio_sgs %>%
   filter(year >= ano_ini & year <= ano_fim)
 
 
-df_ses_agregado <- deflate_and_exchange(tabela_deflator, df_ses_agregado, tabela_cambio)
+df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_agregado, tabela_cambio)
 
 
 ##### save dataset #####
