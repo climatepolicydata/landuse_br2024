@@ -11,7 +11,7 @@
 # Date: 28/05/2025
 
 ########################### ACTION NEEDED ######################################
-ano_ini = 2024 #the initial year to star analysis
+ano_ini = 2020 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
 ano_base = 2024 #the year to base inflation
 
@@ -38,10 +38,6 @@ pacman::p_load(tidyverse,
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 dir_sisser_mapa_dt_clean <- ("A:/finance/atlas_Seguro_Rural/cleanData")
-dir_sisser_mapa_output <- ("A:/finance/sisser/cleanData")
-
-
-dir_mapa_raw <- paste0(root, "Dropbox (CPI)/Climate Finance Brazil/01_DATA/MAPA/0.Database/2.Raw")
 
 setwd(dir_sisser_mapa_dt_clean)
 
