@@ -7,6 +7,19 @@
 # resource: 
 
 
+# Modified by Julia Niemeyer
+# Date 29/05/2025
+
+
+########################## ACTION NEEDED ##################################
+
+# ## set anos de analise caso não esteja rodando pelo MASTER
+ano_ini = 2024 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2014 #the year to base inflation
+# #
+# # # ## set the path to your github clone
+github <- "Documents/"
 
 ########################### Libraries ######################################
 pacman::p_load(tidyverse, 
@@ -52,12 +65,12 @@ CalculaValorFinanc <-  function(data, select_ano){
 ## o for evita que digitalizemos a mesma função para os anos de interesse (dupla contagem).
 #caso seja necessário aumentar o intervalo de anos a serem analisados basta acrescentar na lista "anos"
 
-anos <- 2020:2023
+interval <- ano_ini:ano_fim
 
 valor_financeiro <- data.frame()
 tabela_valores_ano <- data.frame()
 
-for (i in anos){
+for (i in interval){
   
   valor_financeiro <- CalculaValorFinanc(df_b3_clear, i)
   tabela_valores_ano <- bind_rows(valor_financeiro,tabela_valores_ano)
@@ -100,54 +113,36 @@ df_b3_transform_landscape <- tabela_valores_ano %>%
   dplyr::rename(year = ano,
                 value_original_currency = soma)
 
-rm(tabela_valores_ano,valor_financeiro, anos, df_b3_clear)
+rm(tabela_valores_ano,valor_financeiro, interval, df_b3_clear)
 
 
 ################## apply deflate and exchange ####################
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
+############## ATUALIZADO EM 2025 -- automatico -- atualiza com base em ano_ini e ano_fim
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 
-"The object github could be receive the file that corresponds to the project repository"
+####### rodar essa função para atualizar a tabela de taxa de cambio
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
-
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
-
-ano_ini = 2020
-ano_fim = 2023
-
-#a variavel anos completa os anos no intervalo escolhido acima.
-anos = seq(ano_fim,ano_ini, -1)
+#le a tabela atualizada pela funcao acima
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
 
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
 
 
-cambio_sgs = coleta_dados_sgs(serie)
-  
 tabela_cambio <-cambio_sgs %>% 
-  filter(year >= 2015 & year <= 2023)
+  filter(year >= ano_ini & year <= ano_fim)
 
 
-deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
-  
-  base_select_deflator <- base_select_deflator %>% 
-    left_join(tabela_deflator, by= "year")%>%
-    left_join(tabela_cambio, by= "year") %>%  
-    mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
-           value_usd = value_brl_deflated/cambio)
-  
-  
-  return(base_select_deflator)
-}
 
 df_b3_cbios_calculus <- deflate_and_exchange(tabela_deflator, df_b3_transform_landscape, tabela_cambio)
 
 
 #### to select variables ####
 
-rm(cambio_sgs,df_b3_transform_landscape, ibge_ipca, tabela_cambio, tabela_deflator, teste)
 
 df_b3_cbios_calculus <- df_b3_cbios_calculus %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
@@ -157,10 +152,7 @@ df_b3_cbios_calculus <- df_b3_cbios_calculus %>%
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
          beneficiary_public_private, localization_original, region, uf, municipality)
 
-#save in rds
+#save in rds and excel
 
-setwd(dir_b3_project)
-
-
-saveRDS(df_b3_cbios_calculus, "b3_cbios_landscape_final.rds")
-write.xlsx(df_b3_cbios_calculus,"b3_cbios_landscape_final.xlsx")
+saveRDS(df_b3_cbios_calculus, paste0(dir_b3_project, "/b3_cbios_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
+write.xlsx(df_b3_cbios_calculus, paste0(dir_b3_project,"b3_cbios_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
