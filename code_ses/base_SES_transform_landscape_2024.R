@@ -73,7 +73,7 @@ ses_seguros2 <- ses_seguros2 %>%
 ses_seguros_filter_landscape <- ses_seguros2 %>% 
   dplyr::filter(coramo %in% codes2$codigos)
 
-sum(ses_seguros_filter_landscape$premio_direto) 
+#sum(ses_seguros_filter_landscape$premio_direto) 
 
 ##################### transforms ########
 
@@ -144,6 +144,15 @@ df_ses_agregado <- df_ses_agregado %>%
   relocate(original_currency, .after = value_original_currency)
 
 
+
+#################### REMOVE DUPLICATES
+df_ses_filter <- df_ses_agregado %>%
+  distinct(year, id_original, value_original_currency, .keep_all = TRUE)
+
+
+
+
+
 ############ apply deflatd and exchange #######
 
 # Directory - Clone
@@ -171,12 +180,10 @@ tabela_cambio <- cambio_sgs %>%
   filter(year >= ano_ini & year <= ano_fim)
 
 
-df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_agregado, tabela_cambio)
+df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_filter, tabela_cambio)
 
 
 ##### save dataset #####
-
-rm(cambio_sgs, df_ses_agregado, ibge_ipca, tabela_cambio, tabela_deflator, teste, serie, anos)
 
 
 
@@ -187,6 +194,7 @@ df_ses_calculus <- df_ses_calculus %>%
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
          beneficiary_public_private, localization_original, region, uf, municipality)
+
 
 
 
