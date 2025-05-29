@@ -17,7 +17,7 @@ Arquivo baixado em: 2025-05-28, por Julia Niemeyer (2022-2024)
 
 - Tratamento
 
-  - Código "base_atlas_transform_landscape.R", por Renan Florias
+  - Código "base_atlas_transform_landscape_2024.R", por Renan Florias e modificado por Julia Niemeyer
 
 	Código de limpeza e agregação dos dados do para transformação no modelo landscape.
 	A separação entre valores negativos e positivos é para evitar a contabilização duplicada dos contratos que

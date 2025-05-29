@@ -11,7 +11,7 @@
 # Date: 28/05/2025
 
 ########################### ACTION NEEDED ######################################
-ano_ini = 2024 #the initial year to star analysis
+ano_ini = 2020 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
 ano_base = 2024 #the year to base inflation
 

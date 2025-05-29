@@ -50,7 +50,7 @@ código: 00_base_SES_download_update.R
 
 - Tratamento
 
-  código: 01_base_SES_clear_agreggate.R
+  códigos: 01_base_SES_clear_agreggate.R (em A:/finance/ses/code) e base_SES_transform_landscape_2024.R (no Github)
 
 	1 - importação do dataset via xlsx
 	2 - limpeza e padronização das variáveis, retirando acento, maiusculas e minusculas.
