@@ -155,4 +155,4 @@ df_b3_cbios_calculus <- df_b3_cbios_calculus %>%
 #save in rds and excel
 
 saveRDS(df_b3_cbios_calculus, paste0(dir_b3_project, "/b3_cbios_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
-write.xlsx(df_b3_cbios_calculus, paste0(dir_b3_project,"b3_cbios_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
+write.xlsx(df_b3_cbios_calculus, paste0(dir_b3_project,"/b3_cbios_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
