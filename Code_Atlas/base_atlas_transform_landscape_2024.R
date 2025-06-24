@@ -176,6 +176,9 @@ root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 ############## ATUALIZADO EM 2025 -- automatico -- atualiza com base em ano_ini e ano_fim
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 
+############# ATUALIZADO EM 2024 -- pega valores para deflacionar USD na base USD A:\\macro\\usd_FED\\rawData\\Inflation_FED.xls
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/deflated_usd_v2.r"))
+
 ####### rodar essa função para atualizar a tabela de taxa de cambio
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
 
@@ -184,6 +187,7 @@ cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tab
 
 
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
+tabela_deflatorUSD <- deflator_usd(ano_ini, ano_fim, usd_inflation)
 
 
 tabela_cambio <-cambio_sgs %>% 
@@ -191,19 +195,20 @@ tabela_cambio <-cambio_sgs %>%
 
 
 df_atlas_calculus <- deflate_and_exchange(tabela_deflator, df_atlas_final, tabela_cambio)
+df_atlas_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_atlas_calculus, tabela_cambio)
 
 
-df_atlas_calculus <- df_atlas_calculus %>% 
+df_atlas_calculus3 <- df_atlas_calculus2 %>% 
   select(id_original, data_source, year, project_name, project_description, source_original,
          source_finance_landscape, origin_domestic_international, origin_private_public,
-         value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
+         value_original_currency, original_currency, value_brl_deflated, value_BRLm, value_USDm, value_USDm_deflated, channel_original,
          channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
          subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
          beneficiary_public_private, localization_original, region, uf,municipality)
 
 setwd("A:/projects/landuse_br2024/atlas/output")
 
-saveRDS(df_atlas_calculus,paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".rds"))
-write.csv2(df_atlas_calculus,paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".csv"))
+saveRDS(df_atlas_calculus3, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, "_TESTE_USD.rds"))
+write.csv2(df_atlas_calculus3, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, "_TESTE_USD.csv"))
 
 
