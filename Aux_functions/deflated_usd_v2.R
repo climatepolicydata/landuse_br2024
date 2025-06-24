@@ -55,10 +55,10 @@ deflator_usd <- function(ano_ini, ano_fim, base) {
     deflators[i] <- deflator_usd(anos[i])
   }
   
-  tabela_final <- data.frame(year = anos, deflatorUSD = deflators) %>% arrange(year)
+  tabela_finalUSD <- data.frame(year = anos, deflatorUSD = deflators) %>% arrange(year)
   
   cat("deflator automatico USD atualizado para", ano_fim, "\n")
-  return(tabela_final)
+  return(tabela_finalUSD)
 }
 
 #aplicando a funcao na base 
