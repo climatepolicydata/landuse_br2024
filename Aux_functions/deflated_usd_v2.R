@@ -89,33 +89,10 @@ calculo_deflator_usd <- function(tabela_deflator, base_select_deflator, tabela_c
     left_join(tabela_deflator, by = "year") %>%
     #left_join(tabela_cambio, by = "year") %>%
     dplyr::mutate(
-      # USD mercado - convertido e deflacionado para todos os casos
-      value_USDm = ifelse(original_currency == "BRL",
-                          value_original_currency / bid,
-                          ifelse(original_currency == "USD",
-                                 value_original_currency,
-                                 NA_real_)),
-      
       # Deflator sobre valor em USD
-      value_USDm_deflated = ifelse(original_currency == "BRL",
-                                   (value_original_currency * deflatorUSD) / bid,
-                                   ifelse(original_currency == "USD",
-                                          value_original_currency * deflatorUSD,
-                                          NA_real_)),
+      value_USDm_deflated = value_USDm * deflatorUSD
       
-      # Valor convertido para BRL e deflacionado (para moeda local)
-      value_BRLm = ifelse(original_currency == "USD",
-                          value_original_currency * bid,
-                          ifelse(original_currency == "BRL",
-                                 value_original_currency,
-                                 NA_real_)),
-      
-      value_brl_deflated = ifelse(original_currency == "USD",
-                                  value_USDm_deflated * bid,
-                                  ifelse(original_currency == "BRL",
-                                         value_original_currency * deflatorUSD,
-                                         NA_real_))
-    )
+)
   
   cat("Cálculo do deflator USD concluído.\n")
   return(base_select_deflator)

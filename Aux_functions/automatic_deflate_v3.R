@@ -129,26 +129,15 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
     left_join(tabela_cambio, by = "year") %>%
     mutate(
       # BRL case
-      value_BRLm = ifelse(original_currency == "BRL", value_original_currency, NA_real_),
-      value_brl_deflated = ifelse(original_currency == "BRL",
-                                  as.numeric(value_original_currency * deflator),
-                                  ifelse(original_currency == "USD",
-                                         as.numeric(value_original_currency * deflator_usd * bid),
-                                         NA_real_)),
-      value_USDm = ifelse(original_currency == "BRL",
-                          as.numeric(value_original_currency / bid),
-                          ifelse(original_currency == "USD",
-                                 value_original_currency,
-                                 NA_real_)),
-      value_USDm_deflated = ifelse(original_currency == "BRL",
-                                   as.numeric((value_original_currency * deflator) / bid),
-                                   ifelse(original_currency == "USD",
-                                          as.numeric(value_original_currency * deflator_usd),
-                                          NA_real_)),
-      # USD to BRL (for completeness)
       value_BRLm = ifelse(original_currency == "USD",
                           as.numeric(value_original_currency * bid),
-                          value_BRLm)
+                          value_original_currency),
+      value_brl_deflated = as.numeric(value_BRLm * deflator),
+      value_USDm = ifelse(original_currency == "BRL",
+                          as.numeric(value_BRLm/bid),
+                          value_original_currency)
+      # USD to BRL (for completeness)
+      
     )
   
   cat("Deflator e câmbio aplicados sobre a base de dados\n")
