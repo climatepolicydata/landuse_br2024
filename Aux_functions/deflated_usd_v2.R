@@ -26,6 +26,7 @@ usd_inflation <- read_xls("USD Inflation_FED.xls",skip = 10) %>% janitor::clean_
 
 deflator_usd <- function(ano_ini, ano_fim, base) {
   anos = ano_ini:ano_fim
+  deflators <- numeric(length(anos))
   serie_basedosdados <- usd_inflation
   
   serie_basedosdados <- serie_basedosdados  %>% dplyr::rename(ano = year, variacao_doze_meses = fpcpitotlzgusa)
@@ -90,9 +91,8 @@ calculo_deflator_usd <- function(tabela_deflator, base_select_deflator, tabela_c
     #left_join(tabela_cambio, by = "year") %>%
     dplyr::mutate(
       # Deflator sobre valor em USD
-      value_USDm_deflated = value_USDm * deflatorUSD
-      
-)
+      value_usd_deflated = value_USDm * deflatorUSD) %>%
+    dplyr::rename("deflator_usd" = "deflatorUSD")
   
   cat("Cálculo do deflator USD concluído.\n")
   return(base_select_deflator)

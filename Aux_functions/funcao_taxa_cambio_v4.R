@@ -25,7 +25,7 @@ d <- get_currency("USD", date_init, date_final) %>%
   group_by(ano) %>%
   slice_max(order_by = dia, n = 1, with_ties = FALSE) %>%
   select(ano, bid) %>%
-  dplyr::rename("year" = "ano") %>%
+  dplyr::rename("year" = "ano", "cambio" = "bid") %>%
   filter(year >= ano_ini & year <= ano_fim)
 
 

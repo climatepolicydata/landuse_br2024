@@ -16,7 +16,7 @@ ano_fim = 2024 #the final year to end your analysis
 ano_base = 2024 #the year to base inflation
 
 ## set the path to your github clone
- github <- "Documents/"
+github <- "Documents/"
 
 
 ########################### Libraries ######################################
@@ -25,6 +25,7 @@ pacman::p_load(tidyverse,
                stringi, 
                janitor, 
                writexl,
+               readxl,
                openxlsx, 
                httr,
                magrittr, 
@@ -35,14 +36,22 @@ pacman::p_load(tidyverse,
                pivottabler)
 
 ################## directories ###################
-
+ 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 dir_sisser_mapa_dt_clean <- ("A:/finance/atlas_Seguro_Rural/cleanData")
 
 setwd(dir_sisser_mapa_dt_clean)
 
 
-############### import database #####################
+############### import databases #####################
+
+# import landuse br database to get columns names and order 
+Landscape_columns <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "ColunasFinal") %>%
+  select(`LAND USE`, `LANDSCAPE BRAZIL`)
+
+## import keys database (sector_key_cpi)
+planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
+                                
 
 df_atlas <- readRDS(paste0("atlas_2006_", ano_fim, "_clear.rds"))
 
@@ -198,17 +207,78 @@ df_atlas_calculus <- deflate_and_exchange(tabela_deflator, df_atlas_final, tabel
 df_atlas_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_atlas_calculus, tabela_cambio)
 
 
-df_atlas_calculus3 <- df_atlas_calculus2 %>% 
-  select(id_original, data_source, year, project_name, project_description, source_original,
-         source_finance_landscape, origin_domestic_international, origin_private_public,
-         value_original_currency, original_currency, value_brl_deflated, value_BRLm, value_USDm, value_USDm_deflated, channel_original,
-         channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
-         subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf,municipality)
+## Renomeando para landscape br 2025 com base no Landscape format
+
+## Primeiro vamos ver quais colunas que estão em land use e não tem na base para decidir se criamos ou se ignoramos
+landuse_cols <- Landscape_columns$`LAND USE`
+landscape_cols <- Landscape_columns$`LANDSCAPE BRAZIL`
+
+# Nomes existentes no df original
+df_cols <- names(df_atlas_calculus2)
+
+# Quais colunas não existem no df original?
+setdiff(landuse_cols, df_cols)
+#[1] NA               "sub_sector_cpi"
+
+
+## No caso vamos ignorar NA no passo seguinte, e criar a coluna que falta, deixando com NA
+df_atlas_calculus2 <- df_atlas_calculus2 %>% 
+  mutate("sub_sector_cpi" = NA) 
+
+# Criar dicionário de renomeação ignorando NAs
+rename_vector <- Landscape_columns %>%
+  filter(!is.na(`LAND USE`)) %>%
+  mutate(`LAND USE` = trimws(`LAND USE`)) %>%
+  distinct() %>%
+  deframe()  # cria named vector: nomes atuais -> novos nomes
+
+# Renomear colunas do dataframe
+df_atlas_calculus_renamed <- df_atlas_calculus2 %>%
+  rename_with(~ rename_vector[.x], .cols = names(rename_vector))
+
+
+## Adicionar sector_key a partir da tabela uniquekeys
+
+merge_1 <- df_atlas_calculus_renamed %>%
+  left_join(
+    planilha_uniqueKeys %>% select(Sector, Key_Sector),
+    by = "Sector"
+  )
+
+merge_2 = left_join(merge_1,
+                    planilha_uniqueKeys[['Subsector','Key_Subsector']],by = 'Subsector')
+
+merge_3 = left_join(merge_2,
+                    planilha_uniqueKeys[['Solution','Key_Solution']], by = 'Solution') 
+
+merge_3 = merge_3%>% mutate(sector_key_cpi = strc(Key_Sector,Key_Subsector,Key_Solution))
+
+
+# Ve quais colunas ainda não existem para poder criar
+dif_cols <- setdiff(landscape_cols, names(df_atlas_calculus_renamed))
+#"ID_Landscape"       "country_origin_cpi" "region_origin_cpi"  "sector_cpi"         "sector_key_cpi"     "indigenous_cpi" 
+
+# Só executa se houver colunas ausentes
+if (length(dif_cols) > 0) {
+  for (col in dif_cols) {
+    df_atlas_calculus_renamed[[col]] <- NA
+  }
+}
+
+
+
+df_atlas_calculus3 <- df_atlas_calculus_renamed %>%
+  mutate(country_origin_cpi = "Brazil",
+         region_origin_cpi = "Brazil",
+         ID_Landscape = "-") %>% 
+  #bora na ordem de landscape
+  select(Landscape_columns$`LANDSCAPE BRAZIL`)
+
+
 
 setwd("A:/projects/landuse_br2024/atlas/output")
 
-saveRDS(df_atlas_calculus3, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, "_TESTE_USD.rds"))
-write.csv2(df_atlas_calculus3, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, "_TESTE_USD.csv"))
+saveRDS(df_atlas_calculus3, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".rds"))
+write.csv2(df_atlas_calculus3, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".csv"))
 
 

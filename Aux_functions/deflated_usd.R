@@ -24,7 +24,7 @@ usd_inflation <- read_xls("USD Inflation_FED.xls",skip = 10) %>% janitor::clean_
 
 #criando a funcao
 
-deflator_usd <- function(ano_ini, ano_fim, anos, base) {
+deflator_usd <- function(ano_ini, ano_fim, base) {
   
   serie_basedosdados <- base
   

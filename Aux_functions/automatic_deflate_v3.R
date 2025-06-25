@@ -90,7 +90,7 @@ deflator_automatico <- function(ano_ini, ano_fim, base) {
     deflators[i] <- calcular_deflator(anos[i])
   }
   
-  tabela_final <- data.frame(year = anos, deflator = deflators) %>% arrange(year)
+  tabela_final <- data.frame(year = anos, deflator_BRL = deflators) %>% arrange(year)
   
   cat("deflator automatico atualizado para", ano_fim, "\n")
   return(tabela_final)
@@ -130,11 +130,11 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
     mutate(
       # BRL case
       value_BRLm = ifelse(original_currency == "USD",
-                          as.numeric(value_original_currency * bid),
+                          as.numeric(value_original_currency * cambio),
                           value_original_currency),
-      value_brl_deflated = as.numeric(value_BRLm * deflator),
+      value_brl_deflated = as.numeric(value_BRLm * deflator_BRL),
       value_USDm = ifelse(original_currency == "BRL",
-                          as.numeric(value_BRLm/bid),
+                          as.numeric(value_BRLm/cambio),
                           value_original_currency)
       # USD to BRL (for completeness)
       
