@@ -315,7 +315,7 @@ write.csv(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_comp
 
 saveRDS(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".rds"))
 
-write.csv2(df_ses_final2, paste0(dir_susep_output, "base_landscape_final_", ano_ini, "-", ano_fim, ".csv"), fileEncoding = "Latin1")
+write.csv2(df_ses_final2, paste0(dir_susep_output, "base_landscape_final_", ano_ini, "-", ano_fim, ".csv"), fileEncoding = "Latin1", row.names = F)
 
 
 
