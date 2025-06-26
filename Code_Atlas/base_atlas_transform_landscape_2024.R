@@ -40,7 +40,7 @@ pacman::p_load(tidyverse,
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 dir_sisser_mapa_dt_clean <- ("A:/finance/atlas_Seguro_Rural/cleanData")
 
-setwd(dir_sisser_mapa_dt_clean)
+setwd()
 
 
 ############### import databases #####################
@@ -55,7 +55,7 @@ DePara <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data
 planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
                                 
 
-df_atlas <- readRDS(paste0("atlas_2006_", ano_fim, "_clear.rds"))
+df_atlas <- readRDS(paste0(dir_sisser_mapa_dt_clean, "/atlas_2006_", ano_fim, "_clear.rds"))
 
 df_atlas_filter <- df_atlas %>% 
   dplyr::filter(ano_apolice >= ano_ini & ano_apolice <= ano_fim,
@@ -109,7 +109,7 @@ df_atlas_subvencao <- join(df_atlas_subvencao,relational_table %>% select(nm_cul
 
 df_atlas_sub_negative <- df_atlas_sub_negative %>% 
   dplyr::rename(year = ano_apolice, channel_original = nm_razao_social,
-                subsector_original = evento_preponderante, region = sg_uf_propriedade, uf = nm_municipio_propriedade) %>% 
+                subsector_original = evento_preponderante, uf = sg_uf_propriedade, municipality = nm_municipio_propriedade) %>% 
   dplyr::mutate(data_source = "atlas_seguro_mapa",project_name = "Abate no SES para Subvenção PSR",
          project_description = "nm_classif_produto", source_original = "Produtores Rurais",
          source_finance_landscape = "Rural Producers", origin_domestic_international = "National",
@@ -120,7 +120,7 @@ df_atlas_sub_negative <- df_atlas_sub_negative %>%
          climate_component = "Adaptation", rio_marker = "-",
          beneficiary_original = "-", beneficiary_landscape = "Rural producers", 
          beneficiary_public_private = "-", localization_original = "-",
-         municipality = "-")%>%
+         region = uf)%>%
   dplyr::mutate(id_original = paste(id_equals,"VLN", sep = ""),
          subactivity_landscape = "Tipo de Produto") %>% 
   dplyr::rename(value_brl = vl_subvencao_federal) %>% 
@@ -130,7 +130,7 @@ df_atlas_sub_negative <- df_atlas_sub_negative %>%
 
 df_atlas_subvencao <- df_atlas_subvencao %>% 
   dplyr::rename(year = ano_apolice, channel_original = nm_razao_social,
-                subsector_original = evento_preponderante, region = sg_uf_propriedade, uf = nm_municipio_propriedade) %>% 
+                subsector_original = evento_preponderante, uf = sg_uf_propriedade, municipality = nm_municipio_propriedade) %>% 
   dplyr::mutate(data_source = "atlas_seguro_mapa",project_name = "Subvenção PSR",
          project_description = "nm_classif_produto", source_original = "MAPA",
          source_finance_landscape = "Federal and state governments", origin_domestic_international = "National",
@@ -141,7 +141,7 @@ df_atlas_subvencao <- df_atlas_subvencao %>%
          climate_component = "Adaptation", rio_marker = "-",
          beneficiary_original = "-", beneficiary_landscape = "Rural producers", 
          beneficiary_public_private = "-", localization_original = "-",
-         municipality = "-")%>% 
+         region = uf)%>% 
   dplyr::mutate(id_original = paste(id_equals,"SUB", sep = ""),
          subactivity_landscape = "Rural insurance for farming and forestry") %>% 
   dplyr::rename(value_brl = vl_subvencao_federal)
@@ -309,6 +309,6 @@ df_atlas_final2 <- df_atlas_final %>%
 setwd("A:/projects/landuse_br2024/atlas/output")
 
 saveRDS(df_atlas_final2, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".rds"))
-write.csv2(df_atlas_final2, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".csv"))
+write.csv2(df_atlas_final2, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".csv"), fileEncoding = "Latin1")
 
 
