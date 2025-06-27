@@ -13,12 +13,12 @@
 
 
 # ## set anos de analise caso não esteja rodando pelo MASTER
-# ano_ini = 2021 #the initial year to star analysis
-# ano_fim = 2023 #the final year to end your analysis
-# ano_base = 2016 #the year to base inflation
+ano_ini = 2021 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2024 #the year to base inflation
 # #
 # # # ## set the path to your github clone
-# github <- "Documents/"
+github <- "Documents/"
 # 
 # ############## ATUALIZAR SEMPRE #############################
 arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento.Rds")

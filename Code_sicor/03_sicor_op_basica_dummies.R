@@ -20,12 +20,12 @@ tic()
 # 
 
 # Fill the information to run your analysis
-# ano_ini = 2022 #the initial year to star analysis
-# ano_fim = 2024 #the final year to end your analysis
-# ano_base = 2024 #the year to base inflation
-# 
+ano_ini = 2021 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2024 #the year to base inflation
+
 # ## set the path to your github clone
-# github <- "Documents/"
+github <- "Documents/"
 
 ##### directory #########
 
@@ -154,30 +154,35 @@ write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_bas
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 
-############## ATUALIZADO EM 2025 -- automatico -- atualiza com base em ano_ini e ano_fim
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 
-####### rodar essa função para atualizar a tabela de taxa de cambio
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
+############# ATUALIZADO EM 2024 -- pega valores para deflacionar USD na base USD A:\\macro\\usd_FED\\rawData\\Inflation_FED.xls
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/deflated_usd_v2.r"))
+
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
 
 #le a tabela atualizada pela funcao acima
 cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
+
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
+tabela_deflatorUSD <- deflator_usd(ano_ini, ano_fim, usd_inflation)
 
-
-tabela_cambio <-cambio_sgs %>% 
+tabela_cambio <- cambio_sgs %>% 
   filter(year >= ano_ini & year <= ano_fim)
-
 
 df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>% 
   filter(ANO >= ano_ini & ANO <= ano_fim) %>%
-  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) 
+  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) %>%
+  ## Add info de original currency
+  mutate("original_currency" = "BRL")
 
 
 df_deflated <- deflate_and_exchange(tabela_deflator, df_deflated, tabela_cambio)
+df_deflated2 <- calculo_deflator_usd(tabela_deflatorUSD, df_deflated, tabela_cambio)
 
-write.xlsx(df_deflated, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
+
+write.xlsx(df_deflated2, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
 
 toc()
 gc()
