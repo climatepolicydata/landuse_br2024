@@ -40,7 +40,6 @@ pacman::p_load(tidyverse,
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 dir_sisser_mapa_dt_clean <- ("A:/finance/atlas_Seguro_Rural/cleanData")
 
-setwd()
 
 
 ############### import databases #####################
@@ -49,7 +48,7 @@ setwd()
 Landscape_columns <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "ColunasFinal") %>%
   select(`LAND USE`, `LANDSCAPE BRAZIL`)
 
-DePara <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "DeParaLandUse") 
+DePara <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"),  sheet = "DeParaLandUse_Sectors") 
 
 ## import keys database (sector_key_cpi)
 planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
@@ -243,26 +242,43 @@ df_atlas_calculus_renamed <- df_atlas_calculus2 %>%
 
 ### Fazer DePara do sub_sector_cpi com base em sheet = "DeParaLandUse"
 DePara.sub_sector <- DePara %>%
-  filter(column == 'sector_landscape') %>%
-  mutate(`Variável Land Use` = trimws(`Variável Land Use`),
-         `Variável Landscape 2025` = trimws(`Variável Landscape 2025`)) %>%
-  distinct(`Variável Land Use`, `Variável Landscape 2025`) %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(`Variavel Land Use` = trimws(`Variavel Land Use`),
+         sub_sector_cpi = trimws(sub_sector_cpi)) %>%
+  distinct(`Variavel Land Use`, sub_sector_cpi) %>%
   deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
 
 #Substitui valores do sub_sector_cpi com base no Depara
 df_atlas_calculus_dePara <- df_atlas_calculus_renamed %>%
   mutate(sub_sector_cpi = recode(sub_sector_cpi, !!!DePara.sub_sector))
 
-### Inserir informações em solution_cpi com base em "Solution" do UniqueKeys - escolha manual
+## Adicionar 'sector_cpi" com base em "no depara
+### Fazer DePara 
+DePara.sector <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+         sector_cpi = trimws(sector_cpi)) %>%
+  distinct(sub_sector_cpi, sector_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+
+#Substitui valores do sub_sector_cpi com base no Depara
+df_atlas_calculus_dePara <- df_atlas_calculus_dePara %>%
+  mutate(sector_cpi = recode(sub_sector_cpi, !!!DePara.sector))
+
+
+### Inserir informações em solution_cpi com base em "Solution" do UniqueKeys com base na relational
 # Atlas e SES é "Rural Insurence for Climate Resilience"
-df_atlas_final <- df_atlas_calculus_dePara %>%
-  mutate(solution_cpi = "Rural Insurence for Climate Resilience")
+DePara.solution <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+         solution_cpi = trimws(solution_cpi)) %>%
+  distinct(sub_sector_cpi, solution_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
 
 
+df_atlas_calculus_dePara <- df_atlas_calculus_dePara %>%
+  mutate(solution_cpi = recode(sub_sector_cpi, !!!DePara.solution))
 
-## Adicionar 'sector_cpi" com base em "Sector" do excel UniqueKeys - escolha manual
-df_atlas_final <- df_atlas_final %>%
-  mutate(sector_cpi = "Agriculture, Forestry, Other land uses and Fisheries")
 
 
 ### Adicionar sector_key: 
@@ -279,7 +295,7 @@ DePara.keysector <- planilha_uniqueKeys %>%
   deframe()
 
 #Substitui valores com base no Depara
-df_atlas_final <- df_atlas_final %>%
+df_atlas_final <- df_atlas_calculus_dePara %>%
   mutate(sector_key_cpi = trimws(sector_cpi)) %>%
   mutate(sector_key_cpi = recode(sector_key_cpi, !!!DePara.keysector))
 
