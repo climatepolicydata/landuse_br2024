@@ -124,6 +124,8 @@ rm(tabela_valores_ano,valor_financeiro, interval, df_b3_clear)
 ############ apply deflatd and exchange #######
 
 
+root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
 ############# ATUALIZADO EM 2024 -- pega valores para deflacionar USD na base USD A:\\macro\\usd_FED\\rawData\\Inflation_FED.xls
 source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/deflated_usd_v2.r"))
