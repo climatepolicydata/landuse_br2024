@@ -30,7 +30,7 @@ pacman::p_load(tidyverse,
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 #criando a funcao de deflacao
-deflator_automatico <- function(ano_ini, ano_fim, base) {
+deflator_automatico <- function(ano_ini, ano_fim, tabela) {
   
   #a variavel anos completa os anos no intervalo de anos escolhidos acima.
   anos = seq(ano_fim,ano_ini) 
@@ -132,9 +132,9 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
       value_BRLm = ifelse(original_currency == "USD",
                           as.numeric(value_original_currency * cambio),
                           value_original_currency),
-      value_brl_deflated = as.numeric(value_BRLm * deflator_BRL),
+      value_brl_deflated = as.numeric(as.numeric(value_BRLm) * deflator_BRL),
       value_USDm = ifelse(original_currency == "BRL",
-                          as.numeric(value_BRLm/cambio),
+                          as.numeric(as.numeric(value_BRLm)/cambio),
                           value_original_currency)
       # USD to BRL (for completeness)
       

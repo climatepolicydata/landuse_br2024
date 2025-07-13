@@ -13,7 +13,7 @@ tic()
 ## set anos de analise caso não esteja rodando pelo master
 # 
 
-ano_ini = 2021 #the initial year to star analysis
+ano_ini = 2019 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
 ano_base = 2024 #the year to base inflation
 # 
@@ -115,7 +115,7 @@ write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2, paste0("sicor_op_basica_sum
 
 
 mdcr_op_basic_modify <- mdcr_op_basic_modify %>% 
-  #dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) %>%
+  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) %>%
   mutate('original_currency' = 'BRL')
 
 mdcr_op_basic_modify <- deflate_and_exchange(tabela_deflator, mdcr_op_basic_modify, tabela_cambio)
