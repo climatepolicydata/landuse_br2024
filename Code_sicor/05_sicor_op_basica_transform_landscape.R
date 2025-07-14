@@ -29,6 +29,7 @@ pacman::p_load(tidyverse,
                readr,
                data.table,
                dplyr,
+               readxl,
                plyr,
                pivottabler,
                tictoc)
@@ -491,10 +492,22 @@ df_sicor_calculus_final2 <- df_sicor_calculus_final %>%
   select(Landscape_columns$`LANDSCAPE BRAZIL`)
 
 
-saveRDS(df_sicor_calculus,paste0(dir_output, "df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
 
 
-write.xlsx(df_sicor_calculus,paste0(dir_output, "df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
+## REGIONALIZAÇÃO
+
+source(paste0(root,github,"/GitHub/Brazil-Climate-Finance-Landscape/General_Functions/DePara_UF_region.R"))
+
+base_com_regiao <- inserir_regiao(df_sicor_calculus_final2, planilha)
+
+
+
+#Exporta 
+
+saveRDS(base_com_regiao,paste0(dir_output, "/df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
+
+
+write.xlsx(base_com_regiao,paste0(dir_output, "/df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
 
 toc()
 gc()
