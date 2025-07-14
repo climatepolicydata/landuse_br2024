@@ -5,7 +5,8 @@
 # Email: renanflorias@hotmail.com
 # Goal: transformação da base SES para landscape
 
-
+##Modified by Julia Niemeyer
+#Date: 27/05/2025
 
 ########################### Libraries ######################################
 
@@ -23,19 +24,46 @@ pacman::p_load(tidyverse,
                data.table,
                pivottabler,
                readr,
-               dplyr)
+               dplyr,
+               readxl)
 
+########################### ACTION NEEDED ######################################
+# ## set anos de analise caso não esteja rodando pelo MASTER
+ano_ini = 2019 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2024 #the year to base inflation
 
+## set the path to your github clone
+github <- "Documents/"
 
 ########################### Directories ########################################
-root <- ('A:\\finance\\ses\\')
-dir_susep_dt_clean <- paste0(root,'cleanData\\')
-dir_susep_output <- ("A:/projects/landuse_br2024/ses/output")
+
+root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+dir_susep_dt_clean <- paste0('A:\\finance\\ses\\cleanData\\')
+
+dir_susep_output <- "A:/projects/landuse_br2024/ses/output/"
+
+if(!dir.exists(dir_susep_output)){
+  dir.create(dir_susep_output)
+}
+
 dir_susep_doc <- ("A:/projects/landuse_br2024/ses")
+
+
 ########### import databases #########
+# import landuse br database to get columns names and order 
+Landscape_columns <- readxl:::read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "ColunasFinal") %>%
+  select(`LAND USE`, `LANDSCAPE BRAZIL`)
+
+DePara <- readxl:::read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "DeParaLandUse_Sectors") 
+
+## import keys database (sector_key_cpi)
+planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
+
+
 setwd(dir_susep_dt_clean)
 
-ses_seguros2 <- read.csv("ses_clear.csv", fileEncoding = "latin1", sep = ";")
+ses_seguros2 <- read.csv(paste0(dir_susep_dt_clean, "ses_clear_", ano_fim, ".csv"), fileEncoding = "latin1", sep = ";")
 
 ses_seguros2$premio_direto <- gsub(",",".",ses_seguros2$premio_direto) %>% as.numeric()
 
@@ -49,14 +77,14 @@ codes2 <- read.xlsx("codes_ramo_rural_landscape.xlsx") %>% janitor::clean_names(
 
 ses_seguros2 <- ses_seguros2 %>%
   #dplyr::mutate(ano = as.numeric(substr(damesano, 0, 4))) %>% 
-  dplyr::filter(ano >= 2015 & ano <= 2023) %>% 
+  dplyr::filter(ano >= ano_ini & ano <= ano_fim) %>% 
   dplyr::filter(premio_direto != 0)
 
 
 ses_seguros_filter_landscape <- ses_seguros2 %>% 
   dplyr::filter(coramo %in% codes2$codigos)
 
-sum(ses_seguros_filter_landscape$premio_direto) 
+#sum(ses_seguros_filter_landscape$premio_direto) 
 
 ##################### transforms ########
 
@@ -127,73 +155,170 @@ df_ses_agregado <- df_ses_agregado %>%
   relocate(original_currency, .after = value_original_currency)
 
 
+
+#################### REMOVE DUPLICATES
+df_ses_filter <- df_ses_agregado %>%
+  distinct(year, id_original, value_original_currency, .keep_all = TRUE)
+
+
+
+
+
 ############ apply deflatd and exchange #######
 
-# Directory - Clone
 
-# Inserir o caminho onde foi feito o clone do projeto 
-root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
+############# ATUALIZADO EM 2024 -- pega valores para deflacionar USD na base USD A:\\macro\\usd_FED\\rawData\\Inflation_FED.xls
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/deflated_usd_v2.r"))
 
-"The object github could be receive the file that corresponds to the project repository"
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
-
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
-
-ano_ini = 2015
-ano_fim = 2023
-
-#a variavel anos completa os anos no intervalo de anos escolhidos acima.
-anos = seq(ano_fim,ano_ini, -1)
+#le a tabela atualizada pela funcao acima
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
 
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
+tabela_deflatorUSD <- deflator_usd(ano_ini, ano_fim, usd_inflation)
 
 
-cambio_sgs = coleta_dados_sgs(serie) 
-
-tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2015 & year <= 2023)
+tabela_cambio <- cambio_sgs %>% 
+  filter(year >= ano_ini & year <= ano_fim)
 
 
-deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
-  
-  base_select_deflator <- base_select_deflator %>% 
-    left_join(tabela_deflator, by= "year")%>%
-    left_join(tabela_cambio, by= "year") %>%  
-    dplyr::mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
-           value_usd = value_brl_deflated/cambio)
-  
-  
-  return(base_select_deflator)
+df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_filter, tabela_cambio)
+df_ses_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_ses_calculus, tabela_cambio)
+
+
+
+###########################################################################
+################################ LANDSCAPE BR #############################
+########## 
+### Renomeando para landscape br 2025 com base no Landscape format
+
+## Primeiro vamos ver quais colunas que estão em land use e não tem na base para decidir se criamos ou se ignoramos
+landuse_cols <- Landscape_columns$`LAND USE`
+landscape_cols <- Landscape_columns$`LANDSCAPE BRAZIL`
+
+# Nomes existentes no df original
+df_cols <- names(df_ses_calculus2)
+
+# Quais colunas não existem no df original?
+setdiff(landuse_cols, df_cols)
+#[1] NA               "sub_sector_cpi"
+
+
+# Criar dicionário de renomeação ignorando NAs
+rename_vector <- Landscape_columns %>%
+  filter(!is.na(`LAND USE`)) %>%
+  mutate(`LAND USE` = trimws(`LAND USE`)) %>%
+  distinct() %>%
+  deframe()  # cria named vector: nomes atuais -> novos nomes
+
+# Filtra o vetor de renomeação para colunas que existem no df
+rename_vector_valid <- rename_vector[names(rename_vector) %in% names(df_ses_calculus2)]
+
+# Renomeia apenas as colunas que existem
+df_ses_calculus_renamed <- df_ses_calculus2 %>%
+  rename_with(~ rename_vector_valid[.x], .cols = names(rename_vector_valid))
+
+
+
+### Fazer DePara do sub_sector_cpi com base em sheet = "DeParaLandUse"
+DePara.sub_sector <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(`Variavel Land Use` = trimws(`Variavel Land Use`),
+         sub_sector_cpi = trimws(sub_sector_cpi)) %>%
+  distinct(`Variavel Land Use`, sub_sector_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+
+#Substitui valores do sub_sector_cpi com base no Depara
+df_ses_calculus_dePara <- df_ses_calculus_renamed %>%
+  mutate(sub_sector_cpi = recode(sub_sector_cpi, !!!DePara.sub_sector))
+
+
+
+## Adicionar 'sector_cpi" com base em "no depara
+### Fazer DePara 
+DePara.sector <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+         sector_cpi = trimws(sector_cpi)) %>%
+  distinct(sub_sector_cpi, sector_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+
+#Substitui valores do sub_sector_cpi com base no Depara
+df_ses_calculus_dePara <- df_ses_calculus_dePara %>%
+  mutate(sector_cpi = recode(sub_sector_cpi, !!!DePara.sector))
+
+
+
+
+### Inserir informações em solution_cpi com base em "Solution" do UniqueKeys com base na relational
+# Atlas e SES é "Rural Insurence for Climate Resilience"
+DePara.solution <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+         solution_cpi = trimws(solution_cpi)) %>%
+  distinct(sub_sector_cpi, solution_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+
+
+df_ses_calculus_dePara <- df_ses_calculus_dePara %>%
+  mutate(solution_cpi = recode(sub_sector_cpi, !!!DePara.solution))
+
+
+### Adicionar sector_key: 
+# a partir da coluna "Key_Sector" da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi" feito acima
+
+DePara.keysector <- planilha_uniqueKeys %>%
+  select(Sector, Key_Sector) %>%
+  mutate(
+    Sector = trimws(Sector),
+    Key_Sector = trimws(Key_Sector)
+  ) %>%
+  filter(!is.na(Sector), !is.na(Key_Sector), Sector != "") %>%  # remove entradas problemáticas
+  distinct(Sector, Key_Sector) %>%
+  deframe()
+
+#Substitui valores com base no Depara
+df_ses_final <- df_ses_calculus_dePara %>%
+  mutate(sector_key_cpi = trimws(sector_cpi)) %>%
+  mutate(sector_key_cpi = recode(sector_key_cpi, !!!DePara.keysector))
+
+
+# Ve quais colunas ainda não existem para poder criar
+dif_cols <- setdiff(landscape_cols, names(df_ses_final))
+dif_cols
+#""ID_Landscape"       "country_origin_cpi" "region_origin_cpi"  "indigenous_cpi" 
+
+# Só executa se houver colunas ausentes
+if (length(dif_cols) > 0) {
+  for (col in dif_cols) {
+    df_ses_final[[col]] <- NA
+  }
 }
 
-df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_agregado, tabela_cambio)
+
+
+df_ses_final2 <- df_ses_final %>%
+  mutate(country_origin_cpi = "Brazil",
+         region_origin_cpi = "Brazil",
+         ID_Landscape = id_original) %>% 
+  #bota na ordem de landscape
+  select(Landscape_columns$`LANDSCAPE BRAZIL`)
+
+
 
 
 ##### save dataset #####
 
-rm(cambio_sgs,df_ses_agregado, ibge_ipca, tabela_cambio, tabela_deflator, teste, serie, anos, ano_fim, ano_ini)
 
+write.csv(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".csv"))
 
+saveRDS(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".rds"))
 
-df_ses_calculus <- df_ses_calculus %>% 
-  select(id_original, data_source, year, project_name, project_description, source_original,
-         source_finance_landscape, origin_domestic_international, origin_private_public,
-         value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
-         channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
-         subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf, municipality)
-
-
-
-setwd(dir_susep_output)
-
-write.csv(df_ses_calculus, "ses_agregado_landscape_completo_2024.csv")
-
-saveRDS(df_ses_calculus, "ses_agregado_landscape_completo_2024.rds")
-
-write.csv2(df_ses_calculus, "base_landscape_final_18032024.csv",fileEncoding = "ISO-8859-1")
+write.csv2(df_ses_final2, paste0(dir_susep_output, "base_landscape_final_", ano_ini, "-", ano_fim, ".csv"), fileEncoding = "Latin1", row.names = F)
 
 
 

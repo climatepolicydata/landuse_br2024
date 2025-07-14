@@ -24,7 +24,7 @@ usd_inflation <- read_xls("USD Inflation_FED.xls",skip = 10) %>% janitor::clean_
 
 #criando a funcao
 
-deflator_usd <- function(ano_ini, ano_fim, anos, base) {
+deflator_usd <- function(ano_ini, ano_fim, base) {
   
   serie_basedosdados <- base
   
@@ -80,11 +80,3 @@ calculo_deflator_usd <- function(tabela_deflator, base_select_deflator) {
   
 }
 # eh necessario a escolha dos anos nos quais quer criar os indices. Assim, a funcao toma como base/indice = 1 o ano final
-
-ano_ini = 2015
-ano_fim = 2023
-
-#a variavel anos completa os anos no intervalo de anos escolhidos acima.
-anos = seq(ano_fim,ano_ini, -1)
-
-# teste <- deflator_automatico_usd(ano_ini, ano_fim, anos,usd_inflation)

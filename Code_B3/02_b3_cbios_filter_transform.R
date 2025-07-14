@@ -7,6 +7,19 @@
 # resource: 
 
 
+# Modified by Julia Niemeyer
+# Date 29/05/2025
+
+
+########################## ACTION NEEDED ##################################
+
+# ## set anos de analise caso não esteja rodando pelo MASTER
+ano_ini = 2019 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+ano_base = 2024 #the year to base inflation
+# #
+# # # ## set the path to your github clone
+github <- "Documents/"
 
 ########################### Libraries ######################################
 pacman::p_load(tidyverse, 
@@ -52,12 +65,12 @@ CalculaValorFinanc <-  function(data, select_ano){
 ## o for evita que digitalizemos a mesma função para os anos de interesse (dupla contagem).
 #caso seja necessário aumentar o intervalo de anos a serem analisados basta acrescentar na lista "anos"
 
-anos <- 2020:2023
+interval <- ano_ini:ano_fim
 
 valor_financeiro <- data.frame()
 tabela_valores_ano <- data.frame()
 
-for (i in anos){
+for (i in interval){
   
   valor_financeiro <- CalculaValorFinanc(df_b3_clear, i)
   tabela_valores_ano <- bind_rows(valor_financeiro,tabela_valores_ano)
@@ -100,67 +113,158 @@ df_b3_transform_landscape <- tabela_valores_ano %>%
   dplyr::rename(year = ano,
                 value_original_currency = soma)
 
-rm(tabela_valores_ano,valor_financeiro, anos, df_b3_clear)
+rm(tabela_valores_ano,valor_financeiro, interval, df_b3_clear)
 
 
-################## apply deflate and exchange ####################
+
+
+
+
+
+############ apply deflatd and exchange #######
+
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
+############# ATUALIZADO EM 2024 -- pega valores para deflacionar USD na base USD A:\\macro\\usd_FED\\rawData\\Inflation_FED.xls
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/deflated_usd_v2.r"))
 
-"The object github could be receive the file that corresponds to the project repository"
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
 
-source(paste0(root,github,"/GitHub/brlanduse_landscape102023/Aux_functions/automatic_deflate.r"))
-
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v3.r"))
-
-ano_ini = 2020
-ano_fim = 2023
-
-#a variavel anos completa os anos no intervalo escolhido acima.
-anos = seq(ano_fim,ano_ini, -1)
+#le a tabela atualizada pela funcao acima
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
 
 
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
+
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
+tabela_deflatorUSD <- deflator_usd(ano_ini, ano_fim, usd_inflation)
 
 
-cambio_sgs = coleta_dados_sgs(serie)
-  
-tabela_cambio <-cambio_sgs %>% 
-  filter(year >= 2015 & year <= 2023)
+tabela_cambio <- cambio_sgs %>% 
+  filter(year >= ano_ini & year <= ano_fim)
 
-
-deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
-  
-  base_select_deflator <- base_select_deflator %>% 
-    left_join(tabela_deflator, by= "year")%>%
-    left_join(tabela_cambio, by= "year") %>%  
-    mutate(value_brl_deflated = as.numeric(value_original_currency * deflator),
-           value_usd = value_brl_deflated/cambio)
-  
-  
-  return(base_select_deflator)
-}
 
 df_b3_cbios_calculus <- deflate_and_exchange(tabela_deflator, df_b3_transform_landscape, tabela_cambio)
+df_b3_cbios_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_b3_cbios_calculus, tabela_cambio)
 
 
-#### to select variables ####
+###########################################################################
+################################ LANDSCAPE BR #############################
+########## 
+### Renomeando para landscape br 2025 com base no Landscape format
 
-rm(cambio_sgs,df_b3_transform_landscape, ibge_ipca, tabela_cambio, tabela_deflator, teste)
+## Primeiro vamos ver quais colunas que estão em land use e não tem na base para decidir se criamos ou se ignoramos
+landuse_cols <- Landscape_columns$`LAND USE`
+landscape_cols <- Landscape_columns$`LANDSCAPE BRAZIL`
 
-df_b3_cbios_calculus <- df_b3_cbios_calculus %>% 
-  select(id_original, data_source, year, project_name, project_description, source_original,
-         source_finance_landscape, origin_domestic_international, origin_private_public,
-         value_original_currency, original_currency, value_brl_deflated, value_usd, channel_original,
-         channel_landscape, instrument_original, instrument_landscape, sector_original, sector_landscape,
-         subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
-         beneficiary_public_private, localization_original, region, uf, municipality)
+# Nomes existentes no df original
+df_cols <- names(df_b3_cbios_calculus2)
 
-#save in rds
-
-setwd(dir_b3_project)
+# Quais colunas não existem no df original?
+setdiff(landuse_cols, df_cols)
+#[1] NA               "sub_sector_cpi"
 
 
-saveRDS(df_b3_cbios_calculus, "b3_cbios_landscape_final.rds")
-write.xlsx(df_b3_cbios_calculus,"b3_cbios_landscape_final.xlsx")
+# Criar dicionário de renomeação ignorando NAs
+rename_vector <- Landscape_columns %>%
+  filter(!is.na(`LAND USE`)) %>%
+  mutate(`LAND USE` = trimws(`LAND USE`)) %>%
+  distinct() %>%
+  deframe()  # cria named vector: nomes atuais -> novos nomes
+
+# Filtra o vetor de renomeação para colunas que existem no df
+rename_vector_valid <- rename_vector[names(rename_vector) %in% names(df_b3_cbios_calculus2)]
+
+# Renomeia apenas as colunas que existem
+df_b3_calculus_renamed <- df_b3_cbios_calculus2 %>%
+  rename_with(~ rename_vector_valid[.x], .cols = names(rename_vector_valid))
+
+
+### Fazer DePara do sub_sector_cpi com base em sheet = "DeParaLandUse"
+DePara.sub_sector <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(`Variavel Land Use` = trimws(`Variavel Land Use`),
+         sub_sector_cpi = trimws(sub_sector_cpi)) %>%
+  distinct(`Variavel Land Use`, sub_sector_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+
+
+#Substitui valores do sub_sector_cpi com base no Depara
+df_b3_dePara <- df_b3_calculus_renamed %>%
+  mutate(sub_sector_cpi = recode(sub_sector_cpi, !!!DePara.sub_sector))
+
+## Adicionar 'sector_cpi" com base em "no depara
+### Fazer DePara 
+DePara.sector <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+         sector_cpi = trimws(sector_cpi)) %>%
+  distinct(sub_sector_cpi, sector_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+
+#Substitui valores do sub_sector_cpi com base no Depara
+df_b3_dePara <- df_b3_dePara %>%
+  mutate(sector_cpi = recode(sub_sector_cpi, !!!DePara.sector))
+
+
+
+### Inserir informações em solution_cpi com base em "Solution" do UniqueKeys com base na relational
+# Atlas e SES é "Rural Insurence for Climate Resilience"
+DePara.solution <- DePara %>%
+  filter(sector_landscape == 'sector_landscape') %>%
+  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+         solution_cpi = trimws(solution_cpi)) %>%
+  distinct(sub_sector_cpi, solution_cpi) %>%
+  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+
+
+df_b3_dePara <- df_b3_dePara %>%
+  mutate(solution_cpi = recode(sub_sector_cpi, !!!DePara.solution))
+
+### Adicionar sector_key: 
+# a partir da coluna "Key_Sector" da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi" feito acima
+
+DePara.keysector <- planilha_uniqueKeys %>%
+  select(Sector, Key_Sector) %>%
+  mutate(
+    Sector = trimws(Sector),
+    Key_Sector = trimws(Key_Sector)
+  ) %>%
+  filter(!is.na(Sector), !is.na(Key_Sector), Sector != "") %>%  # remove entradas problemáticas
+  distinct(Sector, Key_Sector) %>%
+  deframe()
+
+#Substitui valores com base no Depara
+df_b3_final <- df_b3_dePara %>%
+  mutate(sector_key_cpi = trimws(sector_cpi)) %>%
+  mutate(sector_key_cpi = recode(sector_key_cpi, !!!DePara.keysector))
+
+
+# Ve quais colunas ainda não existem para poder criar
+dif_cols <- setdiff(landscape_cols, names(df_b3_final))
+dif_cols
+#""ID_Landscape"       "country_origin_cpi" "region_origin_cpi"  "indigenous_cpi" 
+
+# Só executa se houver colunas ausentes
+if (length(dif_cols) > 0) {
+  for (col in dif_cols) {
+    df_b3_final[[col]] <- NA
+  }
+}
+
+
+
+df_b3_final2 <- df_b3_final %>%
+  mutate(country_origin_cpi = "Brazil",
+         region_origin_cpi = "Brazil",
+         ID_Landscape = id_original) %>% 
+  #bota na ordem de landscape
+  select(Landscape_columns$`LANDSCAPE BRAZIL`)
+
+
+
+#save in rds and excel
+
+saveRDS(df_b3_final2, paste0(dir_b3_project, "/b3_cbios_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
+write.xlsx(df_b3_final2, paste0(dir_b3_project,"/b3_cbios_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))

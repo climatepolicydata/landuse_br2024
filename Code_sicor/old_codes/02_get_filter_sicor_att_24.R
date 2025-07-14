@@ -13,39 +13,21 @@
 #### ---------------------------------------------------------------------- ####
 tic()
 
-
 # ano_ini = 2022 #the initial year to star analysis
 # ano_fim = 2024 #the final year to end your analysis
 # ano_base = 2024 #the year to base inflation
 
-# ## set anos de analise caso não esteja rodando pelo MASTER
-ano_ini = 2019 #the initial year to star analysis
-ano_fim = 2024 #the final year to end your analysis
-ano_base = 2024 #the year to base inflation
-# #
-# # # ## set the path to your github clone
-github <- "Documents/"
-# 
-# ############## ATUALIZAR SEMPRE #############################
-arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento.Rds")
+# ## set the path to your github clone
+# github <- "Documents"
 
-
-pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow, tictoc)
+pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow)
 
 ##### directory #########
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
+dir_bcb <- paste0("A:\\projects\\landuse_br2024\\sicor\\backup_data\\") 
 
-dir_bcb <- "A:\\projects\\landuse_br2024\\sicor\\backup_data\\" 
-
-## GET AUXILIARY DATA
-## antigamente o caminho eram as pastas documentation
-#dir_bcb_doc <- paste0("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_", ano_fim)
-
-## agora pegamos diretamente em auxiliary, que já mantém os dados atualizados
-dir_bcb_doc <- paste0("A:\\finance\\sicor\\rawData\\auxiliary")
-
-
+dir_bcb_doc <- ("A:/finance/sicor/_documentation/tabelas_sicor_MDCR_2021")
 
 #### ---------------------------------------------------------------------- ####
 ####    Load SICOR data files                                               #### 
@@ -53,7 +35,7 @@ dir_bcb_doc <- paste0("A:\\finance\\sicor\\rawData\\auxiliary")
 setwd(dir_bcb)
 
 ### Load full database
-df_sicor <- readRDS(arquivo_sicor) 
+df_sicor <- readRDS("sicor_main_2013_2025_empreendimento.rds")
 
 df_sicor <- df_sicor %>% select(-cesta,
                                 -unidade_medida_previsao,
@@ -116,9 +98,8 @@ df_sicor <- df_sicor %>%  mutate(dt_emissao = as.Date(df_sicor$dt_emissao, forma
 setwd(dir_bcb_doc)
 
 #produto
-produto <- read.csv("Produto.csv", encoding = "latin1")%>% select(X.CODIGO, DESCRICAO)%>%
-  dplyr::rename(CODIGO_PRODUTO = X.CODIGO,
-                PRODUTO = DESCRICAO)
+produto <- read.csv("Produto.csv", sep = ";", encoding = "latin1")%>% select(X.CODIGO, PRODUTO)%>%
+  dplyr::rename(CODIGO_PRODUTO = X.CODIGO)
 
 #modalidade (I need to change some modalities, to be identique to sicor modalities)
 modalidade <- read.csv("Modalidade.csv", sep = ",", encoding = "latin1") %>% select(CODIGO_MODALIDADE, NOME_MODALIDADE) %>%
