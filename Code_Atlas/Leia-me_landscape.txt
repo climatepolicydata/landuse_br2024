@@ -1,5 +1,5 @@
 Atlas do Seguro Rural
-Última atualização: 2023-08-18, por Wagner Oliveira
+Última atualização: 2025-05-28, por Julia Niemeyer
 Proprietários da pasta: Gabriela Coser, Renan Morais, Wagner Oliveira e Mariana Stussi
 
 - Descrição
@@ -13,11 +13,11 @@ Ministério da Agricultura e Pecuária (MAPA), Departamento de Gestão de Riscos
 
 - Download
 Dados brutos: https://mapa-indicadores.agricultura.gov.br/publico/extensions/SISSER/SISSER.html
-Arquivo baixado em: 2023-05-30, por Renan Morais (2015-2020)
+Arquivo baixado em: 2025-05-28, por Julia Niemeyer (2022-2024)
 
 - Tratamento
 
-  - Código "base_atlas_transform_landscape.R", por Renan Florias
+  - Código "base_atlas_transform_landscape_2024.R", por Renan Florias e modificado por Julia Niemeyer
 
 	Código de limpeza e agregação dos dados do para transformação no modelo landscape.
 	A separação entre valores negativos e positivos é para evitar a contabilização duplicada dos contratos que

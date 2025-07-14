@@ -1,5 +1,5 @@
 SES - Seguro Rural
-Última atualização: 2023-09-21, por Renan Morais
+Última atualização: 2025-05-28, por Julia Niemeyer
 
 -Descrição
 Dados do Mercado de Seguros por Ramo  - Apólices
@@ -37,9 +37,20 @@ As descrições de cada código de empresas (coenti) está disponível na tabela
 - Fonte:
 https://cpisf.sharepoint.com/:x:/r/sites/Brazil/_layouts/15/Doc.aspx?sourcedoc=%7B89572E19-71C4-4283-9B5C-4847535F98F4%7D&file=dadosCompartilhados.xlsx&wdOrigin=TEAMS-ELECTRON.p2p.bim&action=default&mobileredirect=true
 
+
+
+código: 00_base_SES_download_update.R
+
+- atualiza a base de dados SES (rawdata) automaticamente pelo URL: https://www2.susep.gov.br/redarq.asp?arq=BaseCompleta%2ezip
+
+- Dezipa e salva o csv em "A:\finance\ses\rawData"
+
+
+
+
 - Tratamento
 
-  código: 01_base_SES_clear_agreggate.R
+  códigos: 01_base_SES_clear_agreggate.R (em A:/finance/ses/code) e base_SES_transform_landscape_2024.R (no Github)
 
 	1 - importação do dataset via xlsx
 	2 - limpeza e padronização das variáveis, retirando acento, maiusculas e minusculas.
