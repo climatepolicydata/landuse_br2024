@@ -6,6 +6,19 @@
 # Goal: join base: sicor_operacao_basica_estado with table "empreendimento"
 # resource: 
 
+### Modified by Julia Niemeyer
+# Date 25/05/2025
+tic()
+
+## set anos de analise caso não esteja rodando pelo master
+# 
+# ano_ini = 2024
+# ano_fim = 2024
+# current_year = T  ## Se TRUE, então estamos fazendo atualizando para o ano último ano, e o deflator será 1. Se False,
+# #################### seguirá a tabela IPCA
+# 
+# ## set the path to your github clone
+# github <- "Documents"
 
 ########################### Libraries ######################################
 
@@ -24,6 +37,7 @@ pacman::p_load(tidyverse,
 
 options(scipen = 999)
 
+
 ##### directory #########
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
@@ -33,12 +47,14 @@ dir_bcb_raw <- paste0(root, "Dropbox (CPI)/Climate Finance Brazil/01_DATA/BCB/0_
 
 dir_sicor_landuse2024 <- ("A:/projects/landuse_br2024/sicor")
 
-dir_sicor_output <- ("A:/projects/landuse_br2024/sicor/output")
+dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", ano_fim)
+
 
 
 ##### import datasets #########
-setwd(dir_sicor_output)
-mdcr_op_basic_modify <- readRDS("df_sicor_op_basica_all_dummies_aggregate_v2.RDS")
+setwd(dir_output)
+mdcr_op_basic_modify <- readRDS(paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
+
 
 
 ########### Create variable sum dummy to filter operations at least 1 dummy #####
@@ -56,21 +72,39 @@ mdcr_op_basic_modify_filter <- mdcr_op_basic_modify %>%
 
 mdcr_op_basic_modify_filter <- mdcr_op_basic_modify_filter %>% filter(!CODIGO_FINALIDADE == 1)
 
-rm(mdcr_op_basic_modify)
-setwd(dir_sicor_output)
+#rm(mdcr_op_basic_modify)
+setwd(dir_output)
 
-saveRDS(mdcr_op_basic_modify_filter, "sicor_op_basica_sum_dummies_aggregate_v2.RDS")
-write.xlsx(mdcr_op_basic_modify_filter,"sicor_op_basica_sum_dummies_aggregate_v2.xlsx")
+saveRDS(mdcr_op_basic_modify_filter, paste0("sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
+write.xlsx(mdcr_op_basic_modify_filter,paste0("sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".xlsx"))
+
+
+############## ATUALIZADO EM 2025 -- automatico -- atualiza com base em ano_ini e ano_fim
+source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
+
+#le a tabela atualizada pela funcao acima
+cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
+
+tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca, current_year)
+
+
+tabela_cambio <-cambio_sgs %>% 
+  filter(year >= ano_ini & year <= ano_fim)
 
 sicor_op_basica_sum_dummies_aggregate_v2 <- mdcr_op_basic_modify_filter %>% dplyr::rename(year = ANO,
-                                                                                                      value_original_currency = VL_PARC_CREDITO)
+                                                                                          value_original_currency = VL_PARC_CREDITO)
+
 sicor_op_basica_sum_dummies_aggregate_v2 <- deflate_and_exchange(tabela_deflator, sicor_op_basica_sum_dummies_aggregate_v2, tabela_cambio)
 
-write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2,"sicor_op_basica_sum_dummies_aggregate_climate.xlsx")
+write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2, paste0("sicor_op_basica_sum_dummies_aggregate_climate", ano_ini, "-", ano_fim, ".xlsx"))
 
 
-mdcr_op_basic_modify <- mdcr_op_basic_modify %>% dplyr::rename(year = ANO,
-                                                                                          value_original_currency = VL_PARC_CREDITO)
+mdcr_op_basic_modify <- mdcr_op_basic_modify %>% 
+  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO)
+
 mdcr_op_basic_modify <- deflate_and_exchange(tabela_deflator, mdcr_op_basic_modify, tabela_cambio)
 
-write.xlsx(mdcr_op_basic_modify,"sicor_op_basica_sum_dummies_no_filter.xlsx")
+write.xlsx(mdcr_op_basic_modify, paste0("sicor_op_basica_sum_dummies_no_filter", ano_ini, "-", ano_fim, ".xlsx"))
+
+toc()
+gc()
