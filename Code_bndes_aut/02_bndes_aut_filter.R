@@ -6,6 +6,9 @@
 # Goal: filter bndes indiretas automaticas
 # resource: 
 
+#Modified by Julia Niemeyer
+# date: 14/07/2025
+
 ########################### Libraries ######################################
 
 pacman::p_load(tidyverse,
@@ -53,7 +56,7 @@ instrument_bndes_aut <- read.xlsx("07_bndes_aut_relational_tables.xlsx", sheet =
 ###### filter year #####
 
 df_bndes_aut_filter <- df_bndes_aut %>%
-  filter(ano >= 2015 & ano <= 2023)
+  filter(ano >= 2019 & ano <= 2024)
 
 ##### select variables ########
 remove <- c("valor_desembolsado_reais", "custo_financeiro", "juros", "prazo_carencia_meses",
