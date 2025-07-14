@@ -8,10 +8,6 @@
 
 ### Modified by Julia Niemeyer
 # Date 25/05/2025
-tic()
-
-### Modified by Julia Niemeyer
-# Date 25/05/2025
 
 ## set anos de analise caso não esteja rodando pelo master
 
@@ -495,12 +491,10 @@ df_sicor_calculus_final2 <- df_sicor_calculus_final %>%
   select(Landscape_columns$`LANDSCAPE BRAZIL`)
 
 
-setwd(dir_output)
-
-saveRDS(df_sicor_calculus,paste0("df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
+saveRDS(df_sicor_calculus,paste0(dir_output, "df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
 
 
-write.xlsx(df_sicor_calculus,paste0("df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
+write.xlsx(df_sicor_calculus,paste0(dir_output, "df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
 
 toc()
 gc()
