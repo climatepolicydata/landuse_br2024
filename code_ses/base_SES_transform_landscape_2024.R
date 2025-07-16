@@ -186,7 +186,7 @@ tabela_cambio <- cambio_sgs %>%
   filter(year >= ano_ini & year <= ano_fim)
 
 
-df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_filter, tabela_cambio)
+df_ses_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_ses_filter, tabela_cambio)
 df_ses_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_ses_calculus, tabela_cambio)
 
 
