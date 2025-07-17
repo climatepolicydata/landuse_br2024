@@ -53,6 +53,8 @@ Landscape_columns <- readxl:::read_xlsx(paste0(root, "CPI/SP-Program - Brazil La
 
 DePara <- readxl:::read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "DeParaLandUse_Sectors") 
 
+DePara_Solution_sicor <- read_xlsx("A:\\projects\\landuse_br2024\\sicor\\02_sicor_DePara_Solution.xlsx")
+
 ## import keys database (sector_key_cpi)
 planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
 
@@ -318,7 +320,7 @@ mdcr_op_basica_if_sort <- mdcr_op_basica_if%>%
   
   
 mdcr_op_basica_sort <- mdcr_op_basica_if_sort  %>%  
-  select(id_original, data_source, year, project_name,
+  select(CODIGO_FINALIDADE, id_original, data_source, year, project_name,
          project_description, source_original, source_finance_landscape,
          origin_domestic_international, origin_private_public,
          value_brl,channel_original, channel_landscape, instrument_original,
@@ -436,22 +438,28 @@ df_sicor_calculus_dePara <- df_sicor_calculus_dePara %>%
 
 
 
-### Inserir informações em solution_cpi com base em "Solution" do UniqueKeys com base na relational
-# Atlas e SES é "Rural Insurence for Climate Resilience"
-DePara.solution <- DePara %>%
-  filter(sector_landscape == 'sector_landscape') %>%
-  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
-         solution_cpi = trimws(solution_cpi)) %>%
-  distinct(sub_sector_cpi, solution_cpi) %>%
-  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+### Inserir informações em solution_cpi 
+## Solution ira variar com base em CODIGO_FINALIDADE e Subsector
+# ver 02_sicor_DePara_Solution.xlsx
+
+# 1. Faz o join com a tabela de De/Para
+df_sicor_calculus_dePara_sol <- df_sicor_calculus_dePara %>%
+  mutate(CODIGO_FINALIDADE = as.double(CODIGO_FINALIDADE)) %>%
+  left_join(DePara_Solution_sicor, by = "CODIGO_FINALIDADE") %>%
+  mutate(
+    solution_cpi = case_when(
+      sub_sector_cpi == "Agriculture" ~ Agriculture,
+      sub_sector_cpi == "Forestry" ~ Forestry,
+      TRUE ~ NA_character_  # caso subsector_cpi seja diferente de ambos
+    )
+  ) %>%
+  select(-Agriculture, -Forestry, -CODIGO_FINALIDADE)  # remove colunas auxiliares se desejar
 
 
-df_sicor_calculus_dePara <- df_sicor_calculus_dePara %>%
-  mutate(solution_cpi = recode(sub_sector_cpi, !!!DePara.solution))
 
 
-### Adicionar sector_key: 
-# a partir da coluna "Key_Sector" da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi" feito acima
+### Adicionar sector_key_cpi: 
+# a partir da coluna "Key_Sector", "Key_Subsector" e Key_Solution da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi", subsector_cpi e solution_cpi
 
 DePara.keysector <- planilha_uniqueKeys %>%
   select(Sector, Key_Sector) %>%
@@ -463,10 +471,43 @@ DePara.keysector <- planilha_uniqueKeys %>%
   distinct(Sector, Key_Sector) %>%
   deframe()
 
+
+DePara.keysubsector <- planilha_uniqueKeys %>%
+  select(Subsector, Key_Subsector) %>%
+  mutate(
+    Subsector = trimws(Subsector),
+    Key_Subsector = trimws(Key_Subsector)
+  ) %>%
+  filter(!is.na(Subsector), !is.na(Key_Subsector), Subsector != "") %>%  # remove entradas problemáticas
+  distinct(Subsector, Key_Subsector) %>%
+  deframe()
+
+
+
+DePara.keysolution <- planilha_uniqueKeys %>%
+  select(Solution, Key_Solution) %>%
+  mutate(
+    Solution = trimws(Solution),
+    Key_Solution = trimws(Key_Solution)
+  ) %>%
+  filter(!is.na(Solution), !is.na(Key_Solution), Solution != "") %>%  # remove entradas problemáticas
+  distinct(Solution, Key_Solution) %>%
+  deframe()
+
+
+
 #Substitui valores com base no Depara
-df_sicor_calculus_final <- df_sicor_calculus_dePara %>%
-  mutate(sector_key_cpi = trimws(sector_cpi)) %>%
-  mutate(sector_key_cpi = recode(sector_key_cpi, !!!DePara.keysector))
+df_sicor_calculus_final <- df_sicor_calculus_dePara_sol %>%
+  mutate(keysector = trimws(sector_cpi),
+         keysubsector = trimws(sub_sector_cpi),
+         keysolution = trimws(solution_cpi)) %>%
+  mutate(keysector = recode(keysector, !!!DePara.keysector),
+         keysubsector = recode(keysubsector, !!!DePara.keysubsector),
+         keysolution = recode(keysolution, !!!DePara.keysolution)) %>%
+  mutate(sector_key_cpi = str_c(keysector, "_", keysubsector, "_", keysolution)) %>%
+  select(- c(keysector, keysubsector, keysolution))
+
+
 
 
 
