@@ -186,7 +186,7 @@ tabela_cambio <- cambio_sgs %>%
   filter(year >= ano_ini & year <= ano_fim)
 
 
-df_ses_calculus <- deflate_and_exchange(tabela_deflator, df_ses_filter, tabela_cambio)
+df_ses_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_ses_filter, tabela_cambio)
 df_ses_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_ses_calculus, tabela_cambio)
 
 
@@ -255,21 +255,21 @@ df_ses_calculus_dePara <- df_ses_calculus_dePara %>%
 
 
 ### Inserir informações em solution_cpi com base em "Solution" do UniqueKeys com base na relational
-# Atlas e SES é "Rural Insurence for Climate Resilience"
-DePara.solution <- DePara %>%
-  filter(sector_landscape == 'sector_landscape') %>%
-  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
-         solution_cpi = trimws(solution_cpi)) %>%
-  distinct(sub_sector_cpi, solution_cpi) %>%
-  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+# Atlas e SES é Climate resiliency building rural insurance
+# DePara.solution <- DePara %>%
+#   filter(sector_landscape == 'sector_landscape') %>%
+#   mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+#          solution_cpi = trimws(solution_cpi)) %>%
+#   distinct(sub_sector_cpi, solution_cpi) %>%
+#   deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
 
 
 df_ses_calculus_dePara <- df_ses_calculus_dePara %>%
-  mutate(solution_cpi = recode(sub_sector_cpi, !!!DePara.solution))
+  mutate(solution_cpi = "Climate resiliency building rural insurance")
 
 
-### Adicionar sector_key: 
-# a partir da coluna "Key_Sector" da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi" feito acima
+### Adicionar sector_key_cpi: 
+# a partir da coluna "Key_Sector", "Key_Subsector" e Key_Solution da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi", subsector_cpi e solution_cpi
 
 DePara.keysector <- planilha_uniqueKeys %>%
   select(Sector, Key_Sector) %>%
@@ -281,10 +281,44 @@ DePara.keysector <- planilha_uniqueKeys %>%
   distinct(Sector, Key_Sector) %>%
   deframe()
 
+
+DePara.keysubsector <- planilha_uniqueKeys %>%
+  select(Subsector, Key_Subsector) %>%
+  mutate(
+    Subsector = trimws(Subsector),
+    Key_Subsector = trimws(Key_Subsector)
+  ) %>%
+  filter(!is.na(Subsector), !is.na(Key_Subsector), Subsector != "") %>%  # remove entradas problemáticas
+  distinct(Subsector, Key_Subsector) %>%
+  deframe()
+
+
+
+DePara.keysolution <- planilha_uniqueKeys %>%
+  select(Solution, Key_Solution) %>%
+  mutate(
+    Solution = trimws(Solution),
+    Key_Solution = trimws(Key_Solution)
+  ) %>%
+  filter(!is.na(Solution), !is.na(Key_Solution), Solution != "") %>%  # remove entradas problemáticas
+  distinct(Solution, Key_Solution) %>%
+  deframe()
+
+
+
 #Substitui valores com base no Depara
 df_ses_final <- df_ses_calculus_dePara %>%
-  mutate(sector_key_cpi = trimws(sector_cpi)) %>%
-  mutate(sector_key_cpi = recode(sector_key_cpi, !!!DePara.keysector))
+  mutate(keysector = trimws(sector_cpi),
+         keysubsector = trimws(sub_sector_cpi),
+         keysolution = trimws(solution_cpi)) %>%
+  mutate(keysector = recode(keysector, !!!DePara.keysector),
+         keysubsector = recode(keysubsector, !!!DePara.keysubsector),
+         keysolution = recode(keysolution, !!!DePara.keysolution)) %>%
+  mutate(sector_key_cpi = str_c(keysector, "_", keysubsector, "_", keysolution)) %>%
+  select(- c(keysector, keysubsector, keysolution))
+
+
+
 
 
 # Ve quais colunas ainda não existem para poder criar
@@ -304,7 +338,7 @@ if (length(dif_cols) > 0) {
 df_ses_final2 <- df_ses_final %>%
   mutate(country_origin_cpi = "Brazil",
          region_origin_cpi = "Brazil",
-         ID_Landscape = id_original) %>% 
+         ID_Landscape = NA) %>% 
   #bota na ordem de landscape
   select(Landscape_columns$`LANDSCAPE BRAZIL`)
 

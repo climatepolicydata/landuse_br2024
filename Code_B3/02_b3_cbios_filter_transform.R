@@ -18,14 +18,18 @@ ano_ini = 2019 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
 ano_base = 2024 #the year to base inflation
 # #
-# # # ## set the path to your github clone
+## set the path to your github clone
 github <- "Documents/"
 
+########################### Directories ########################################
+
+root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 ########################### Libraries ######################################
 pacman::p_load(tidyverse, 
                stringi, 
                janitor, 
                writexl,
+               readxl,
                openxlsx, 
                httr,
                readr,
@@ -45,6 +49,16 @@ dir_b3_project <-("A:/projects/landuse_br2024/b3/output")
 setwd(dir_b3_output)
 
 df_b3_clear <- readRDS("cbios_b3_nd_clear.rds")
+
+
+# import landuse br database to get columns names and order 
+Landscape_columns <- readxl:::read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "ColunasFinal") %>%
+  select(`LAND USE`, `LANDSCAPE BRAZIL`)
+
+DePara <- readxl:::read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "DeParaLandUse_Sectors") 
+
+## import keys database (sector_key_cpi)
+planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
 
 
 #função para calcular os valores financeiros dos anos
@@ -145,7 +159,7 @@ tabela_cambio <- cambio_sgs %>%
   filter(year >= ano_ini & year <= ano_fim)
 
 
-df_b3_cbios_calculus <- deflate_and_exchange(tabela_deflator, df_b3_transform_landscape, tabela_cambio)
+df_b3_cbios_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_b3_transform_landscape, tabela_cambio)
 df_b3_cbios_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_b3_cbios_calculus, tabela_cambio)
 
 
@@ -222,8 +236,10 @@ DePara.solution <- DePara %>%
 df_b3_dePara <- df_b3_dePara %>%
   mutate(solution_cpi = recode(sub_sector_cpi, !!!DePara.solution))
 
-### Adicionar sector_key: 
-# a partir da coluna "Key_Sector" da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi" feito acima
+
+
+### Adicionar sector_key_cpi: 
+# a partir da coluna "Key_Sector", "Key_Subsector" e Key_Solution da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi", subsector_cpi e solution_cpi
 
 DePara.keysector <- planilha_uniqueKeys %>%
   select(Sector, Key_Sector) %>%
@@ -235,10 +251,43 @@ DePara.keysector <- planilha_uniqueKeys %>%
   distinct(Sector, Key_Sector) %>%
   deframe()
 
+
+DePara.keysubsector <- planilha_uniqueKeys %>%
+  select(Subsector, Key_Subsector) %>%
+  mutate(
+    Subsector = trimws(Subsector),
+    Key_Subsector = trimws(Key_Subsector)
+  ) %>%
+  filter(!is.na(Subsector), !is.na(Key_Subsector), Subsector != "") %>%  # remove entradas problemáticas
+  distinct(Subsector, Key_Subsector) %>%
+  deframe()
+
+
+
+DePara.keysolution <- planilha_uniqueKeys %>%
+  select(Solution, Key_Solution) %>%
+  mutate(
+    Solution = trimws(Solution),
+    Key_Solution = trimws(Key_Solution)
+  ) %>%
+  filter(!is.na(Solution), !is.na(Key_Solution), Solution != "") %>%  # remove entradas problemáticas
+  distinct(Solution, Key_Solution) %>%
+  deframe()
+
+
+
 #Substitui valores com base no Depara
 df_b3_final <- df_b3_dePara %>%
-  mutate(sector_key_cpi = trimws(sector_cpi)) %>%
-  mutate(sector_key_cpi = recode(sector_key_cpi, !!!DePara.keysector))
+  mutate(keysector = trimws(sector_cpi),
+         keysubsector = trimws(sub_sector_cpi),
+         keysolution = trimws(solution_cpi)) %>%
+  mutate(keysector = recode(keysector, !!!DePara.keysector),
+         keysubsector = recode(keysubsector, !!!DePara.keysubsector),
+         keysolution = recode(keysolution, !!!DePara.keysolution)) %>%
+  mutate(sector_key_cpi = str_c(keysector, "_", keysubsector, "_", keysolution)) %>%
+  select(- c(keysector, keysubsector, keysolution))
+
+
 
 
 # Ve quais colunas ainda não existem para poder criar

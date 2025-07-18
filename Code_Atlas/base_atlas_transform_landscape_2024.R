@@ -114,7 +114,7 @@ df_atlas_sub_negative <- df_atlas_sub_negative %>%
          source_finance_landscape = "Rural Producers", origin_domestic_international = "National",
          origin_private_public = "Private", channel_landscape= "Financial Institution",
          instrument_original = "-", instrument_landscape= "Risk management",
-         sector_original = paste0(nm_classif_produto,nm_cultura_global),
+         sector_original = paste0(nm_classif_produto,"_", nm_cultura_global),
          activity_landscape = "Financial services", subactivity_landscape = '-',
          climate_component = "Adaptation", rio_marker = "-",
          beneficiary_original = "-", beneficiary_landscape = "Rural producers", 
@@ -204,7 +204,7 @@ tabela_cambio <-cambio_sgs %>%
   filter(year >= ano_ini & year <= ano_fim)
 
 
-df_atlas_calculus <- deflate_and_exchange(tabela_deflator, df_atlas_final, tabela_cambio)
+df_atlas_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_atlas_final, tabela_cambio)
 df_atlas_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_atlas_calculus, tabela_cambio)
 
 
@@ -268,21 +268,21 @@ df_atlas_calculus_dePara <- df_atlas_calculus_dePara %>%
 
 ### Inserir informações em solution_cpi com base em "Solution" do UniqueKeys com base na relational
 # Atlas e SES é "Rural Insurence for Climate Resilience"
-DePara.solution <- DePara %>%
-  filter(sector_landscape == 'sector_landscape') %>%
-  mutate(sub_sector_cpi = trimws(sub_sector_cpi),
-         solution_cpi = trimws(solution_cpi)) %>%
-  distinct(sub_sector_cpi, solution_cpi) %>%
-  deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
+# DePara.solution <- DePara %>%
+#   filter(sector_landscape == 'sector_landscape') %>%
+#   mutate(sub_sector_cpi = trimws(sub_sector_cpi),
+#          solution_cpi = trimws(solution_cpi)) %>%
+#   distinct(sub_sector_cpi, solution_cpi) %>%
+#   deframe()  # cria um vetor nomeado: "valor_antigo" = "valor_novo"
 
 
 df_atlas_calculus_dePara <- df_atlas_calculus_dePara %>%
-  mutate(solution_cpi = recode(sub_sector_cpi, !!!DePara.solution))
+  mutate(solution_cpi = "Climate resiliency building rural insurance")
 
 
 
-### Adicionar sector_key: 
-# a partir da coluna "Key_Sector" da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi" feito acima
+### Adicionar sector_key_cpi: 
+# a partir da coluna "Key_Sector", "Key_Subsector" e Key_Solution da planilha do excel UniqueKeys fazendo correspondência com "sector_cpi", subsector_cpi e solution_cpi
 
 DePara.keysector <- planilha_uniqueKeys %>%
   select(Sector, Key_Sector) %>%
@@ -294,10 +294,43 @@ DePara.keysector <- planilha_uniqueKeys %>%
   distinct(Sector, Key_Sector) %>%
   deframe()
 
+
+DePara.keysubsector <- planilha_uniqueKeys %>%
+  select(Subsector, Key_Subsector) %>%
+  mutate(
+    Subsector = trimws(Subsector),
+    Key_Subsector = trimws(Key_Subsector)
+  ) %>%
+  filter(!is.na(Subsector), !is.na(Key_Subsector), Subsector != "") %>%  # remove entradas problemáticas
+  distinct(Subsector, Key_Subsector) %>%
+  deframe()
+
+
+
+DePara.keysolution <- planilha_uniqueKeys %>%
+  select(Solution, Key_Solution) %>%
+  mutate(
+    Solution = trimws(Solution),
+    Key_Solution = trimws(Key_Solution)
+  ) %>%
+  filter(!is.na(Solution), !is.na(Key_Solution), Solution != "") %>%  # remove entradas problemáticas
+  distinct(Solution, Key_Solution) %>%
+  deframe()
+
+
+
 #Substitui valores com base no Depara
 df_atlas_final <- df_atlas_calculus_dePara %>%
-  mutate(sector_key_cpi = trimws(sector_cpi)) %>%
-  mutate(sector_key_cpi = recode(sector_key_cpi, !!!DePara.keysector))
+  mutate(keysector = trimws(sector_cpi),
+         keysubsector = trimws(sub_sector_cpi),
+         keysolution = trimws(solution_cpi)) %>%
+  mutate(keysector = recode(keysector, !!!DePara.keysector),
+         keysubsector = recode(keysubsector, !!!DePara.keysubsector),
+         keysolution = recode(keysolution, !!!DePara.keysolution)) %>%
+  mutate(sector_key_cpi = str_c(keysector, "_", keysubsector, "_", keysolution)) %>%
+  select(- c(keysector, keysubsector, keysolution))
+
+
 
 
 # Ve quais colunas ainda não existem para poder criar
@@ -319,6 +352,10 @@ df_atlas_final2 <- df_atlas_final %>%
          ID_Landscape = id_original) %>% 
   #bota na ordem de landscape
   select(Landscape_columns$`LANDSCAPE BRAZIL`)
+
+
+
+
 
 
 
