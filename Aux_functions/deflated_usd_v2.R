@@ -17,9 +17,9 @@ pacman::p_load(tidyverse,
 dir_usd_fed <- ("A:\\macro\\usd_FED\\rawData\\")
 
 
-setwd(dir_usd_fed)
+#setwd(dir_usd_fed)
 
-usd_inflation <- read_xls("USD Inflation_FED.xls",skip = 10) %>% janitor::clean_names() %>% select(observation_date,fpcpitotlzgusa,inflacao_anual) %>% 
+usd_inflation <- read_xls(paste0(dir_usd_fed, "USD Inflation_FED.xls"),skip = 10) %>% janitor::clean_names() %>% select(observation_date,fpcpitotlzgusa,inflacao_anual) %>% 
   dplyr::mutate(year = year(observation_date)) %>% select(year, fpcpitotlzgusa)
 
 #criando a funcao
