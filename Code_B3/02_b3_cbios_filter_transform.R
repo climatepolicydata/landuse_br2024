@@ -160,7 +160,7 @@ tabela_cambio <- cambio_sgs %>%
 
 
 df_b3_cbios_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_b3_transform_landscape, tabela_cambio)
-df_b3_cbios_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_b3_cbios_calculus, tabela_cambio)
+df_b3_cbios_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_b3_cbios_calculus)
 
 
 ###########################################################################

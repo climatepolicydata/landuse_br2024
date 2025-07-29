@@ -84,7 +84,7 @@ deflator_usd <- function(ano_ini, ano_fim, base) {
 # caso original_currency == 'BRL',value_USDm_deflated = value_USDm*deflator_USD
 # Caso original_currency == 'USD', value_USDm_deflated = value_USDm*deflator_USD, value_BRLm = value_USDm*bid,  value_brl_deflated = value_USDm_deflated*bid
 
-calculo_deflator_usd <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
+calculo_deflator_usd <- function(tabela_deflator, base_select_deflator) {
   
   base_select_deflator <- base_select_deflator %>% 
     left_join(tabela_deflator, by = "year") %>%
