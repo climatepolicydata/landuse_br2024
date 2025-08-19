@@ -11,8 +11,6 @@
 #### ---------------------------------------------------------------------- ####
 ####    Environment                                                         #### 
 #### ---------------------------------------------------------------------- ####
-tic()
-
 
 # ano_ini = 2022 #the initial year to star analysis
 # ano_fim = 2024 #the final year to end your analysis
@@ -79,17 +77,20 @@ df_sicor <- df_sicor %>% select(-cesta,
                                 -vl_perc_risco_stn,
                                 -dt_fim_colheita,
                                 -cd_contrato_stn,
-                                -consorcio, -dt_inic_plantio, -cd_inst_credito,-nu_ordem,-ano_base,-cd_tipo_seguro,
+                                -consorcio, -dt_inic_plantio, -cd_inst_credito,-nu_ordem, -cd_tipo_seguro,
                                 -cd_tipo_encarg_financ,-data_inicio,-cd_ref_bacen_investimento,
                                 -unidade_medida_previsao, -unidade_medida,-cnpj_agente_invest, -cd_cnpj_cadastrante)
+#nrow = 25.636.221
+
 #### ---------------------------------------------------------------------- ####
 ####    Cleaning and Creating variables                                     #### 
 #### ---------------------------------------------------------------------- ####
 
 ### Create Year variable
-df_sicor <- df_sicor %>% mutate(ano = as.numeric(format(mdy(df_sicor$dt_emissao),'%Y')),
-                                mes = as.numeric(format(mdy(df_sicor$dt_emissao),'%m'))) %>% 
-  filter(ano >= ano_ini & ano <= ano_fim) 
+df_sicor <- df_sicor %>% mutate(#ano = as.numeric(format(mdy(df_sicor$dt_emissao),'%Y')),
+                                ano = ano_base,
+                                mes = as.numeric(format(dmy(df_sicor$dt_emissao),'%m'))) %>% ##nrow(df_sicor) = 25636221
+  filter(ano_base >= ano_ini & ano_base <= ano_fim) # nrow(df_sicor) = 12204945
 
 write_parquet(df_sicor, paste0("sicor_data_", ano_ini, "-", ano_fim, ".parquet"))
 
@@ -97,7 +98,7 @@ write_parquet(df_sicor, paste0("sicor_data_", ano_ini, "-", ano_fim, ".parquet")
 ### Create SAFRA Year variable
 # A vigência do Plano Safra é de um ano. Ela começa em 1º de julho e vai até junho do ano seguinte, período que acompanha o calendário das safras agrícolas no Brasil.
 # Convert the date column to Date format
-df_sicor <- df_sicor %>%  mutate(dt_emissao = as.Date(df_sicor$dt_emissao, format = "%m/%d/%Y"))
+df_sicor <- df_sicor %>%  mutate(dt_emissao = as.Date(df_sicor$dt_emissao, format = "%d/%m/%Y")) ## nrow(df_sicor) = 
   
  
 
@@ -222,7 +223,7 @@ if(!dir.exists(dir_output)){
 }
 setwd(dir_output)
 
-saveRDS(df_sicor_aggregate, paste0("df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
+saveRDS(df_sicor_aggregate, paste0("df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, "V2.RDS"))
 
   
 gc()

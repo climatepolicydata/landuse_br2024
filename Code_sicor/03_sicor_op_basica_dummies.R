@@ -38,7 +38,7 @@ dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", a
 
 ### import dataset ############
 
-df_sicor <- readRDS(paste0(dir_output, "/df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
+df_sicor <- readRDS(paste0(dir_output, "/df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, "V2.RDS"))
 
 
 #### df "bcb_c82" possui todos códigos e descrições das características climáticas da consulta pública 82
@@ -138,8 +138,10 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 setwd(dir_output)
 
-saveRDS(df_sicor_op_basica_empreendimento_all_dummies, paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
-write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, ".xlsx"))
+saveRDS(df_sicor_op_basica_empreendimento_all_dummies, paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, "V2.RDS"))
+write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, "V2.xlsx"))
+
+## nrow(df_sicor_op_basica_empreendimento_all_dummies) = 546271
 
 
 ########deflated##############
@@ -173,11 +175,12 @@ df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>%
   mutate("original_currency" = "BRL")
 
 
-df_deflated <- deflate_and_exchange(tabela_deflator, df_deflated, tabela_cambio)
-df_deflated2 <- calculo_deflator_usd(tabela_deflatorUSD, df_deflated, tabela_cambio)
+df_deflated <- deflate_and_exchange_Landuse(tabela_deflator, df_deflated, tabela_cambio)
+df_deflated2 <- calculo_deflator_usd(tabela_deflatorUSD, df_deflated)
 
 
-write.xlsx(df_deflated2, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
+## EXPORT TABLE
+write.xlsx(df_deflated2, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, "V2.xlsx"))
 
 toc()
 gc()
