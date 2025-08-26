@@ -348,11 +348,11 @@ df_ses_final2 <- df_ses_final %>%
 ##### save dataset #####
 
 
-write.csv(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".csv"))
+write_xls(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".xlsx"))
 
 saveRDS(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".rds"))
 
-write.csv2(df_ses_final2, paste0(dir_susep_output, "ses_landscape_final_", ano_ini, "-", ano_fim, ".csv"), fileEncoding = "Latin1", row.names = F)
+write_xls(df_ses_final2, paste0(dir_susep_output, "ses_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"), fileEncoding = "Latin1")
 
 
 
