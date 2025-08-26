@@ -106,7 +106,7 @@ sicor_op_basica_sum_dummies_aggregate_v2 <- mdcr_op_basic_modify_filter %>% dply
 
 
 sicor_op_basica_sum_dummies_aggregate_v2 <- deflate_and_exchange_Landuse(tabela_deflator, sicor_op_basica_sum_dummies_aggregate_v2, tabela_cambio)
-sicor_op_basica_sum_dummies_aggregate_v2 <- calculo_deflator_usd(tabela_deflatorUSD, sicor_op_basica_sum_dummies_aggregate_v2, tabela_cambio)
+sicor_op_basica_sum_dummies_aggregate_v2 <- calculo_deflator_usd(tabela_deflatorUSD, sicor_op_basica_sum_dummies_aggregate_v2)
 
 
 write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2, paste0("sicor_op_basica_sum_dummies_aggregate_climate", ano_ini, "-", ano_fim, "V2.xlsx"))

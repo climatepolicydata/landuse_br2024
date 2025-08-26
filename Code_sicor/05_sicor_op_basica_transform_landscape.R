@@ -124,10 +124,10 @@ rm(tb_irrigacao,tb_agricultura,tb_subprograma,tb_cultivo)
 
 # Read relational tables
 setwd(dir_sicor_landuse2024)
-tabela_instrument <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "instrument_landscape")
-tabela_recipient <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "beneficiary_landscape") 
-tabela_fonte_recurso <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "source_landscape")
-tabela_climate_use <- read.xlsx("01_sicor_relational_tables.xlsx", sheet = "climate_use_bcb_82") %>% 
+tabela_instrument <- read.xlsx("01_sicor_relational_tables_2025.xlsx", sheet = "instrument_landscape")
+tabela_recipient <- read.xlsx("01_sicor_relational_tables_2025.xlsx", sheet = "beneficiary_landscape") 
+tabela_fonte_recurso <- read.xlsx("01_sicor_relational_tables_2025.xlsx", sheet = "source_landscape")
+tabela_climate_use <- read.xlsx("01_sicor_relational_tables_2025.xlsx", sheet = "climate_use_bcb_82") %>% 
   dplyr::rename(DESC_IRRIGACAO = IRRIGACAO,
                 DESCRICAO_SUBPROGRAMA = SUBPROGRAMA,
                 DESC_AGRICULTURA = TP_AGRICULTURA,

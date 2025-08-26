@@ -25,7 +25,7 @@ ano_base = 2024 #the year to base inflation
 github <- "Documents/"
 # 
 # ############## ATUALIZAR SEMPRE #############################
-arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento.Rds")
+arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento_V2.Rds")
 
 
 pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow, tictoc)
@@ -92,7 +92,7 @@ df_sicor <- df_sicor %>% mutate(#ano = as.numeric(format(mdy(df_sicor$dt_emissao
                                 mes = as.numeric(format(dmy(df_sicor$dt_emissao),'%m'))) %>% ##nrow(df_sicor) = 25636221
   filter(ano_base >= ano_ini & ano_base <= ano_fim) # nrow(df_sicor) = 12204945
 
-write_parquet(df_sicor, paste0("sicor_data_", ano_ini, "-", ano_fim, ".parquet"))
+write_parquet(df_sicor, paste0("/sicor_data_", ano_ini, "-", ano_fim, "_V2.parquet"))
 
 
 ### Create SAFRA Year variable
