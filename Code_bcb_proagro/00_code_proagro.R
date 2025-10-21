@@ -81,7 +81,7 @@ for (i in anos) {
   # Adicione o data frame à lista
   lista_de_dataframes[[i - 2014]] <- df
 }
-## REVISAR ISTO
+
 
 clean_proagro <- bind_rows(lista_de_dataframes) %>%
   dplyr::mutate(ValorAdiconal = gsub("\\.", "", ValorAdiconal)) %>% ## retirando os pontos 
