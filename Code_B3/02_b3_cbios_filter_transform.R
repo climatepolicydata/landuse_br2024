@@ -77,7 +77,6 @@ CalculaValorFinanc <-  function(data, select_ano){
 }
 
 ## o for evita que digitalizemos a mesma função para os anos de interesse (dupla contagem).
-#caso seja necessário aumentar o intervalo de anos a serem analisados basta acrescentar na lista "anos"
 
 interval <- ano_ini:ano_fim
 
