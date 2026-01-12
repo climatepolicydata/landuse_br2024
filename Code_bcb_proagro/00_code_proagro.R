@@ -27,7 +27,8 @@ pacman::p_load(tidyverse,
                pivottabler,
                readxl)
 options(scipen = 999)
-##### directory #########
+
+############### ACTION NEEDED #####################
 
 ano_ini = 2019 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
@@ -37,6 +38,7 @@ ano_base = 2024 #the year to base inflation
 github <- "Documents/"
 
 
+##### directories  #########
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 root_servidor <- paste0("A:/")
 finance <- paste0(root_servidor, "finance/")
