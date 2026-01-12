@@ -25,7 +25,8 @@ pacman::p_load(tidyverse,
                pivottabler,
                readr,
                dplyr,
-               readxl)
+               readxl,
+               writexl)
 
 ########################### ACTION NEEDED ######################################
 # ## set anos de analise caso não esteja rodando pelo MASTER
@@ -63,9 +64,11 @@ planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape
 
 setwd(dir_susep_dt_clean)
 
-ses_seguros2 <- read.csv(paste0(dir_susep_dt_clean, "ses_clear_", ano_fim, ".csv"), fileEncoding = "latin1", sep = ";")
+ses_seguros <- read.csv2(paste0(dir_susep_dt_clean, "ses_clear_", ano_fim, ".csv"), fileEncoding = "latin1", sep = ";")
 
-ses_seguros2$premio_direto <- gsub(",",".",ses_seguros2$premio_direto) %>% as.numeric()
+ses_seguros2 <- ses_seguros
+
+#ses_seguros2$premio_direto <- gsub(",",".",ses_seguros2$premio_direto) %>% as.numeric()
 
 ses_seguros2$noenti <- str_trim(ses_seguros2$noenti)
 
@@ -73,7 +76,7 @@ setwd(dir_susep_doc)
 
 codes2 <- read.xlsx("codes_ramo_rural_landscape.xlsx") %>% janitor::clean_names()
 
-##################### filters and transforms ###########3
+##################### filters and transforms ###########
 
 ses_seguros2 <- ses_seguros2 %>%
   #dplyr::mutate(ano = as.numeric(substr(damesano, 0, 4))) %>% 
@@ -187,7 +190,7 @@ tabela_cambio <- cambio_sgs %>%
 
 
 df_ses_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_ses_filter, tabela_cambio)
-df_ses_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_ses_calculus, tabela_cambio)
+df_ses_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_ses_calculus)
 
 
 
@@ -348,11 +351,11 @@ df_ses_final2 <- df_ses_final %>%
 ##### save dataset #####
 
 
-write_xls(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".xlsx"))
+write_xlsx(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".xlsx"))
 
 saveRDS(df_ses_calculus, paste0(dir_susep_output, "ses_agregado_landscape_completo_", ano_ini, "-", ano_fim, ".rds"))
 
-write_xls(df_ses_final2, paste0(dir_susep_output, "ses_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"), fileEncoding = "Latin1")
+write_xlsx(df_ses_final2, paste0(dir_susep_output, "ses_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
 
 
 

@@ -17,9 +17,12 @@ Arquivo baixado em: 2025-05-28, por Julia Niemeyer (2022-2024)
 
 - Tratamento
 
-  - Código "base_atlas_transform_landscape_2024.R", por Renan Florias e modificado por Julia Niemeyer
+  - Código "0.1_base_atlas_clean.r", por Renan Florias e modificado por Julia Niemeyer
+  Código de limpeza e agregação dos dados para transformação no modelo landscape.
+  Gera o arquivo atlas_2006_2024_clear.rds usando no script seguinte.
+  
+  - Código "0.2_base_atlas_transform_landscape.R", por Renan Florias e modificado por Julia Niemeyer
 
-	Código de limpeza e agregação dos dados do para transformação no modelo landscape.
 	A separação entre valores negativos e positivos é para evitar a contabilização duplicada dos contratos que
 	estão na base SES (Susep).
 	1º padronizamos as variáveis da base, tanto para colunas quanto para observações.
