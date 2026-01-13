@@ -12,9 +12,6 @@
 ####    Environment                                                         #### 
 #### ---------------------------------------------------------------------- ####
 
-# ano_ini = 2022 #the initial year to star analysis
-# ano_fim = 2024 #the final year to end your analysis
-# ano_base = 2024 #the year to base inflation
 
 # ## set anos de analise caso não esteja rodando pelo MASTER
 ano_ini = 2019 #the initial year to star analysis
@@ -25,7 +22,7 @@ ano_base = 2024 #the year to base inflation
 github <- "Documents/"
 # 
 # ############## ATUALIZAR SEMPRE #############################
-arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento_V2.Rds")
+arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento.Rds")
 
 
 pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow, tictoc)
@@ -92,7 +89,7 @@ df_sicor <- df_sicor %>% mutate(#ano = as.numeric(format(mdy(df_sicor$dt_emissao
                                 mes = as.numeric(format(dmy(df_sicor$dt_emissao),'%m'))) %>% ##nrow(df_sicor) = 25636221
   filter(ano_base >= ano_ini & ano_base <= ano_fim) # nrow(df_sicor) = 12204945
 
-write_parquet(df_sicor, paste0("/sicor_data_", ano_ini, "-", ano_fim, "_V2.parquet"))
+write_parquet(df_sicor, paste0("/sicor_data_", ano_ini, "-", ano_fim, ".parquet"))
 
 
 ### Create SAFRA Year variable
@@ -223,7 +220,7 @@ if(!dir.exists(dir_output)){
 }
 setwd(dir_output)
 
-saveRDS(df_sicor_aggregate, paste0("df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, "V2.RDS"))
+saveRDS(df_sicor_aggregate, paste0("df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
 
   
 gc()
