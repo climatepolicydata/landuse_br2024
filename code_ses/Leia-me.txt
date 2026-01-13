@@ -39,22 +39,36 @@ https://cpisf.sharepoint.com/:x:/r/sites/Brazil/_layouts/15/Doc.aspx?sourcedoc=%
 
 
 
-código: 00_base_SES_download_update.R
+códigos: 
+
+00_base_SES_download_update.R
 
 - atualiza a base de dados SES (rawdata) automaticamente pelo URL: https://www2.susep.gov.br/redarq.asp?arq=BaseCompleta%2ezip
 
 - Dezipa e salva o csv em "A:\finance\ses\rawData"
 
 
-
-
 - Tratamento
 
-  códigos: 01_base_SES_clear_agreggate.R (em A:/finance/ses/code) e base_SES_transform_landscape_2024.R (no Github)
+  códigos: 01_base_SES_clear_agreggate.R
 
 	1 - importação do dataset via xlsx
 	2 - limpeza e padronização das variáveis, retirando acento, maiusculas e minusculas.
 	3 - Inclusão da descrição de cada código da empresa (coenti) através de outra planilha "Ses_grupos_economicos.csv"
+	
+
+	0.2_base_SES_transform_landscape_2024.R 
+	
 	6 - Filtragem para códigos de interesse focados na análise do landuse. planilha: "codes_ramo_rural_landscape.xlsx" (onde está o arquivo)?
 	7 - Criação de um id com base em 3 variáveis: coenti,coramo e ano.
 	8 - agregação da base a fim de diminuir o número de observações, mas manter a características agrupadas sem alteração do valor
+Em seguida:	
+- Efetua transformação para landscape land use Br 2024 
+- Remove duplicatas
+- Aplica as funções de deflação, dolarização e de taxa de câmbio, usando scripts fonte
+- Aplica transformação para Landscape Brazil 2025 com base no dataset relacional “LandscapeFormat_Colunas.xlsx" (em Methodology files): renomeia colunas.
+- Insere sector, subsector e solution com base no dataset relacional “LandscapeFormat_Colunas.xlsx” (em Methodology files)
+- Insere Keys com base no datset relacional “UniqueKeys_ToSector_Subsector_Solution.xlsx” (em Methodology files)
+- Adiciona região e ID_Landscape
+- Exporta versão final
+
