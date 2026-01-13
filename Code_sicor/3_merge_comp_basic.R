@@ -5,6 +5,18 @@
 ####    Created: May 12th, 2023, by: Wagner F. Oliveira                     ####
 ####    Last updated: Aug  24th, 2025, by: Julia Niemeyer                   #### ---------------------------------------------------------------------- ####
 
+############################### ACTION NEEDED ################################
+# ## set anos de analise caso não esteja rodando pelo MASTER
+ano_ini = 2013 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+#ano_base = 2024 #the year to base inflation
+# #
+# # # ## set the path to your github clone
+github <- "Documents/"
+
+
+
+
 #### ---------------------------------------------------------------------- ####
 ####    Environment                                                         #### 
 #### ---------------------------------------------------------------------- ####
@@ -39,7 +51,7 @@ options(scipen = 999)
 #### ---------------------------------------------------------------------- ####
 
 ### Load full database
-df <- readRDS(paste0(clean, "sicor_main_2013_2025_V2.Rds"))
+df <- readRDS(paste0(clean, "sicor_main_", ano_ini, "_", ano_fim, ".Rds"))
 
 ### Load Basic complementary file (contains Municipality)
 basic <- fread(paste0(raw, "complement/SICOR_COMPLEMENTO_OPERACAO_BASICA.csv")) %>%
@@ -76,7 +88,7 @@ teste <- left_join(basic, df, by = c("ref_bacen", "nu_ordem")) %>%
 nrow(teste)/nrow(basic) # 0 observations
 
 ### Save merged data
-saveRDS(df, paste0(clean, "sicor_main_2013_2025_basic_complement_V2.Rds"))
+saveRDS(df, paste0(clean, "sicor_main_", ano_ini, "_", ano_fim, "_basic_complement.Rds"))
 
 ### Clean memory
 rm(list=ls())
