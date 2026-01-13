@@ -4,7 +4,7 @@
 # Author : Renan Morais
 # Date: 24-04-2023
 # Email: renanflorias@hotmail.com
-# Goal: join base: sicor_operacao_basica_estado with table "empreendimento"
+# Goal: Definir transações climáticas com base no df "bcb_c82", que possui todos códigos e descrições das características climáticas da consulta pública 82
 # resource: 
 
 
@@ -12,7 +12,7 @@
 # Date 25/05/2025
 
 ######################### ACTION NEEDED ########################################
-
+## set anos de analise caso não esteja rodando pelo master
 # Fill the information to run your analysis
 ano_ini = 2019 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
@@ -27,8 +27,8 @@ github <- "Documents/"
 pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr)
 
 tic()
-## set anos de analise caso não esteja rodando pelo master
-# 
+
+
 
 
 ##### directory #########
@@ -41,7 +41,7 @@ dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", a
 
 ### import dataset ############
 
-df_sicor <- readRDS(paste0(dir_output, "/df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, "V2.RDS"))
+df_sicor <- readRDS(paste0(dir_output, "/df_sicor_op_basica_pre_dummie_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
 
 
 #### df "bcb_c82" possui todos códigos e descrições das características climáticas da consulta pública 82
@@ -141,8 +141,8 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 setwd(dir_output)
 
-saveRDS(df_sicor_op_basica_empreendimento_all_dummies, paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, "V2.RDS"))
-write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, "V2.xlsx"))
+saveRDS(df_sicor_op_basica_empreendimento_all_dummies, paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
+write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, ".xlsx"))
 
 ## nrow(df_sicor_op_basica_empreendimento_all_dummies) = 546271
 
@@ -151,39 +151,39 @@ write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_bas
 
 
 ######## apply deflate and create usd value ##########
-
-root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
-
-
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
-############# ATUALIZADO EM 2024 -- pega valores para deflacionar USD na base USD A:\\macro\\usd_FED\\rawData\\Inflation_FED.xls
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/deflated_usd_v2.r"))
-
-
-source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
-
-#le a tabela atualizada pela funcao acima
-cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
-
-tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
-tabela_deflatorUSD <- deflator_usd(ano_ini, ano_fim, usd_inflation)
-
-tabela_cambio <- cambio_sgs %>% 
-  filter(year >= ano_ini & year <= ano_fim)
-
-df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>% 
-  filter(ANO >= ano_ini & ANO <= ano_fim) %>%
-  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) %>%
-  ## Add info de original currency
-  mutate("original_currency" = "BRL")
-
-
-df_deflated <- deflate_and_exchange_Landuse(tabela_deflator, df_deflated, tabela_cambio)
-df_deflated2 <- calculo_deflator_usd(tabela_deflatorUSD, df_deflated)
-
-
-## EXPORT TABLE
-write.xlsx(df_deflated2, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, "V2.xlsx"))
+# 
+# root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+# 
+# 
+# source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/automatic_deflate_v3.r"))
+# ############# ATUALIZADO EM 2024 -- pega valores para deflacionar USD na base USD A:\\macro\\usd_FED\\rawData\\Inflation_FED.xls
+# source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/deflated_usd_v2.r"))
+# 
+# 
+# source(paste0(root,github,"/GitHub/landuse_br2024/Aux_functions/funcao_taxa_cambio_v4.r"))
+# 
+# #le a tabela atualizada pela funcao acima
+# cambio_sgs = read.csv(paste0("A:\\projects\\landuse_br2024\\macro_databases\\tabela_cambio_", ano_ini, "-", ano_fim, ".csv")) #%>% select(-X)
+# 
+# tabela_deflator <- deflator_automatico(ano_ini, ano_fim, ibge_ipca)
+# tabela_deflatorUSD <- deflator_usd(ano_ini, ano_fim, usd_inflation)
+# 
+# tabela_cambio <- cambio_sgs %>% 
+#   filter(year >= ano_ini & year <= ano_fim)
+# 
+# df_deflated <- df_sicor_op_basica_empreendimento_all_dummies %>% 
+#   filter(ANO >= ano_ini & ANO <= ano_fim) %>%
+#   dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) %>%
+#   ## Add info de original currency
+#   mutate("original_currency" = "BRL")
+# 
+# 
+# df_deflated <- deflate_and_exchange_Landuse(tabela_deflator, df_deflated, tabela_cambio)
+# df_deflated2 <- calculo_deflator_usd(tabela_deflatorUSD, df_deflated)
+# 
+# 
+# ## EXPORT TABLE
+# write.xlsx(df_deflated2, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
 
 toc()
 gc()
