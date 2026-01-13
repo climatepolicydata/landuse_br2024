@@ -20,12 +20,16 @@ ano_base = 2024 #the year to base inflation
 # #
 # # # ## set the path to your github clone
 github <- "Documents/"
-root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
-#  
+
+
+#####################  
 # Clean Memory
-rm(list=ls())
+#rm(list=ls())
 gc()
+################
+
+root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 # Packages
 if (!require("pacman")) install.packages("pacman")
