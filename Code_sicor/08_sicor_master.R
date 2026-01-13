@@ -39,10 +39,10 @@ codes_sicor <- paste0(root,github,"/GitHub/landuse_br2024/Code_sicor/")
 
 tic()
 # sourcing SICOR codes
-source(paste0(codes_sicor,"02_get_filter_sicor.R"))
-source(paste0(codes_sicor,"03_sicor_op_basica_dummies.R"))
-source(paste0(codes_sicor,"04_sicor_op_basica_filter_dummies.R"))
-source(paste0(codes_sicor,"05_sicor_op_basica_transform_landscape.R"))
+source(paste0(codes_sicor,"04_get_filter_sicor.R"))
+source(paste0(codes_sicor,"05_sicor_op_basica_dummies.R"))
+source(paste0(codes_sicor,"06_sicor_op_basica_filter_dummies.R"))
+source(paste0(codes_sicor,"07_sicor_op_basica_transform_landscape.R"))
 
 
 toc()
