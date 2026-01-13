@@ -152,6 +152,7 @@ write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_bas
 
 ######## apply deflate and create usd value ##########
 
+
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
 
 
@@ -184,6 +185,3 @@ df_deflated2 <- calculo_deflator_usd(tabela_deflatorUSD, df_deflated)
 
 ## EXPORT TABLE
 write.xlsx(df_deflated2, paste0("df_sicor_deflated_analise_", ano_ini, "-", ano_fim, ".xlsx"))
-
-toc()
-gc()
