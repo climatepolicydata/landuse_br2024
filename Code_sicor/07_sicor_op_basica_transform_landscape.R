@@ -60,9 +60,9 @@ planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape
 
 
 # Read main dataset
-df <-readRDS(paste0(dir_output, "/sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, "V2.RDS"))
+df <-readRDS(paste0(dir_output, "/sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
 
-df_sicor_op_basica_empreendimento_all_dummies <- readRDS(paste0(dir_output, "/df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, "V2.RDS"))                
+df_sicor_op_basica_empreendimento_all_dummies <- readRDS(paste0(dir_output, "/df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))                
 
 
 
@@ -545,10 +545,10 @@ base_com_regiao <- inserir_regiao(df_sicor_calculus_final2, planilha)
 
 #Exporta 
 
-saveRDS(base_com_regiao,paste0(dir_output, "/df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, "V2.rds"))
+saveRDS(base_com_regiao,paste0(dir_output, "/df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".rds"))
 
 
-write.xlsx(base_com_regiao,paste0(dir_output, "/df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, "V2.xlsx"))
+write.xlsx(base_com_regiao,paste0(dir_output, "/df_sicor_format_landscape_final_", ano_ini, "-", ano_fim, ".xlsx"))
 
 toc()
 gc()

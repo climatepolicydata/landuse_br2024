@@ -16,6 +16,7 @@
 # Fill the information to run your analysis
 ano_ini = 2019 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
+ano_base = 2024 #the year to base inflation
 
 # ## set the path to your github clone
 github <- "Documents/"
@@ -141,8 +142,8 @@ df_sicor_op_basica_empreendimento_all_dummies <- df_sicor_op_basica_empreendimen
 
 setwd(dir_output)
 
-saveRDS(df_sicor_op_basica_empreendimento_all_dummies, paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, ".RDS"))
-write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_basica_all_dummies_aggregate_", ano_ini, "-", ano_fim, ".xlsx"))
+saveRDS(df_sicor_op_basica_empreendimento_all_dummies, paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
+write.xlsx(df_sicor_op_basica_empreendimento_all_dummies,paste0("df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".xlsx"))
 
 ## nrow(df_sicor_op_basica_empreendimento_all_dummies) = 546271
 

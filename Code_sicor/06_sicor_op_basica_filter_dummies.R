@@ -10,6 +10,10 @@
 # Date 25/05/2025
 tic()
 
+
+
+############################### ACTION NEEDED #################################
+
 ## set anos de analise caso não esteja rodando pelo master
 # 
 ano_ini = 2019 #the initial year to star analysis
