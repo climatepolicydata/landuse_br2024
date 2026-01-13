@@ -50,7 +50,7 @@ dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", a
 
 ##### import datasets #########
 #setwd(dir_output)
-mdcr_op_basic_modify <- readRDS(paste0(dir_output, "/df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, "V2.RDS"))
+mdcr_op_basic_modify <- readRDS(paste0(dir_output, "/df_sicor_op_basica_all_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
 
 
 
@@ -72,8 +72,8 @@ mdcr_op_basic_modify_filter <- mdcr_op_basic_modify_filter %>% filter(!CODIGO_FI
 #rm(mdcr_op_basic_modify)
 setwd(dir_output)
 
-saveRDS(mdcr_op_basic_modify_filter, paste0("sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, "V2.RDS"))
-write.xlsx(mdcr_op_basic_modify_filter,paste0("sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, "V2.xlsx"))
+saveRDS(mdcr_op_basic_modify_filter, paste0("sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".RDS"))
+write.xlsx(mdcr_op_basic_modify_filter,paste0("sicor_op_basica_sum_dummies_aggregate_v2_", ano_ini, "-", ano_fim, ".xlsx"))
 
 
 #### DEFLATE
@@ -109,7 +109,7 @@ sicor_op_basica_sum_dummies_aggregate_v2 <- deflate_and_exchange_Landuse(tabela_
 sicor_op_basica_sum_dummies_aggregate_v2 <- calculo_deflator_usd(tabela_deflatorUSD, sicor_op_basica_sum_dummies_aggregate_v2)
 
 
-write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2, paste0("sicor_op_basica_sum_dummies_aggregate_climate", ano_ini, "-", ano_fim, "V2.xlsx"))
+write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2, paste0("sicor_op_basica_sum_dummies_aggregate_climate", ano_ini, "-", ano_fim, ".xlsx"))
 
 
 mdcr_op_basic_modify <- mdcr_op_basic_modify %>%
@@ -120,7 +120,7 @@ mdcr_op_basic_modify <- deflate_and_exchange_Landuse(tabela_deflator, mdcr_op_ba
 mdcr_op_basic_modify <- calculo_deflator_usd(tabela_deflatorUSD, mdcr_op_basic_modify)
 
 
-write.xlsx(mdcr_op_basic_modify, paste0(dir_output, "sicor_op_basica_sum_dummies_no_filter", ano_ini, "-", ano_fim, "V2.xlsx"))
+write.xlsx(mdcr_op_basic_modify, paste0(dir_output, "sicor_op_basica_sum_dummies_no_filter", ano_ini, "-", ano_fim, ".xlsx"))
 
 toc()
 gc()
