@@ -6,12 +6,27 @@
 ####    Last updated: Aug, 2025, by: Julia Niemeyer               ####
 #### ---------------------------------------------------------------------- ####
 
+
+############################### ACTION NEEDED ################################
+# ## set anos de analise caso não esteja rodando pelo MASTER
+ano_ini = 2013 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+#ano_base = 2024 #the year to base inflation
+# #
+# # # ## set the path to your github clone
+github <- "Documents/"
+
+
+
+
+
 #### ---------------------------------------------------------------------- ####
 ####    Environment                                                         #### 
 #### ---------------------------------------------------------------------- ####
 
 # Clean Memory
-rm(list=ls())
+
+#rm(list=ls())
 gc()
 
 # Packages
@@ -37,7 +52,7 @@ options(scipen = 999)
 #### ---------------------------------------------------------------------- ####
 
 # Load data
-sicor_op_basica <- readRDS(paste0(clean, "sicor_main_2013_2025.Rds"))
+sicor_op_basica <- readRDS(paste0(clean, "sicor_main_", ano_ini, "_", ano_fim, ".Rds"))
 
 df_empreendimento <- read.csv(paste0(auxil, "Empreendimento.csv"),
                   sep = ",", encoding = "latin1") %>%
@@ -55,7 +70,7 @@ df <- left_join(sicor_op_basica, df_empreendimento,
            by = "cd_empreendimento")
 
 # Save cleaned data
-saveRDS(df, paste0(clean, "sicor_main_2013_2025_empreendimento.Rds"))
+saveRDS(df, paste0(clean, "sicor_main_", ano_ini, "_", ano_fim, "_empreendimento.Rds"))
 
 # Clean memory
 rm(list=ls())
