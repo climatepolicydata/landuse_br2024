@@ -11,6 +11,17 @@
 ### Modified by Julia Niemeyer
 # Date 25/05/2025
 
+######################### ACTION NEEDED ########################################
+
+# Fill the information to run your analysis
+ano_ini = 2019 #the initial year to star analysis
+ano_fim = 2024 #the final year to end your analysis
+
+# ## set the path to your github clone
+github <- "Documents/"
+
+
+
 ########################### Libraries ######################################
 
 pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr)
@@ -18,14 +29,6 @@ pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, r
 tic()
 ## set anos de analise caso não esteja rodando pelo master
 # 
-
-# Fill the information to run your analysis
-ano_ini = 2019 #the initial year to star analysis
-ano_fim = 2024 #the final year to end your analysis
-ano_base = 2024 #the year to base inflation
-
-# ## set the path to your github clone
-github <- "Documents/"
 
 
 ##### directory #########
