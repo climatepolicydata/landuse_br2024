@@ -91,7 +91,7 @@ calculo_deflator_usd <- function(tabela_deflator, base_select_deflator) {
     #left_join(tabela_cambio, by = "year") %>%
     dplyr::mutate(
       # Deflator sobre valor em USD
-      value_usd_deflated = value_USD * deflatorUSD) %>%
+      value_usd_deflated = value_USDm * deflatorUSD) %>%
     dplyr::rename("deflator_usd" = "deflatorUSD")
   
   cat("Cálculo do deflator USD concluído.\n")
