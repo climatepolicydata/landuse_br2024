@@ -21,7 +21,7 @@ ano_fim = 2024 #the final year to end your analysis
 # # # ## set the path to your github clone
 github <- "Documents/"
 
-## path to output
+## path to output 
 dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", ano_fim)
 
 # ############## ATUALIZAR SEMPRE #############################
