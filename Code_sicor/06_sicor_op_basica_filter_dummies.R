@@ -16,7 +16,7 @@ tic()
 
 ## set anos de analise caso não esteja rodando pelo master
 # 
-ano_ini = 2019 #the initial year to star analysis
+ano_ini = 2013 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
 ano_base = 2024 #the year to base inflation
 # 
@@ -113,12 +113,12 @@ sicor_op_basica_sum_dummies_aggregate_v2 <- deflate_and_exchange_Landuse(tabela_
 sicor_op_basica_sum_dummies_aggregate_v2 <- calculo_deflator_usd(tabela_deflatorUSD, sicor_op_basica_sum_dummies_aggregate_v2)
 
 
-write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2, paste0("sicor_op_basica_sum_dummies_aggregate_climate", ano_ini, "-", ano_fim, ".xlsx"))
+write.xlsx(sicor_op_basica_sum_dummies_aggregate_v2, paste0(dir_output, "sicor_op_basica_sum_dummies_aggregate_climate", ano_ini, "-", ano_fim, ".xlsx"))
 
 
 mdcr_op_basic_modify <- mdcr_op_basic_modify %>%
-  dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) %>%
-  mutate('original_currency' = 'BRL')
+ dplyr::rename(year = ANO, value_original_currency = VL_PARC_CREDITO) %>%
+ mutate('original_currency' = 'BRL')
 
 mdcr_op_basic_modify <- deflate_and_exchange_Landuse(tabela_deflator, mdcr_op_basic_modify, tabela_cambio)
 mdcr_op_basic_modify <- calculo_deflator_usd(tabela_deflatorUSD, mdcr_op_basic_modify)
