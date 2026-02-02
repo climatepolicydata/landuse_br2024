@@ -14,15 +14,18 @@
 
 
 # ## set anos de analise caso não esteja rodando pelo MASTER
-ano_ini = 2019 #the initial year to star analysis
+ano_ini = 2013 #the initial year to star analysis
 ano_fim = 2024 #the final year to end your analysis
 #ano_base = 2024 #the year to base inflation
 # #
 # # # ## set the path to your github clone
 github <- "Documents/"
-# 
+
+## path to output
+dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", ano_fim)
+
 # ############## ATUALIZAR SEMPRE #############################
-arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento.Rds")
+arquivo_sicor <- paste0("A:/finance/sicor/cleanData/sicor_main_2013_", ano_fim+1, "_empreendimento_V2.Rds")
 
 
 pacman::p_load(tidyverse, stringi, janitor, writexl, openxlsx, httr, magrittr, readr, data.table, dplyr, plyr,arrow, tictoc)
@@ -89,8 +92,9 @@ df_sicor <- df_sicor %>% mutate(#ano = as.numeric(format(mdy(df_sicor$dt_emissao
                                 mes = as.numeric(format(dmy(df_sicor$dt_emissao),'%m'))) %>% ##nrow(df_sicor) = 25636221
   filter(ano_base >= ano_ini & ano_base <= ano_fim) # nrow(df_sicor) = 12204945
 
-write_parquet(df_sicor, paste0("/sicor_data_", ano_ini, "-", ano_fim, ".parquet"))
+write_parquet(df_sicor, paste0("A:/projects/landuse_br2024/sicor/output/sicor_data_", ano_ini, "-", ano_fim, ".parquet"))
 
+gc()
 
 ### Create SAFRA Year variable
 # A vigência do Plano Safra é de um ano. Ela começa em 1º de julho e vai até junho do ano seguinte, período que acompanha o calendário das safras agrícolas no Brasil.
@@ -214,7 +218,7 @@ sum(df_sicor_aggregate$VL_PARC_CREDITO)
 ####    Saving the dataframe                                                #### 
 #### ---------------------------------------------------------------------- ####
 
-dir_output <- paste0("A:/projects/landuse_br2024/sicor/output/", ano_ini, "-", ano_fim)
+
 if(!dir.exists(dir_output)){
   dir.create(dir_output)
 }
