@@ -107,13 +107,15 @@ deflate_and_exchange_Landuse <- function(tabela_deflator, base_select_deflator, 
     left_join(tabela_cambio, by = "year") %>%
     mutate(
       # BRL case
-      value_BRLm = ifelse(original_currency == "USD",
+      value_BRL = ifelse(original_currency == "USD",
                           as.numeric(value_original_currency * cambio),
                           value_original_currency),
+      value_BRLm = value_BRL/1000000,
       value_brl_deflated = as.numeric(as.numeric(value_BRLm) * deflator_BRL),
-      value_USDm = ifelse(original_currency == "BRL",
-                          as.numeric(as.numeric(value_BRLm)/cambio),
-                          value_original_currency)
+      value_USD = ifelse(original_currency == "BRL",
+                          as.numeric(as.numeric(value_BRL)/cambio),
+                          value_original_currency),
+      value_USDm = value_USD/1000000
       # USD to BRL (for completeness)
       
     )
@@ -133,13 +135,13 @@ deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_c
     left_join(tabela_cambio, by = "year") %>%
     mutate(
       # BRL case
-      value_BRL = ifelse(original_currency == "USD", ## se for em dolar originalmente, o valor de BRL tem que aplicar cambio no original currency, se náo for USD é brl e ai so pega o valor de original em brl
-                          as.numeric(value_USD * cambio),
-                          value_BRL),
-      value_brl_deflated = as.numeric(as.numeric(value_BRL) * deflator_BRL), #aplica deflacao brasileira sobre BRL
-      value_USD = ifelse(original_currency == "BRL", ## se for em brl o original currency, o valor de USDm tem que aplicar o cambio no original currency, se for dolar, é o valor em dolar.  
-                          as.numeric(as.numeric(value_BRL)/cambio),
-                          value_USD)
+      value_BRLm = ifelse(original_currency == "USD", ## se for em dolar originalmente, o valor de BRL tem que aplicar cambio no original currency, se náo for USD é brl e ai so pega o valor de original em brl
+                          as.numeric(value_USDm * cambio),
+                          value_BRLm),
+      value_brl_deflated = as.numeric(as.numeric(value_BRLm) * deflator_BRL), #aplica deflacao brasileira sobre BRL
+      value_USDm = ifelse(original_currency == "BRL", ## se for em brl o original currency, o valor de USDm tem que aplicar o cambio no original currency, se for dolar, é o valor em dolar.  
+                          as.numeric(as.numeric(value_BRLm)/cambio),
+                          value_USDm)
       # USD to BRL (for completeness)
       
     )
@@ -161,13 +163,13 @@ deflate_and_exchange_AllData <- function(tabela_deflator, base_select_deflator, 
     left_join(tabela_cambio, by = "year") %>%
     mutate(
       # BRL case
-      value_BRL = ifelse(original_currency == "usd",
-                          as.numeric(value_USD * cambio),
-                          value_BRL) ,
-      value_BRLm_deflated = as.numeric(as.numeric(value_BRL) * deflator_BRL.y),
-      value_USD = ifelse(original_currency == "BRL",
-                          as.numeric(as.numeric(value_BRL)/cambio),
-                          value_USD)
+      value_BRLm = ifelse(original_currency == "usd",
+                          as.numeric(value_USDm * cambio),
+                          value_BRLm) ,
+      value_BRLm_deflated = as.numeric(as.numeric(value_BRLm) * deflator_BRL.y),
+      value_USDm = ifelse(original_currency == "BRL",
+                          as.numeric(as.numeric(value_BRLm)/cambio),
+                          value_USDm)
     )
   
   
