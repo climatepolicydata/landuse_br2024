@@ -381,6 +381,12 @@ tabela_cambio <- cambio_sgs %>%
 df_sicor_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_final, tabela_cambio)
 df_sicor_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_sicor_calculus)
 
+
+
+## Salvar no formado land use
+
+write.xlsx(df_sicor_calculus2, paste0(dir_output, "/df_sicor_format_landuse_final_", ano_ini, "-", ano_fim, ".xlsx"))
+
 ###########################################################################
 ################################ LANDSCAPE BR #############################
 ########## 
