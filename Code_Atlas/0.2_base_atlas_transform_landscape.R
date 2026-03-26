@@ -56,6 +56,10 @@ planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape
 
 df_atlas <- readRDS(paste0(dir_sisser_mapa_dt_clean, "/atlas_2006_", ano_fim, "_clear.rds"))
 
+
+
+########### Aplica filtros e seleções
+
 df_atlas_filter <- df_atlas %>% 
   dplyr::filter(ano_apolice >= ano_ini & ano_apolice <= ano_fim,
          !nm_cultura_global %in% c("Pecuário"))
@@ -91,7 +95,7 @@ df_atlas_subvencao <- aggregate(vl_subvencao_federal ~ id_equals + nm_razao_soci
 rm(df_atlas)
 
 
-############### transform ########
+############### transform to Landacape of Land use ########
 
 setwd("A:/projects/landuse_br2024/atlas")
 
