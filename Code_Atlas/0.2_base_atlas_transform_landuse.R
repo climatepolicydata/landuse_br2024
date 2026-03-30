@@ -18,6 +18,7 @@ ano_base = 2024 #the year to base inflation
 ## set the path to your github clone
 github <- "Documents/"
 
+# set the path to save the output
 path_output <- "A:/projects/landuse_br2024/atlas/output"
 
 ########################### Libraries ######################################
