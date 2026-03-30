@@ -12,6 +12,8 @@ ano_base = 2024 #the year to base inflation
 ## set the path to your github clone
 github <- "Documents/"
 
+# set path to sabe output
+path_output <- "A:/projects/landuse_br2024/atlas/output"
 
 ########################### Libraries ######################################
 
@@ -204,10 +206,8 @@ df_atlas_final2 <- df_atlas_final %>%
 
 
 
-
-setwd("A:/projects/landuse_br2024/atlas/output")
-
-saveRDS(df_atlas_final2, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".rds"))
-write.csv2(df_atlas_final2, paste0("database_atlas_landscape_", ano_ini, "_", ano_fim, ".csv"), fileEncoding = "Latin1")
+## Export
+saveRDS(df_atlas_final2, paste0(path_output, "database_atlas_landscape_", ano_ini, "_", ano_fim, ".rds"))
+write.csv2(df_atlas_final2, paste0(path_output, "database_atlas_landscape_", ano_ini, "_", ano_fim, ".csv"), fileEncoding = "Latin1")
 
 

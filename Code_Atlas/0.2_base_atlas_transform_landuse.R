@@ -18,6 +18,7 @@ ano_base = 2024 #the year to base inflation
 ## set the path to your github clone
 github <- "Documents/"
 
+path_output <- "A:/projects/landuse_br2024/atlas/output"
 
 ########################### Libraries ######################################
 
@@ -210,5 +211,10 @@ tabela_cambio <-cambio_sgs %>%
 
 df_atlas_calculus <- deflate_and_exchange_Landuse(tabela_deflator, df_atlas_final, tabela_cambio)
 df_atlas_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_atlas_calculus)
+
+
+## export
+
+saveRDS(df_atlas_calculus2, paste0(path_output, "Atlas_landscape_landuse_", ano_ini, "_", ano_fim, "_TESTE_PYTHON.rds"))
 
 
