@@ -21,6 +21,9 @@ github <- "Documents/"
 # set the path to save the output
 path_output <- "A:/projects/landuse_br2024/atlas/output"
 
+# path para a base relacional atlas (sempre igual)
+path_relt <- "A:/projects/landuse_br2024/atlas"
+
 ########################### Libraries ######################################
 
 pacman::p_load(tidyverse, 
@@ -47,17 +50,11 @@ dir_sisser_mapa_dt_clean <- ("A:/finance/atlas_Seguro_Rural/cleanData")
 ############### import databases #####################
 
 # import landuse br database to get columns names and order 
-Landscape_columns <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"), sheet = "ColunasFinal") %>%
-  select(`LAND USE`, `LANDSCAPE BRAZIL`)
-
-DePara <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/LandscapeFormat_Colunas.xlsx"),  sheet = "DeParaLandUse_Sectors") 
-
-## import keys database (sector_key_cpi)
-planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
-                                
+                            
 
 df_atlas <- readRDS(paste0(dir_sisser_mapa_dt_clean, "/atlas_2006_", ano_fim, "_clear.rds"))
 
+relational_table <- read_excel(paste0(path_relt, "/03_atlas_relational_tables.xlsx"), sheet = "sector_landscape")
 
 
 ########### Aplica filtros e seleções
@@ -81,8 +78,8 @@ df_atlas <- df_atlas_filter %>%
 
 "remove values with count for 'livestock' "
 
-df_atlas <- df_atlas %>% 
-  dplyr::filter(!nm_cultura_global %in% c("Pecuário"))
+#df_atlas <- df_atlas %>% 
+ # dplyr::filter(!nm_cultura_global %in% c("Pecuário"))
 
 df_atlas_sub_negative <- aggregate( vl_subvencao_federal ~ id_equals + nm_razao_social + nm_municipio_propriedade + 
                                       sg_uf_propriedade + nm_classif_produto+ nm_cultura_global+ vl_subvencao_federal+
@@ -216,6 +213,6 @@ df_atlas_calculus2 <- calculo_deflator_usd(tabela_deflatorUSD, df_atlas_calculus
 
 ## export
 
-saveRDS(df_atlas_calculus2, paste0(path_output, "Atlas_landscape_landuse_", ano_ini, "_", ano_fim, "_TESTE_PYTHON.rds"))
+saveRDS(df_atlas_calculus2, paste0(path_output, "/Atlas_landscape_landuse_", ano_ini, "_", ano_fim, ".rds"))
 
 

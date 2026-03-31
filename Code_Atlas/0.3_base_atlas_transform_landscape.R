@@ -15,6 +15,10 @@ github <- "Documents/"
 # set path to sabe output
 path_output <- "A:/projects/landuse_br2024/atlas/output"
 
+path_input <- "A:/projects/landuse_br2024/atlas/output"
+
+
+
 ########################### Libraries ######################################
 
 pacman::p_load(tidyverse, 
@@ -34,9 +38,6 @@ pacman::p_load(tidyverse,
 ################## directories ###################
 
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
-dir_sisser_mapa_dt_clean <- ("A:/finance/atlas_Seguro_Rural/cleanData")
-
-
 
 ############### import databases #####################
 
@@ -50,7 +51,7 @@ DePara <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data
 planilha_uniqueKeys <- read_xlsx(paste0(root, "CPI/SP-Program - Brazil Landscape/2025/3. Data Scoping/Methodology files/UniqueKeys_ToSector_Subsector_Solution.xlsx")) 
 
 
-df_atlas <- readRDS(paste0(dir_sisser_mapa_dt_clean, "/atlas_2006_", ano_fim, "_clear.rds"))
+df_atlas_calculus2 <- readRDS(paste0(path_input, "/Atlas_landscape_landuse_", ano_ini, "_", ano_fim, ".rds"))
 
 
 
