@@ -44,10 +44,25 @@ setwd(dir_susep_raw)
 ses_seguros2 <- read_csv2("Ses_seguros.csv")
 
 ## Get unique values of coenti code
-code_coenti <- read.csv("Ses_grupos_economicos.csv", sep = ";", encoding = "latin1") %>%
-    select(coenti, noenti) %>%
-    mutate(coenti = as.numeric(coenti)) %>%
-    distinct()
+# code_coenti <- read.csv("Ses_grupos_economicos.csv", sep = ";", encoding = "latin1") %>%
+#     select(coenti, noenti) %>%
+#     mutate(coenti = as.numeric(as.character(coenti))) %>%
+#     distinct()
+
+
+code_coenti <- read_delim(
+  "Ses_grupos_economicos.csv",
+  delim = ";",
+  locale = locale(encoding = "latin1"),
+  quote = "\"",
+  trim_ws = TRUE
+)
+
+code_coenti <- code_coenti %>%
+  select(coenti, noenti) %>%
+  mutate(coenti = as.numeric(as.character(coenti))) %>%
+  distinct()
+
 
 ##################### filters and transforms ###########
 
