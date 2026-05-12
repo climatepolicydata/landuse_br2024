@@ -70,6 +70,6 @@ df_negociacao_raw <- df_negociacao_raw %>%
 
 setwd(dir_b3_output)
 
-write_xlsx(df_negociacao_raw, paste0(dir_b3_raw, "/cbios_negociacao_definitiva_2020_", ano, ".xlsx"))
+write_xlsx(df_negociacao_raw, paste0("/cbios_negociacao_definitiva_2020_", ano, ".xlsx"))
 saveRDS(df_negociacao_raw, "cbios_b3_nd_clear.rds")
 
