@@ -3,7 +3,7 @@
 # Author : Renan Morais
 # Date: 30.05.2023
 # Email: renanflorias@hotmail.com
-# Goal: transformação da base SES para landscape
+# Goal: transformação da base SES para landscape de land use
 
 ##Modified by Julia Niemeyer
 #Date: 27/05/2025
