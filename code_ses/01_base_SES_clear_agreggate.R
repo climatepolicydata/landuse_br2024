@@ -58,10 +58,21 @@ code_coenti <- read_delim(
   trim_ws = TRUE
 )
 
+
 code_coenti <- code_coenti %>%
   select(coenti, noenti) %>%
-  mutate(coenti = as.numeric(as.character(coenti))) %>%
-  distinct()
+  mutate(
+    coenti = as.numeric(coenti),
+    
+    # NORMALIZAÇÃO DO TEXTO
+    noenti = noenti %>%
+      str_to_upper() %>%                             # remove diferença de maiúsc/minúsc
+      stri_trans_general("Latin-ASCII") %>%          # remove acentos
+      str_squish()                                   # remove espaços extras
+  ) %>%
+  distinct(coenti, noenti)
+
+
 
 
 ##################### filters and transforms ###########
