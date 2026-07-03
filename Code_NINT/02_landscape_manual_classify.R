@@ -20,23 +20,30 @@ pacman::p_load(tidyverse,
 
 github <- "Documents"
 root <- paste0("C:/Users/", Sys.getenv("USERNAME"), "/")
+
+################################# CHANGE NEEDED
 source(paste0(root,github,"/GitHub/landuse_br2024/AuxFolder/Dictionary_Sectors.R"))
 #Importando tabela relacional
 source_finance_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "source_landscape") %>% select(-emissor_trade_name)
-source_finance_landscape <- source_finance_landscape %>% mutate(source_original = str_to_lower(stri_trans_general(source_original,"Latin-ASCII")))
-source_finance_landscape <- source_finance_landscape[,-5]
-source_finance_landscape <- source_finance_landscape %>% unique()
-
 
 channel_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "channel_landscape") %>% select(channel_original, channel_landscape) %>% 
   dplyr::mutate(channel_original = str_to_lower(stri_trans_general(channel_original,"Latin-ASCII"))) %>% unique()
 
 instrument_landscape <- read_excel("A:\\projects\\landuse_br2024\\NINT/11_nint_relational_tables.xlsx",sheet = "instrument_landscape") %>% select(-tipo,-categoria,-instrumento_financeiro)
-instrument_landscape <- instrument_landscape %>% mutate(instrument_original = str_to_lower(stri_trans_general(instrument_original,"Latin-ASCII")))
 #####################################################################################################################
 nint_clear <- read_csv2("A:\\projects\\landuse_br2024\\NINT\\Clean_data\\nint_clear_19_03_2024.csv") %>% filter((data >=2021) & (data<= 2023))
+
+################################# eFETUA MODIFICAÇÕES NOS INPUTS
+source_finance_landscape <- source_finance_landscape %>% mutate(source_original = str_to_lower(stri_trans_general(source_original,"Latin-ASCII")))
+source_finance_landscape <- source_finance_landscape[,-5]
+source_finance_landscape <- source_finance_landscape %>% unique()
+
+instrument_landscape <- instrument_landscape %>% mutate(instrument_original = str_to_lower(stri_trans_general(instrument_original,"Latin-ASCII")))
+
 nint_clear[nint_clear == "N/D"] <- NA
 nint_clear%>%view
+
+passado <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_nint_landscape_final_reviewed.rds")
 
 ######################## filter manual ################### 
 
@@ -117,7 +124,7 @@ df_nint_calculus <- df_nint_calculus %>% select(id_original, data_source, year, 
        subsector_original, activity_landscape, subactivity_landscape, climate_component, rio_marker, beneficiary_original, beneficiary_landscape,
        beneficiary_public_private, localization_original, region, uf, municipality)
 
-passado <- read_rds("A:\\projects\\brlanduse_landscape102023\\nint\\output\\df_nint_landscape_final_reviewed.rds")
+
 ano_ini = 2015
 ano_fim = 2023
 anos = seq(ano_fim,ano_ini, -1)
