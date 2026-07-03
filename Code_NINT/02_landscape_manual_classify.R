@@ -95,7 +95,7 @@ anos = seq(ano_fim,ano_ini, -1)
 tabela_deflator <- deflator_automatico(ano_ini, ano_fim, anos,ibge_ipca)
 
 tabela_cambio <-cambio_sgs %>% 
-  dplyr::filter(year >= 2015 & year <= 2023)
+  dplyr::filter(year >= ano_ini & year <= ano_fim)
 
 
 deflate_and_exchange <- function(tabela_deflator, base_select_deflator, tabela_cambio) {
@@ -125,8 +125,7 @@ df_nint_calculus <- df_nint_calculus %>% select(id_original, data_source, year, 
        beneficiary_public_private, localization_original, region, uf, municipality)
 
 
-ano_ini = 2015
-ano_fim = 2023
+
 anos = seq(ano_fim,ano_ini, -1)
 
 passado <- deflate_and_exchange(tabela_deflator, passado, tabela_cambio)
