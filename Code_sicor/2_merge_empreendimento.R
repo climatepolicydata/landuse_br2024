@@ -10,7 +10,7 @@
 ############################### ACTION NEEDED ################################
 # ## set anos de analise caso não esteja rodando pelo MASTER
 ano_ini = 2013 #the initial year to star analysis
-ano_fim = 2024 #the final year to end your analysis
+ano_fim = 2026 #the final year to end your analysis
 #ano_base = 2024 #the year to base inflation
 # #
 # # # ## set the path to your github clone
